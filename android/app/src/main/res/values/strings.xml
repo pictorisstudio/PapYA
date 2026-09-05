@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PapYA</string>
+    <string name="title_activity_main">PapYA</string>
+    <string name="package_name">com.papya.game</string>
+    <string name="custom_url_scheme">com.papya.game</string>
+</resources>
