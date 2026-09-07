@@ -37,8 +37,10 @@ export default class PotatoSpawnManager {
     const type = forcedType ?? (Math.random() <= PAPA_CONFIG.GOOD_POTATO_PROBABILITY ? 'GOOD' : 'BAD')
     const x = Phaser.Math.Between(PAPA_CONFIG.SPAWN_MARGIN_X, 1280 - PAPA_CONFIG.SPAWN_MARGIN_X)
     const directionBias = x < 640 ? 1 : -1
-    const velocityX = Phaser.Math.Between(PAPA_CONFIG.MIN_HORIZONTAL_SPEED, PAPA_CONFIG.MAX_HORIZONTAL_SPEED) + directionBias * Phaser.Math.Between(20, 80)
-    const velocityY = Phaser.Math.Between(PAPA_CONFIG.MIN_VERTICAL_SPEED, PAPA_CONFIG.MAX_VERTICAL_SPEED)
+    const velocityX =
+      Phaser.Math.Between(PAPA_CONFIG.MIN_HORIZONTAL_SPEED, PAPA_CONFIG.MAX_HORIZONTAL_SPEED) +
+      directionBias * Phaser.Math.Between(PAPA_CONFIG.HORIZONTAL_EDGE_BIAS_MIN, PAPA_CONFIG.HORIZONTAL_EDGE_BIAS_MAX)
+    const velocityY = -Phaser.Math.Between(PAPA_CONFIG.MIN_VERTICAL_SPEED, PAPA_CONFIG.MAX_VERTICAL_SPEED)
     const rotationSpeed = Phaser.Math.FloatBetween(-2.6, 2.6)
     const scale = Phaser.Math.FloatBetween(0.86, 1.12)
 
@@ -46,7 +48,7 @@ export default class PotatoSpawnManager {
       id: `potato-${this.idCounter}`,
       type,
       x,
-      y: PAPA_CONFIG.FIELD_BASE_Y + 20,
+      y: PAPA_CONFIG.POTATO_SPAWN_Y,
       velocityX,
       velocityY,
       rotationSpeed,

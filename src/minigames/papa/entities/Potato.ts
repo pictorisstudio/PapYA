@@ -45,13 +45,13 @@ export default class Potato {
     }
 
     const seconds = delta / 1000
-    this.velocityY += PAPA_CONFIG.GRAVITY * seconds
+    this.velocityY += PAPA_CONFIG.GRAVITY_Y * seconds
     this.container.x += this.velocityX * seconds
     this.container.y += this.velocityY * seconds
     this.container.rotation += this.rotationSpeed * seconds
     this.container.setDepth(Math.round(this.container.y))
 
-    if (this.container.y >= PAPA_CONFIG.FIELD_BASE_Y + 32 || this.container.x < -80 || this.container.x > 1360) {
+    if (this.container.y >= PAPA_CONFIG.POTATO_MISS_Y || this.container.x < -80 || this.container.x > 1360) {
       this.state = 'MISSED'
     }
   }
