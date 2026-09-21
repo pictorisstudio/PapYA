@@ -32,6 +32,7 @@ export default class PapaScene extends Phaser.Scene {
     this.scoreManager = new PotatoScoreManager()
     this.spawnManager = new PotatoSpawnManager(this)
     this.spawnManager.setHitboxesVisible(DEBUG_MODE && gameManager.debugManager.arePapaHitboxesVisible())
+    this.events.on('debug:touch-areas-changed', this.handleDebugTouchAreasChanged, this)
     this.hud = new PapaHUD(this, {
       spawnGood: () => this.spawnDebugPotato('GOOD'),
       spawnBad: () => this.spawnDebugPotato('BAD'),
@@ -116,6 +117,10 @@ export default class PapaScene extends Phaser.Scene {
     this.spawnManager?.setHitboxesVisible(visible)
   }
 
+  private handleDebugTouchAreasChanged(): void {
+    this.spawnManager?.setHitboxesVisible(DEBUG_MODE && gameManager.debugManager.arePapaHitboxesVisible())
+  }
+
   private finish(victory: boolean): void {
     if (this.finished || !this.hud) {
       return
@@ -154,6 +159,7 @@ export default class PapaScene extends Phaser.Scene {
 
   private cleanup(): void {
     this.removeInputHandler()
+    this.events.off('debug:touch-areas-changed', this.handleDebugTouchAreasChanged, this)
     this.spawnManager?.destroy()
     this.spawnManager = undefined
     this.scoreManager = undefined

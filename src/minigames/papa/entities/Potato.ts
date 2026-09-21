@@ -23,14 +23,23 @@ export default class Potato {
     const markColor = options.type === 'GOOD' ? PAPA_CONFIG.COLORS.goodPotatoMark : PAPA_CONFIG.COLORS.badPotatoMark
 
     // TODO: reemplazar posteriormente por sprites pixel art de papa buena y papa dañada.
-    const body = scene.add.ellipse(0, 0, 52, 42, bodyColor, 1).setStrokeStyle(3, 0x3f2a1c, 0.65)
+    const body = scene.add
+      .ellipse(0, 0, PAPA_CONFIG.POTATO_VISUAL_WIDTH, PAPA_CONFIG.POTATO_VISUAL_HEIGHT, bodyColor, 1)
+      .setStrokeStyle(3, 0x3f2a1c, 0.65)
     const eye = scene.add.circle(-10, -6, 4, markColor, 1)
     const mark =
       options.type === 'GOOD'
         ? scene.add.circle(12, 7, 6, markColor, 0.95)
         : scene.add.rectangle(12, 4, 22, 6, markColor, 1).setRotation(0.75)
 
-    this.hitbox = scene.add.rectangle(0, 0, 64, 56, PAPA_CONFIG.COLORS.hitbox, 0)
+    this.hitbox = scene.add.rectangle(
+      0,
+      0,
+      PAPA_CONFIG.POTATO_VISUAL_WIDTH + PAPA_CONFIG.POTATO_TOUCH_PADDING * 2,
+      PAPA_CONFIG.POTATO_VISUAL_HEIGHT + PAPA_CONFIG.POTATO_TOUCH_PADDING * 2,
+      PAPA_CONFIG.COLORS.hitbox,
+      0,
+    )
     this.hitbox.setStrokeStyle(2, PAPA_CONFIG.COLORS.hitbox, 0.9)
 
     this.container = scene.add.container(options.x, options.y, [body, eye, mark, this.hitbox])
@@ -110,6 +119,10 @@ export default class Potato {
 
   get y(): number {
     return this.container.y
+  }
+
+  getDistanceSqTo(x: number, y: number): number {
+    return Phaser.Math.Distance.Squared(this.container.x, this.container.y, x, y)
   }
 
   get velocityLabel(): string {

@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { DEBUG_MODE } from '../../../config/constants'
+import { DEBUG_MODE, SAFE_MARGIN_X, SAFE_MARGIN_Y } from '../../../config/constants'
 import type { PotatoScoreSnapshot } from '../types/PapaTypes'
 import type { PapaDebugSnapshot, PotatoType } from '../types/PapaTypes'
 
@@ -22,12 +22,12 @@ export default class PapaHUD {
   private readonly debugText?: Phaser.GameObjects.Text
 
   constructor(private readonly scene: Phaser.Scene, actions: PapaHUDActions) {
-    scene.add.rectangle(292, 58, 500, 86, 0x102132, 0.76).setStrokeStyle(2, 0xffffff, 0.32)
-    scene.add.text(58, 30, 'COSECHA DE PAPA', { fontSize: '28px', fontStyle: '700', color: '#f8fafc' })
+    scene.add.rectangle(292, SAFE_MARGIN_Y + 30, 500, 86, 0x102132, 0.76).setStrokeStyle(2, 0xffffff, 0.32)
+    scene.add.text(SAFE_MARGIN_X, SAFE_MARGIN_Y, 'COSECHA DE PAPA', { fontSize: '28px', fontStyle: '700', color: '#f8fafc' })
 
-    this.potatoesText = scene.add.text(58, 70, 'Papas: 0 / 20', { fontSize: '22px', color: '#f8fafc' })
-    this.scoreText = scene.add.text(260, 70, 'Puntaje: 0', { fontSize: '22px', color: '#f8fafc' })
-    this.timeText = scene.add.text(452, 70, 'Tiempo: 30', { fontSize: '22px', color: '#f8fafc' })
+    this.potatoesText = scene.add.text(SAFE_MARGIN_X, SAFE_MARGIN_Y + 40, 'Papas: 0 / 20', { fontSize: '22px', color: '#f8fafc' })
+    this.scoreText = scene.add.text(260, SAFE_MARGIN_Y + 40, 'Puntaje: 0', { fontSize: '22px', color: '#f8fafc' })
+    this.timeText = scene.add.text(452, SAFE_MARGIN_Y + 40, 'Tiempo: 30', { fontSize: '22px', color: '#f8fafc' })
 
     this.finalText = scene.add
       .text(640, 318, '', {

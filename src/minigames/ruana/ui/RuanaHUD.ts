@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { DEBUG_MODE, REQUIRED_VICTORIES } from '../../../config/constants'
+import { DEBUG_MODE, REQUIRED_VICTORIES, SAFE_MARGIN_X, SAFE_MARGIN_Y } from '../../../config/constants'
 import { RUANA_CONFIG } from '../config/ruanaConfig'
 import type { RuanaScoreSnapshot } from '../systems/RuanaScoreManager'
 import type { RuanaDebugSnapshot, RuanaJudgeResult } from '../types/RuanaTypes'
@@ -22,12 +22,12 @@ export default class RuanaHUD {
   private readonly debugText?: Phaser.GameObjects.Text
 
   constructor(scene: Phaser.Scene, actions: RuanaHUDActions) {
-    scene.add.rectangle(640, 64, 1160, 74, 0x0f172a, 0.82).setStrokeStyle(2, 0x334155)
-    scene.add.text(84, 38, 'TEJIENDO LA RUANA', { fontSize: '28px', fontStyle: '700', color: '#f8fafc' })
+    scene.add.rectangle(640, SAFE_MARGIN_Y + 24, 1160, 74, 0x0f172a, 0.82).setStrokeStyle(2, 0x334155)
+    scene.add.text(SAFE_MARGIN_X + 28, SAFE_MARGIN_Y, 'TEJIENDO LA RUANA', { fontSize: '28px', fontStyle: '700', color: '#f8fafc' })
 
-    this.accuracyText = scene.add.text(410, 38, 'Precisión: 0%', { fontSize: '22px', color: '#6ee7b7' })
-    this.statsText = scene.add.text(410, 68, 'Perfect: 0  Good: 0  Miss: 0', { fontSize: '18px', color: '#d8dee9' })
-    this.progressText = scene.add.text(720, 68, `Victorias: 0/5  Meta: ${REQUIRED_VICTORIES}`, {
+    this.accuracyText = scene.add.text(410, SAFE_MARGIN_Y, 'Precisión: 0%', { fontSize: '22px', color: '#6ee7b7' })
+    this.statsText = scene.add.text(410, SAFE_MARGIN_Y + 30, 'Perfect: 0  Good: 0  Miss: 0', { fontSize: '18px', color: '#d8dee9' })
+    this.progressText = scene.add.text(720, SAFE_MARGIN_Y + 30, `Victorias: 0/5  Meta: ${REQUIRED_VICTORIES}`, {
       fontSize: '20px',
       color: '#aab3c5',
     })

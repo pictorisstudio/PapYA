@@ -1,6 +1,8 @@
 export const LOGICAL_WIDTH = 1280
 export const LOGICAL_HEIGHT = 720
 export const SAFE_MARGIN = 48
+export const SAFE_MARGIN_X = 56
+export const SAFE_MARGIN_Y = 44
 
 export const REQUIRED_VICTORIES = 3
 export const TOTAL_ROUTES = 5

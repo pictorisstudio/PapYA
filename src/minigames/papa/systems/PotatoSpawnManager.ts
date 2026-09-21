@@ -61,15 +61,21 @@ export default class PotatoSpawnManager {
   }
 
   getPotatoAt(x: number, y: number): Potato | null {
-    for (let index = this.potatoes.length - 1; index >= 0; index -= 1) {
-      const potato = this.potatoes[index]
+    let closestPotato: Potato | null = null
+    let closestDistance = Number.POSITIVE_INFINITY
 
+    for (const potato of this.potatoes) {
       if (potato.contains(x, y)) {
-        return potato
+        const distance = potato.getDistanceSqTo(x, y)
+
+        if (distance < closestDistance) {
+          closestDistance = distance
+          closestPotato = potato
+        }
       }
     }
 
-    return null
+    return closestPotato
   }
 
   removeInactivePotatoes(): void {

@@ -48,6 +48,7 @@ export default class RuanaScene extends Phaser.Scene {
     this.scoreManager = new RuanaScoreManager(RUANA_BEATMAP_PROTOTYPE.length)
     this.hitZone = new HitZone(this, this.projector)
     this.hitZone.setGuidesVisible(DEBUG_MODE && gameManager.debugManager.areRuanaGuidesVisible())
+    this.events.on('debug:touch-areas-changed', this.handleDebugTouchAreasChanged, this)
     this.progressDisplay = new RuanaProgressDisplay(this, 640, 670, RUANA_BEATMAP_PROTOTYPE.length)
     this.hud = new RuanaHUD(this, {
       forcePerfect: () => this.forcePerfect(),
@@ -213,6 +214,10 @@ export default class RuanaScene extends Phaser.Scene {
     this.hitZone?.setGuidesVisible(visible)
   }
 
+  private handleDebugTouchAreasChanged(): void {
+    this.hitZone?.setGuidesVisible(DEBUG_MODE && gameManager.debugManager.areRuanaGuidesVisible())
+  }
+
   private finishNow(): void {
     this.finishWithScore()
   }
@@ -312,6 +317,7 @@ export default class RuanaScene extends Phaser.Scene {
 
   private cleanup(): void {
     this.removeInputHandler()
+    this.events.off('debug:touch-areas-changed', this.handleDebugTouchAreasChanged, this)
 
     for (const timer of this.cleanupEvents) {
       timer.remove(false)

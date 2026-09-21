@@ -5,6 +5,7 @@ import type { RuanaJudgeResult, RuanaLaneId } from '../types/RuanaTypes'
 
 export default class HitZone {
   private readonly guides: Phaser.GameObjects.Rectangle[] = []
+  private readonly touchZones = new Map<RuanaLaneId, Phaser.Geom.Rectangle>()
   private readonly zones = new Map<RuanaLaneId, Phaser.GameObjects.Rectangle>()
   private readonly feedbackLabels = new Map<RuanaLaneId, Phaser.GameObjects.Text>()
 
@@ -27,12 +28,21 @@ export default class HitZone {
         .setAlpha(0)
 
       this.zones.set(lane.id, zone)
+      this.touchZones.set(
+        lane.id,
+        new Phaser.Geom.Rectangle(
+          lane.endX - RUANA_CONFIG.HIT_ZONE_TOUCH_WIDTH / 2,
+          lane.endY - RUANA_CONFIG.HIT_ZONE_TOUCH_HEIGHT / 2,
+          RUANA_CONFIG.HIT_ZONE_TOUCH_WIDTH,
+          RUANA_CONFIG.HIT_ZONE_TOUCH_HEIGHT,
+        ),
+      )
       this.feedbackLabels.set(lane.id, label)
     }
 
     this.guides.push(
       ...projector.getLanes().map((lane) =>
-        scene.add.rectangle(lane.endX, lane.endY, RUANA_CONFIG.HIT_ZONE_WIDTH + 70, RUANA_CONFIG.HIT_ZONE_HEIGHT + 34, RUANA_CONFIG.COLORS.goodWindow, 0.1),
+        scene.add.rectangle(lane.endX, lane.endY, RUANA_CONFIG.HIT_ZONE_TOUCH_WIDTH, RUANA_CONFIG.HIT_ZONE_TOUCH_HEIGHT, RUANA_CONFIG.COLORS.goodWindow, 0.1),
       ),
       ...projector.getLanes().map((lane) =>
         scene.add.rectangle(lane.endX, lane.endY, RUANA_CONFIG.HIT_ZONE_WIDTH, RUANA_CONFIG.HIT_ZONE_HEIGHT + 18, RUANA_CONFIG.COLORS.perfectWindow, 0.16),
@@ -41,10 +51,8 @@ export default class HitZone {
   }
 
   getLaneAt(x: number, y: number): RuanaLaneId | null {
-    for (const [laneId, zone] of this.zones) {
-      const bounds = zone.getBounds()
-
-      if (bounds.contains(x, y)) {
+    for (const [laneId, touchZone] of this.touchZones) {
+      if (Phaser.Geom.Rectangle.Contains(touchZone, x, y)) {
         return laneId
       }
     }
