@@ -1,6 +1,7 @@
 import { TOTAL_ROUTES } from '../config/constants'
 import type SaveManager from './SaveManager'
 import type { RouteId, SaveData } from '../types/SaveData'
+import type { RecordedMinigameResult } from '../types/Minigame'
 
 const ROUTES: RouteId[] = ['route1', 'route2', 'route3', 'route4', 'route5']
 
@@ -58,11 +59,12 @@ export default class ProgressManager {
     this.saveManager.save(data)
   }
 
-  registerRun(victories: number, score: number): void {
+  registerRun(victories: number, score: number, results: RecordedMinigameResult[] = []): void {
     const data = this.getSaveData()
     data.totalRuns += 1
     data.bestVictories = Math.max(data.bestVictories, victories)
     data.recordScore = Math.max(data.recordScore, score)
+    for (const result of results) data.bestScores[result.key] = Math.max(data.bestScores[result.key], result.rawScore)
     this.saveManager.save(data)
   }
 

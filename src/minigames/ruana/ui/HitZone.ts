@@ -1,3 +1,4 @@
+import { TEXTS } from '../../../config/texts'
 import Phaser from 'phaser'
 import { RUANA_CONFIG } from '../config/ruanaConfig'
 import type LaneProjector from '../systems/LaneProjector'
@@ -70,7 +71,7 @@ export default class HitZone {
 
     const color = result === 'PERFECT' ? '#6ee7b7' : result === 'GOOD' ? '#fbbf24' : '#f87171'
     zone.setAlpha(1)
-    label.setText(result)
+    label.setText(result === 'PERFECT' ? TEXTS.minigames.ruana.perfect : result === 'GOOD' ? TEXTS.minigames.ruana.good : TEXTS.minigames.ruana.miss)
     label.setColor(color)
     label.setAlpha(1)
 

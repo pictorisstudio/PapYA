@@ -8,14 +8,14 @@ Prototipo funcional para preparar un solo Cocido Boyacense en 30 segundos. La es
 
 ## Temperatura
 
-Los botones modifican `fireLevel`. La temperatura tiene inercia:
+Al completar la receta, la temperatura sube constantemente a 10 puntos porcentuales por segundo. `−` cambia la dirección a descenso y `+` a ascenso, sin saltar de valor. La flecha de la barra indica la dirección actual. Durante la preparación el fuego está apagado, la temperatura no cambia y los controles y barras están ocultos. Aparecen automáticamente con la receta completa.
 
 ```ts
-temperature += (fireLevel - temperature) * HEAT_RESPONSE * delta
+temperature += direction * TEMPERATURE_RATE_PER_SECOND * deltaSeconds
 ```
 
-En temperatura baja la coccion avanza lento. En temperatura optima avanza rapido. En temperatura alta tambien cocina, pero aumenta el quemado.
+Solo se cocina en la zona ideal (40–70 %). Por debajo se detiene la cocción; por encima se detiene y aumenta el quemado. Dejarla calentando sola quema el plato antes de completarlo. Se puede completar alternando los controles para mantener la zona ideal durante aproximadamente 8 segundos. La configuración está en `cocinaConfig.ts`.
 
 ## Debug
 
-Con `DEBUG_MODE = true`, el HUD permite completar receta, agregar/quitar distractores, forzar temperatura optima/alta, llevar coccion o quemado a 95%, forzar victoria/derrota y reiniciar. El toggle global de areas tactiles muestra drop area, slots y hit areas. Con `DEBUG_MODE = false`, estas herramientas no se crean.
+En desarrollo, **DEV: mostrar controles** habilita los controles globales y de Cocina. Empiezan ocultos; se pueden ocultar otra vez. El HUD permite completar receta, agregar/quitar distractores, forzar temperatura ideal/alta, llevar cocción o quemado a 95 %, forzar resultado y reiniciar. En producción las herramientas se excluyen.

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="es">
+<head><base href="/"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>PapYá · prueba aislada</title></head>
+<body><div id="app"></div>
+<script type="module">
+  // Fixture manual: solo memoria de esta página; nunca toca el progreso del dispositivo.
+  if (!import.meta.env.DEV) throw new Error('Fixture disponible solo en desarrollo')
+  const values = new Map([['papya-save', JSON.stringify({
+    version: 2, unlockedRoutes: ['route1', 'route2'], perfectRoutes: [],
+    totalRuns: 2, bestVictories: 4, recordScore: 400, explorationUnlocked: false,
+    bestScores: { papa: 200, cocina: 100, ruana: 85, tejo: 10, cocuy: 500 },
+  })]])
+  Object.defineProperty(window, 'localStorage', { value: {
+    getItem: key => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: key => values.delete(key),
+  } })
+  await import('/src/main.ts')
+</script>
+</body></html>

@@ -16,6 +16,7 @@ export default class IngredientManager {
   }
 
   startDrag(x: number, y: number): boolean {
+    if (this.draggingIngredient) return false
     const ingredient = this.getIngredientAt(x, y)
 
     if (!ingredient) {
@@ -23,10 +24,10 @@ export default class IngredientManager {
     }
 
     this.draggingIngredient = ingredient
-    this.dragOffsetX = ingredient.originalPosition.x - ingredient.originalPosition.x
-    this.dragOffsetY = ingredient.originalPosition.y - ingredient.originalPosition.y
+    this.dragOffsetX = ingredient.getPosition().x - x
+    this.dragOffsetY = ingredient.getPosition().y - y
     ingredient.startDrag()
-    ingredient.setPosition({ x, y })
+    ingredient.setPosition({ x: x + this.dragOffsetX, y: y + this.dragOffsetY })
     return true
   }
 
@@ -34,11 +35,11 @@ export default class IngredientManager {
     this.draggingIngredient?.setPosition({ x: x + this.dragOffsetX, y: y + this.dragOffsetY })
   }
 
-  dropAt(x: number, y: number): void {
+  dropAt(x: number, y: number): boolean {
     const ingredient = this.draggingIngredient
 
     if (!ingredient) {
-      return
+      return false
     }
 
     ingredient.stopDrag()
@@ -46,10 +47,19 @@ export default class IngredientManager {
 
     if (this.pot.containsDropPoint(x, y)) {
       this.placeIngredientInPot(ingredient)
-      return
+      return !ingredient.isCorrect
     }
 
     ingredient.returnHome()
+    this.reflowPotSlots()
+    return false
+  }
+
+  cancelDrag(): void {
+    const ingredient = this.draggingIngredient
+    this.draggingIngredient = null
+    ingredient?.stopDrag()
+    ingredient?.returnHome()
     this.reflowPotSlots()
   }
 

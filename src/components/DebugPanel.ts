@@ -1,3 +1,4 @@
+import { LAYERS } from '../config/layers'
 import Phaser from 'phaser'
 import { DEBUG_MODE, LOGICAL_HEIGHT, LOGICAL_WIDTH, SAFE_MARGIN_X, SAFE_MARGIN_Y } from '../config/constants'
 import { gameManager } from '../core/GameManager'
@@ -7,6 +8,7 @@ type DebugAction = () => void
 export default class DebugPanel {
   private readonly text: Phaser.GameObjects.Text
   private readonly viewportOverlay?: Phaser.GameObjects.Graphics
+  private controls: (Phaser.GameObjects.GameObject & { visible: boolean; setVisible(value: boolean): unknown })[] = []
 
   constructor(private readonly scene: Phaser.Scene) {
     if (!DEBUG_MODE) {
@@ -14,27 +16,50 @@ export default class DebugPanel {
       return
     }
 
-    scene.add.rectangle(886, 12, 382, 166, 0x05070c, 0.72).setOrigin(0, 0)
-    this.text = scene.add.text(900, 22, '', {
+    scene.add.rectangle(886, 64, 382, 166, 0x05070c, 0.72).setOrigin(0, 0).setDepth(LAYERS.debug)
+    this.text = scene.add.text(900, 74, '', {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '13px',
+      fontSize: '10px',
       color: '#d6e4ff',
-      lineSpacing: 3,
+      lineSpacing: 0,
+    }).setDepth(LAYERS.debug)
+
+    this.addButton(904, 148, 'WIN', () => this.finishMinigame(true))
+    this.addButton(966, 148, 'LOSE', () => this.finishMinigame(false))
+    this.addButton(1034, 148, 'NEXT', () => this.finishMinigame(false))
+    this.addButton(1102, 148, 'TEST', () => scene.scene.start('DevScene'))
+    this.addButton(1168, 148, '+RUTA', () => this.changeProgress(() => gameManager.progressManager.unlockNextRoute()))
+    this.addButton(904, 176, 'ALL', () => this.changeProgress(() => gameManager.progressManager.unlockAllRoutes()))
+    this.addButton(966, 176, 'BORRAR', () => {
+      // Este módulo ni siquiera se importa en una compilación de producción.
+      if (import.meta.env.DEV) void import('../dev/resetProgress').then(module => {
+        if (this.scene.scene.isActive() && gameManager.debugManager.areControlsEnabled()) module.openProgressReset(this.scene)
+      })
     })
+    this.addButton(1034, 176, 'MENU', () => scene.scene.start('MenuScene'))
+    this.addButton(1102, 176, 'MAPA', () => scene.scene.start('MapScene'))
+    this.addButton(1168, 176, 'RES', () => { if (!gameManager.roundManager.getState().isRunning) scene.scene.start('ResultsScene') })
+    this.addButton(904, 204, 'TOUCH', () => this.toggleTouchAreas(), 72)
 
-    this.addButton(904, 96, 'WIN', () => this.finishMinigame(true))
-    this.addButton(966, 96, 'LOSE', () => this.finishMinigame(false))
-    this.addButton(1034, 96, 'NEXT', () => this.finishMinigame(false))
-    this.addButton(1102, 96, 'AUTO', () => gameManager.debugManager.toggleAutoPlaceholders())
-    this.addButton(1168, 96, '+RUTA', () => gameManager.progressManager.unlockNextRoute())
-    this.addButton(904, 124, 'ALL', () => gameManager.progressManager.unlockAllRoutes())
-    this.addButton(966, 124, 'RESET', () => gameManager.progressManager.reset())
-    this.addButton(1034, 124, 'MENU', () => scene.scene.start('MenuScene'))
-    this.addButton(1102, 124, 'MAPA', () => scene.scene.start('MapScene'))
-    this.addButton(1168, 124, 'RES', () => scene.scene.start('ResultsScene'))
-    this.addButton(904, 152, 'TOUCH', () => this.toggleTouchAreas(), 72)
-
-    this.viewportOverlay = scene.add.graphics().setDepth(2000)
+    this.viewportOverlay = scene.add.graphics().setDepth(LAYERS.debug - 1)
+    this.controls = scene.children.list.filter(object => {
+      const depth = (object as Phaser.GameObjects.Rectangle).depth
+      return depth >= LAYERS.debug - 1 && depth <= LAYERS.debug + 3
+    }) as typeof this.controls
+    const toggle = scene.add.rectangle(1146, 32, 220, 30, 0x172033)
+      .setStrokeStyle(1, 0x64748b).setDepth(LAYERS.debug + 8).setInteractive({ useHandCursor: true })
+    const toggleText = scene.add.text(1146, 32, '', {
+      fontFamily: 'Arial, sans-serif', fontSize: '16px', color: '#f8fafc',
+    }).setOrigin(0.5).setDepth(LAYERS.debug + 8)
+    const updateControls = () => {
+      const enabled = gameManager.debugManager.areControlsEnabled()
+      for (const object of this.controls) object.setVisible(enabled)
+      toggleText.setText(enabled ? 'DEV: ocultar controles' : 'DEV: mostrar controles')
+      this.scene.events.emit('debug:touch-areas-changed', gameManager.debugManager.areTouchAreasVisible())
+      this.drawViewportOverlay()
+    }
+    toggle.on('pointerdown', () => { gameManager.debugManager.toggleControls(); updateControls() })
+    updateControls()
     this.drawViewportOverlay()
 
     this.refresh()
@@ -42,10 +67,10 @@ export default class DebugPanel {
   }
 
   private addButton(x: number, y: number, label: string, action: DebugAction, width = 54): void {
-    const button = this.scene.add.rectangle(x, y, width, 22, 0x1f2937, 0.92).setOrigin(0, 0)
+    const button = this.scene.add.rectangle(x, y, width, 22, 0x1f2937, 0.92).setOrigin(0, 0).setDepth(LAYERS.debug)
     button.setStrokeStyle(1, 0x64748b)
     button.setInteractive({ useHandCursor: true })
-    button.on('pointerdown', action)
+    button.on('pointerdown', () => { if (gameManager.debugManager.areControlsEnabled()) action() })
 
     this.scene.add
       .text(x + width / 2, y + 11, label, {
@@ -53,7 +78,12 @@ export default class DebugPanel {
         fontSize: '11px',
         color: '#ffffff',
       })
-      .setOrigin(0.5)
+      .setOrigin(0.5).setDepth(LAYERS.debug)
+  }
+
+  private changeProgress(action: DebugAction): void {
+    action()
+    this.scene.game.events.emit('debug:progress-changed')
   }
 
   private toggleTouchAreas(): void {
@@ -72,8 +102,7 @@ export default class DebugPanel {
       return
     }
 
-    const nextScene = gameManager.completeCurrentMinigame(won)
-    this.scene.scene.start(nextScene === 'next' ? 'TransitionScene' : 'ResultsScene')
+    this.scene.events.emit('debug:finish', won)
   }
 
   private refresh(): void {
@@ -99,7 +128,7 @@ export default class DebugPanel {
 
     this.viewportOverlay.clear()
 
-    if (!gameManager.debugManager.areTouchAreasVisible()) {
+    if (!gameManager.debugManager.areControlsEnabled() || !gameManager.debugManager.areTouchAreasVisible()) {
       return
     }
 

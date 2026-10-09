@@ -37,7 +37,10 @@ export default class Ingredient {
     this.container.setDepth(Math.round(point.y) + (this.state === 'DRAGGING' ? 500 : 0))
   }
 
+  getPosition(): CocinaPoint { return { x: this.container.x, y: this.container.y } }
+
   moveTo(point: CocinaPoint, duration: number = COCINA_CONFIG.INGREDIENT_RETURN_MS): void {
+    this.scene.tweens.killTweensOf(this.container)
     this.scene.tweens.add({
       targets: this.container,
       x: point.x,
@@ -59,6 +62,7 @@ export default class Ingredient {
   }
 
   startDrag(): void {
+    this.scene.tweens.killTweensOf(this.container)
     this.state = 'DRAGGING'
     this.container.setScale(1.08)
   }

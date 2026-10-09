@@ -1,48 +1,47 @@
 import Phaser from 'phaser'
 import DebugPanel from '../components/DebugPanel'
 import { REQUIRED_VICTORIES } from '../config/constants'
+import { MINIGAMES_CONFIG } from '../config/minigamesConfig'
+import { TEXTS } from '../config/texts'
 import { gameManager } from '../core/GameManager'
 
 export default class ResultsScene extends Phaser.Scene {
-  constructor() {
-    super('ResultsScene')
-  }
-
+  constructor() { super('ResultsScene') }
   create(): void {
-    gameManager.finishRun()
     const state = gameManager.roundManager.getState()
+    if (state.isRunning || !state.results.length || gameManager.isPractice) {
+      this.scene.start('MenuScene')
+      return
+    }
+    gameManager.finishRun()
     const save = gameManager.progressManager.getSaveData()
-    const routeResult =
-      gameManager.lastUnlockedRoute === null
-        ? 'Ruta no desbloqueada'
-        : gameManager.lastRoutePerfect
-          ? `Ruta desbloqueada: ${gameManager.lastUnlockedRoute} · Ruta perfecta`
-          : `Ruta desbloqueada: ${gameManager.lastUnlockedRoute}`
-
+    const route = gameManager.lastUnlockedRoute
+    const routeMessage = route
+      ? TEXTS.routeUnlocked(gameManager.progressManager.routes.indexOf(route) + 1, gameManager.lastRoutePerfect)
+      : save.explorationUnlocked ? TEXTS.allRoutes : TEXTS.routePending
     this.cameras.main.setBackgroundColor('#10131a')
-    this.add.text(640, 92, 'Resultados', { fontSize: '56px', fontStyle: '700', color: '#f8fafc' }).setOrigin(0.5)
-    this.add.text(640, 176, `Puntaje provisional: ${state.score}`, { fontSize: '30px', color: '#d8dee9' }).setOrigin(0.5)
-    this.add.text(640, 226, `Victorias: ${state.victories}/5`, { fontSize: '34px', color: '#6ee7b7' }).setOrigin(0.5)
-    this.add.text(640, 274, `Meta: ${REQUIRED_VICTORIES}`, { fontSize: '24px', color: '#aab3c5' }).setOrigin(0.5)
-    this.add.text(640, 330, routeResult, { fontSize: '26px', color: '#fbbf24' }).setOrigin(0.5)
-    this.add.text(640, 386, `Mejor resultado: ${save.bestVictories}/5 · Record: ${save.recordScore}`, {
-      fontSize: '24px',
-      color: '#d8dee9',
-    }).setOrigin(0.5)
-
-    this.addButton(500, 560, 250, 56, 'Volver al mapa', () => this.scene.start('MapScene'))
-    this.addButton(780, 560, 250, 56, 'Jugar otra vez', () => {
+    const text = (y: number, label: string, size: number, color = '#d8dee9') => {
+      this.add.text(640, y, label, { fontSize: `${size}px`, color, align: 'center', wordWrap: { width: 1080 } }).setOrigin(0.5)
+    }
+    text(82, TEXTS.results, 48, '#f8fafc')
+    text(150, TEXTS.travelPoints(state.score), 30)
+    text(197, TEXTS.victories(state.victories, state.minigameOrder.length), 30, '#6ee7b7')
+    text(243, TEXTS.goal(REQUIRED_VICTORIES), 22)
+    text(292, routeMessage, 26, '#fbbf24')
+    text(338, TEXTS.pointsRule, 20)
+    state.results.forEach((result, index) => {
+      text(383 + index * 31, TEXTS.rawScore(MINIGAMES_CONFIG[result.key].name, result.rawScore), 20)
+    })
+    text(551, TEXTS.record(save.bestVictories, state.minigameOrder.length, save.recordScore), 20)
+    this.button(484, TEXTS.backToMap, () => this.scene.start('MapScene'))
+    this.button(796, TEXTS.again, () => {
       gameManager.startNewRun()
       this.scene.start('TransitionScene')
     })
-
     new DebugPanel(this)
   }
-
-  private addButton(x: number, y: number, width: number, height: number, label: string, action: () => void): void {
-    const button = this.add.rectangle(x, y, width, height, 0xfbbf24).setStrokeStyle(2, 0xf8fafc)
-    button.setInteractive({ useHandCursor: true })
-    button.on('pointerdown', action)
-    this.add.text(x, y, label, { fontSize: '24px', fontStyle: '700', color: '#1f2937' }).setOrigin(0.5)
+  private button(x: number, label: string, action: () => void): void {
+    this.add.rectangle(x, 620, 282, 58, 0xfbbf24).setInteractive({ useHandCursor: true }).on('pointerdown', action)
+    this.add.text(x, 620, label, { fontSize: '24px', color: '#1f2937' }).setOrigin(0.5)
   }
 }

@@ -1,3 +1,4 @@
+import { LAYERS } from '../../../config/layers'
 import Phaser from 'phaser'
 import { TEJO_CONFIG } from '../config/tejoConfig'
 import type { TejoImpactResult, TejoPoint } from '../types/TejoTypes'
@@ -13,7 +14,7 @@ export default class TejoBoard {
   private readonly mechas: MechaZone[]
 
   constructor(private readonly scene: Phaser.Scene) {
-    this.graphics = scene.add.graphics().setDepth(80)
+    this.graphics = scene.add.graphics().setDepth(LAYERS.background)
     this.debugGraphics = scene.add.graphics().setDepth(900)
     this.impactGraphics = scene.add.graphics().setDepth(920)
     this.mechas = this.createMechaZones()
@@ -60,7 +61,7 @@ export default class TejoBoard {
   }
 
   flashResult(point: TejoPoint, result: TejoImpactResult): void {
-    const label = result === 'MECHA' ? '+5' : result === 'NEAR' ? '+1' : 'FUERA'
+    const label = result === 'MECHA' ? '+5' : result === 'NEAR' ? '+1' : ''
     const color = result === 'MECHA' ? '#ef4444' : result === 'NEAR' ? '#fbbf24' : '#f8fafc'
     const text = this.scene.add.text(point.x, point.y - 26, label, { fontSize: '30px', fontStyle: '700', color }).setOrigin(0.5).setDepth(940)
 

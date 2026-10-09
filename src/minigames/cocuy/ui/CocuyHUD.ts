@@ -1,3 +1,5 @@
+import { applyHudLayers, LAYERS } from '../../../config/layers'
+import { TEXTS } from '../../../config/texts'
 import Phaser from 'phaser'
 import { DEBUG_MODE } from '../../../config/constants'
 import { COCUY_CONFIG } from '../config/cocuyConfig'
@@ -23,31 +25,27 @@ export default class CocuyHUD {
   private readonly altitudeText: Phaser.GameObjects.Text
   private readonly timerText: Phaser.GameObjects.Text
   private readonly messageText: Phaser.GameObjects.Text
-  private readonly finalText: Phaser.GameObjects.Text
   private readonly progressGraphics: Phaser.GameObjects.Graphics
   private readonly debugText?: Phaser.GameObjects.Text
 
   constructor(private readonly scene: Phaser.Scene, actions: CocuyHUDActions) {
+    const hudStart = scene.children.list.length
     scene.add.rectangle(414, COCUY_CONFIG.SAFE_MARGIN_Y + 30, 716, 84, 0x0f172a, 0.78).setStrokeStyle(2, 0x334155)
-    scene.add.text(COCUY_CONFIG.SAFE_MARGIN_X, COCUY_CONFIG.SAFE_MARGIN_Y, 'ASCENSO AL COCUY', {
+    scene.add.text(COCUY_CONFIG.SAFE_MARGIN_X, COCUY_CONFIG.SAFE_MARGIN_Y, TEXTS.minigames.cocuy.name, {
       fontSize: '28px',
       fontStyle: '700',
       color: '#f8fafc',
     })
-    this.altitudeText = scene.add.text(COCUY_CONFIG.SAFE_MARGIN_X, COCUY_CONFIG.SAFE_MARGIN_Y + 42, '0 / 500 m', {
+    this.altitudeText = scene.add.text(COCUY_CONFIG.SAFE_MARGIN_X, COCUY_CONFIG.SAFE_MARGIN_Y + 42, TEXTS.minigames.cocuy.altitude(0, COCUY_CONFIG.TARGET_ALTITUDE), {
       fontSize: '22px',
       color: '#f8fafc',
     })
-    this.timerText = scene.add.text(1036, COCUY_CONFIG.SAFE_MARGIN_Y, '00:30', {
-      fontSize: '30px',
+    this.timerText = scene.add.text(665, COCUY_CONFIG.SAFE_MARGIN_Y + 42, TEXTS.time(30), {
+      fontSize: '22px',
       fontStyle: '700',
       color: '#f8fafc',
     })
     this.messageText = scene.add.text(640, 132, '', { fontSize: '26px', fontStyle: '700', color: '#f8fafc' }).setOrigin(0.5).setDepth(880)
-    this.finalText = scene.add
-      .text(640, 316, '', { fontSize: '46px', fontStyle: '700', color: '#ffffff', align: 'center', lineSpacing: 12 })
-      .setOrigin(0.5)
-      .setDepth(1000)
     this.progressGraphics = scene.add.graphics().setDepth(730)
 
     if (DEBUG_MODE) {
@@ -67,12 +65,13 @@ export default class CocuyHUD {
       this.addButton(1074, 370, 'LOSE', actions.forceLose, 54)
       this.addButton(1134, 370, 'RESET', actions.restart, 58)
     }
+    applyHudLayers(scene, hudStart)
   }
 
   update(altitude: number, remainingMs: number): void {
-    this.altitudeText.setText(`${Math.round(altitude)} / ${COCUY_CONFIG.TARGET_ALTITUDE} m`)
+    this.altitudeText.setText(TEXTS.minigames.cocuy.altitude(altitude, COCUY_CONFIG.TARGET_ALTITUDE))
     const seconds = Math.ceil(remainingMs / 1000)
-    this.timerText.setText(`00:${seconds.toString().padStart(2, '0')}`)
+    this.timerText.setText(TEXTS.time(seconds))
     this.drawProgress(altitude / COCUY_CONFIG.TARGET_ALTITUDE)
   }
 
@@ -107,10 +106,6 @@ export default class CocuyHUD {
     })
   }
 
-  showFinal(victory: boolean, altitude: number, score: number): void {
-    this.finalText.setText(`${victory ? '¡Cumbre alcanzada!' : 'Ascenso incompleto'}\n${victory ? 'VICTORIA' : 'DERROTA'}\n${Math.round(altitude)} m | Puntaje: ${score}`)
-    this.finalText.setColor(victory ? '#6ee7b7' : '#f87171')
-  }
 
   destroy(): void {
     this.progressGraphics.destroy()

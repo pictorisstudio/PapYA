@@ -1,3 +1,4 @@
+import { LAYERS } from '../../../config/layers'
 import Phaser from 'phaser'
 import { COCUY_CONFIG } from '../config/cocuyConfig'
 
@@ -8,7 +9,7 @@ export default class WorldScrollSystem {
   private scroll = 0
 
   constructor(private readonly scene: Phaser.Scene) {
-    this.graphics = scene.add.graphics().setDepth(10)
+    this.graphics = scene.add.graphics().setDepth(LAYERS.background)
     this.createClouds()
   }
 
@@ -47,7 +48,7 @@ export default class WorldScrollSystem {
       { x: 330, y: 390, width: 130, height: 44 },
       { x: 1128, y: 548, width: 160, height: 52 },
     ]) {
-      this.clouds.push(this.scene.add.ellipse(cloud.x, cloud.y, cloud.width, cloud.height, COCUY_CONFIG.COLORS.cloud, 0.24).setDepth(20))
+      this.clouds.push(this.scene.add.ellipse(cloud.x, cloud.y, cloud.width, cloud.height, COCUY_CONFIG.COLORS.cloud, 0.24).setDepth(LAYERS.scenery))
     }
   }
 

@@ -23,6 +23,7 @@ export interface RecipeSnapshot {
 export interface CookingSnapshot {
   fireLevel: number
   temperature: number
+  temperatureRate: number
   heatZone: HeatZone
   cookingProgress: number
   burnProgress: number

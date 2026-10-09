@@ -1,7 +1,7 @@
 import { MINIGAMES_CONFIG } from '../config/minigamesConfig'
 import { REQUIRED_VICTORIES } from '../config/constants'
 import WebStorageAdapter from '../storage/WebStorageAdapter'
-import type { MinigameConfig } from '../types/Minigame'
+import type { MinigameConfig, MinigameKey, MinigameResult } from '../types/Minigame'
 import type { RouteId } from '../types/SaveData'
 import AudioManager from './AudioManager'
 import DebugManager from './DebugManager'
@@ -19,6 +19,7 @@ export default class GameManager {
   lastUnlockedRoute: RouteId | null = null
   lastRoutePerfect = false
   private runFinished = false
+  isPractice = false
 
   initialize(): void {
     this.saveManager = new SaveManager(new WebStorageAdapter())
@@ -28,11 +29,12 @@ export default class GameManager {
     this.debugManager = new DebugManager()
   }
 
-  startNewRun(): MinigameConfig {
+  startNewRun(order?: MinigameKey[], practice = false): MinigameConfig {
     this.lastUnlockedRoute = null
     this.lastRoutePerfect = false
     this.runFinished = false
-    this.roundManager.start()
+    this.isPractice = practice
+    this.roundManager.start(order)
     return this.getCurrentMinigame()
   }
 
@@ -46,8 +48,9 @@ export default class GameManager {
     return MINIGAMES_CONFIG[key]
   }
 
-  completeCurrentMinigame(won: boolean): 'next' | 'results' {
-    const state = this.roundManager.recordResult(won)
+  completeCurrentMinigame(result: MinigameResult): 'next' | 'results' | 'practice' {
+    const state = this.roundManager.recordResult(result)
+    if (this.isPractice && !state.isRunning) return 'practice'
     return state.isRunning ? 'next' : 'results'
   }
 
@@ -57,10 +60,11 @@ export default class GameManager {
     }
 
     const state = this.roundManager.getState()
+    if (this.isPractice || state.isRunning || state.results.length === 0 || state.results.length !== state.minigameOrder.length) return
     const isSuccessful = state.victories >= REQUIRED_VICTORIES
     const isPerfect = state.victories === state.minigameOrder.length
 
-    this.progressManager.registerRun(state.victories, state.score)
+    this.progressManager.registerRun(state.victories, state.score, state.results)
     this.lastUnlockedRoute = isSuccessful ? this.progressManager.unlockNextRoute(isPerfect) : null
     this.lastRoutePerfect = Boolean(this.lastUnlockedRoute && isPerfect)
     this.runFinished = true

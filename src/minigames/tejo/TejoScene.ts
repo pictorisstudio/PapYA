@@ -1,4 +1,6 @@
 import Phaser from 'phaser'
+import GameplaySession from '../../components/GameplaySession'
+import { TEXTS } from '../../config/texts'
 import DebugPanel from '../../components/DebugPanel'
 import { DEBUG_MODE } from '../../config/constants'
 import { gameManager } from '../../core/GameManager'
@@ -13,6 +15,7 @@ import TejoHUD from './ui/TejoHUD'
 import type { TejoAimState, TejoImpactResult, TejoPhase, TejoPoint } from './types/TejoTypes'
 
 export default class TejoScene extends Phaser.Scene {
+  private session?: GameplaySession
   private board?: TejoBoard
   private disc?: TejoDisc
   private aimSystem?: TejoAimSystem
@@ -24,6 +27,7 @@ export default class TejoScene extends Phaser.Scene {
   private elapsedMs = 0
   private finished = false
   private activeAim: TejoAimState | null = null
+  private aimPointerId: number | null = null
   private cleanupEvents: Phaser.Time.TimerEvent[] = []
 
   constructor() {
@@ -56,6 +60,7 @@ export default class TejoScene extends Phaser.Scene {
     this.input.on('pointerupoutside', this.handlePointerUp, this)
     this.events.on('debug:touch-areas-changed', this.handleDebugTouchAreasChanged, this)
 
+    this.session = new GameplaySession(this, { debugFinish: won => this.finish(won), cancelInput: () => this.cancelAim() })
     new DebugPanel(this)
     this.refreshHud()
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.cleanup())
@@ -84,20 +89,23 @@ export default class TejoScene extends Phaser.Scene {
       return
     }
 
+    this.aimPointerId = pointer.id
     this.phase = 'AIMING'
     this.disc.setHighlighted(true)
     this.updateAim(pointer)
   }
 
   private handlePointerMove(pointer: Phaser.Input.Pointer): void {
-    if (this.phase !== 'AIMING') {
+    if (this.phase !== 'AIMING' || pointer.id !== this.aimPointerId) {
       return
     }
 
     this.updateAim(pointer)
   }
 
-  private handlePointerUp(): void {
+  private handlePointerUp(pointer: Phaser.Input.Pointer): void {
+    if (pointer.id !== this.aimPointerId) return
+    this.aimPointerId = null
     if (this.phase !== 'AIMING' || !this.aimSystem || !this.throwSystem || !this.disc) {
       return
     }
@@ -212,15 +220,10 @@ export default class TejoScene extends Phaser.Scene {
     this.throwSystem?.stop()
     this.aimSystem?.clear()
     this.disc?.setHighlighted(false)
-    this.hud.showFinal(victory, this.scoreManager.getSnapshot())
     this.removeInputHandlers()
-
-    this.trackTimer(
-      this.time.delayedCall(TEJO_CONFIG.RESET_DELAY_MS + 900, () => {
-        const nextScene = gameManager.completeCurrentMinigame(victory)
-        this.scene.start(nextScene === 'next' ? 'TransitionScene' : 'ResultsScene')
-      }),
-    )
+    const score = this.scoreManager.getSnapshot()
+    this.session?.complete({ key: 'tejo', won: victory, rawScore: score.score,
+      metrics: { mechas: score.mechas, throws: score.throws } })
   }
 
   private refreshHud(): void {
@@ -285,7 +288,13 @@ export default class TejoScene extends Phaser.Scene {
     this.activeAim = null
   }
 
+  private cancelAim(): void {
+    this.aimPointerId = null
+    if (this.phase === 'AIMING') this.resetDisc()
+  }
+
   private removeInputHandlers(): void {
+    this.cancelAim()
     this.input.off('pointerdown', this.handlePointerDown, this)
     this.input.off('pointermove', this.handlePointerMove, this)
     this.input.off('pointerup', this.handlePointerUp, this)

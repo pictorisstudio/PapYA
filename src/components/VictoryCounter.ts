@@ -1,3 +1,4 @@
+import { TEXTS } from '../config/texts'
 import Phaser from 'phaser'
 import { REQUIRED_VICTORIES } from '../config/constants'
 
@@ -15,6 +16,6 @@ export default class VictoryCounter {
   }
 
   update(victories: number, total: number): void {
-    this.text.setText(`Victorias: ${victories}/${total} · Meta: ${REQUIRED_VICTORIES}`)
+    this.text.setText(TEXTS.victories(victories, total))
   }
 }

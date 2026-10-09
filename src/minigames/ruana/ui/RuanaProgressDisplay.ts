@@ -1,3 +1,5 @@
+import { applyHudLayers, LAYERS } from '../../../config/layers'
+import { TEXTS } from '../../../config/texts'
 import Phaser from 'phaser'
 import { RUANA_CONFIG } from '../config/ruanaConfig'
 
@@ -7,7 +9,8 @@ export default class RuanaProgressDisplay {
   private completed = 0
 
   constructor(scene: Phaser.Scene, x: number, y: number, totalSegments: number) {
-    scene.add.text(x, y - 28, 'Progreso de tejido', { fontSize: '18px', color: '#d8dee9' }).setOrigin(0.5)
+    const hudStart = scene.children.list.length
+    scene.add.text(x, y - 28, TEXTS.minigames.ruana.progress, { fontSize: '18px', color: '#d8dee9' }).setOrigin(0.5)
     this.label = scene.add.text(x, y + 28, '0%', { fontSize: '18px', color: '#aab3c5' }).setOrigin(0.5)
 
     const segmentWidth = 14
@@ -20,6 +23,7 @@ export default class RuanaProgressDisplay {
       segment.setStrokeStyle(1, 0x64748b, 0.8)
       this.segments.push(segment)
     }
+    applyHudLayers(scene, hudStart)
   }
 
   setProgress(validHits: number): void {

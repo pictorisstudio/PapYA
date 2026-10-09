@@ -1,7 +1,6 @@
 export const TEJO_CONFIG = {
   GAME_DURATION_MS: 30000,
   WIN_SCORE: 10,
-  WIN_MECHAS: 3,
   MECHA_SCORE: 5,
   NEAR_SCORE: 1,
 

@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import { POTATO_ASSETS } from '../../../config/assets'
 import { PAPA_CONFIG } from '../config/papaConfig'
 import type { PotatoSpawnOptions, PotatoState, PotatoType } from '../types/PapaTypes'
 
@@ -6,7 +7,8 @@ export default class Potato {
   readonly id: string
   readonly type: PotatoType
   private readonly container: Phaser.GameObjects.Container
-  private readonly hitbox: Phaser.GameObjects.Rectangle
+  private readonly sprite: Phaser.GameObjects.Image
+  private readonly hitbox: Phaser.GameObjects.Arc
   private velocityX: number
   private velocityY: number
   private rotationSpeed: number
@@ -19,30 +21,14 @@ export default class Potato {
     this.velocityY = options.velocityY
     this.rotationSpeed = options.rotationSpeed
 
-    const bodyColor = options.type === 'GOOD' ? PAPA_CONFIG.COLORS.goodPotato : PAPA_CONFIG.COLORS.badPotato
-    const markColor = options.type === 'GOOD' ? PAPA_CONFIG.COLORS.goodPotatoMark : PAPA_CONFIG.COLORS.badPotatoMark
-
-    // TODO: reemplazar posteriormente por sprites pixel art de papa buena y papa dañada.
-    const body = scene.add
-      .ellipse(0, 0, PAPA_CONFIG.POTATO_VISUAL_WIDTH, PAPA_CONFIG.POTATO_VISUAL_HEIGHT, bodyColor, 1)
-      .setStrokeStyle(3, 0x3f2a1c, 0.65)
-    const eye = scene.add.circle(-10, -6, 4, markColor, 1)
-    const mark =
-      options.type === 'GOOD'
-        ? scene.add.circle(12, 7, 6, markColor, 0.95)
-        : scene.add.rectangle(12, 4, 22, 6, markColor, 1).setRotation(0.75)
-
-    this.hitbox = scene.add.rectangle(
-      0,
-      0,
-      PAPA_CONFIG.POTATO_VISUAL_WIDTH + PAPA_CONFIG.POTATO_TOUCH_PADDING * 2,
-      PAPA_CONFIG.POTATO_VISUAL_HEIGHT + PAPA_CONFIG.POTATO_TOUCH_PADDING * 2,
-      PAPA_CONFIG.COLORS.hitbox,
-      0,
-    )
+    const variants = POTATO_ASSETS[options.type]
+    const asset = variants[Phaser.Math.Between(0, variants.length - 1)]
+    this.sprite = scene.add.image(0, 0, asset.key)
+      .setDisplaySize(PAPA_CONFIG.POTATO_VISUAL_WIDTH, PAPA_CONFIG.POTATO_VISUAL_HEIGHT)
+    this.hitbox = scene.add.circle(0, 0, PAPA_CONFIG.POTATO_TOUCH_RADIUS, PAPA_CONFIG.COLORS.hitbox, 0)
     this.hitbox.setStrokeStyle(2, PAPA_CONFIG.COLORS.hitbox, 0.9)
 
-    this.container = scene.add.container(options.x, options.y, [body, eye, mark, this.hitbox])
+    this.container = scene.add.container(options.x, options.y, [this.sprite, this.hitbox])
     this.container.setScale(options.scale)
     this.container.setDepth(options.y)
     this.setHitboxVisible(false)
@@ -57,7 +43,7 @@ export default class Potato {
     this.velocityY += PAPA_CONFIG.GRAVITY_Y * seconds
     this.container.x += this.velocityX * seconds
     this.container.y += this.velocityY * seconds
-    this.container.rotation += this.rotationSpeed * seconds
+    this.sprite.rotation += this.rotationSpeed * seconds
     this.container.setDepth(Math.round(this.container.y))
 
     if (this.container.y >= PAPA_CONFIG.POTATO_MISS_Y || this.container.x < -80 || this.container.x > 1360) {
@@ -70,8 +56,8 @@ export default class Potato {
       return false
     }
 
-    const bounds = this.hitbox.getBounds()
-    return bounds.contains(x, y)
+    const radius = PAPA_CONFIG.POTATO_TOUCH_RADIUS * this.container.scaleX
+    return this.getDistanceSqTo(x, y) <= radius * radius
   }
 
   hit(): void {
@@ -119,6 +105,10 @@ export default class Potato {
 
   get y(): number {
     return this.container.y
+  }
+
+  get depth(): number {
+    return this.container.depth
   }
 
   getDistanceSqTo(x: number, y: number): number {

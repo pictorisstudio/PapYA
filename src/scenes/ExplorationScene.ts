@@ -1,3 +1,4 @@
+import { TEXTS } from '../config/texts'
 import Phaser from 'phaser'
 import DebugPanel from '../components/DebugPanel'
 import { gameManager } from '../core/GameManager'
@@ -11,10 +12,10 @@ export default class ExplorationScene extends Phaser.Scene {
     const save = gameManager.progressManager.getSaveData()
 
     this.cameras.main.setBackgroundColor('#10131a')
-    this.add.text(640, 74, 'Explorar Boyacá', { fontSize: '48px', fontStyle: '700', color: '#f8fafc' }).setOrigin(0.5)
+    this.add.text(640, 74, TEXTS.explore, { fontSize: '48px', fontStyle: '700', color: '#f8fafc' }).setOrigin(0.5)
 
     if (!save.explorationUnlocked) {
-      this.add.text(640, 330, 'Completa las cinco rutas para desbloquear esta exploración.', {
+      this.add.text(640, 330, TEXTS.exploreLocked, {
         fontSize: '28px',
         color: '#aab3c5',
       }).setOrigin(0.5)
@@ -22,12 +23,12 @@ export default class ExplorationScene extends Phaser.Scene {
       for (let index = 0; index < 5; index += 1) {
         const x = 186 + index * 226
         this.add.rectangle(x, 338, 172, 246, 0x172033).setStrokeStyle(3, 0x6ee7b7)
-        this.add.text(x, 306, `Tarjeta ${index + 1}`, { fontSize: '24px', color: '#f8fafc' }).setOrigin(0.5)
-        this.add.text(x, 380, 'Placeholder', { fontSize: '18px', color: '#aab3c5' }).setOrigin(0.5)
+        this.add.text(x, 306, TEXTS.routeName(index + 1), { fontSize: '24px', color: '#f8fafc' }).setOrigin(0.5)
+        this.add.text(x, 380, TEXTS.exploreCard, { fontSize: '18px', color: '#aab3c5' }).setOrigin(0.5)
       }
     }
 
-    this.addButton(640, 626, 220, 48, 'Volver al mapa', () => this.scene.start('MapScene'))
+    this.addButton(640, 626, 220, 48, TEXTS.backToMap, () => this.scene.start('MapScene'))
     new DebugPanel(this)
   }
 

@@ -1,4 +1,6 @@
 import Phaser from 'phaser'
+import GameplaySession from '../../components/GameplaySession'
+import { TEXTS } from '../../config/texts'
 import DebugPanel from '../../components/DebugPanel'
 import { DEBUG_MODE } from '../../config/constants'
 import { gameManager } from '../../core/GameManager'
@@ -14,6 +16,7 @@ import HeatControls from './ui/HeatControls'
 import type { CocinaPhase } from './types/CocinaTypes'
 
 export default class CocinaScene extends Phaser.Scene {
+  private session?: GameplaySession
   private pot?: CookingPot
   private ingredientManager?: IngredientManager
   private recipeManager?: RecipeManager
@@ -26,6 +29,7 @@ export default class CocinaScene extends Phaser.Scene {
   private elapsedMs = 0
   private finished = false
   private ingredientErrors = 0
+  private dragPointerId: number | null = null
   private cleanupEvents: Phaser.Time.TimerEvent[] = []
 
   constructor() {
@@ -44,6 +48,7 @@ export default class CocinaScene extends Phaser.Scene {
     this.cookingDisplay = new CookingDisplay(this)
     this.heatControls = new HeatControls(this, () => this.decreaseHeat(), () => this.increaseHeat())
     this.heatControls.setEnabled(false)
+    this.pot.updateFire(0)
     this.hud = new CocinaHUD(this, {
       forceRecipeComplete: () => this.forceRecipeComplete(),
       addWrongIngredient: () => this.addWrongIngredient(),
@@ -64,6 +69,7 @@ export default class CocinaScene extends Phaser.Scene {
     this.input.on('pointerupoutside', this.handlePointerUp, this)
     this.events.on('debug:touch-areas-changed', this.handleDebugTouchAreasChanged, this)
 
+    this.session = new GameplaySession(this, { debugFinish: won => this.finish(won), cancelInput: () => this.cancelDrag() })
     new DebugPanel(this)
     this.refreshHud()
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.cleanup())
@@ -76,7 +82,7 @@ export default class CocinaScene extends Phaser.Scene {
 
     this.elapsedMs += delta
     const cooking = this.cookingSystem.update(delta, this.phase === 'COOKING')
-    this.pot?.updateFire(cooking.fireLevel)
+    this.pot?.updateFire(this.phase === 'COOKING' ? cooking.fireLevel : 0)
     this.refreshHud()
 
     if (this.phase === 'COOKING') {
@@ -101,7 +107,8 @@ export default class CocinaScene extends Phaser.Scene {
       return
     }
 
-    this.ingredientManager.startDrag(pointer.worldX, pointer.worldY)
+    if (this.dragPointerId !== null) return
+    if (this.ingredientManager.startDrag(pointer.worldX, pointer.worldY)) this.dragPointerId = pointer.id
   }
 
   private handlePointerMove(pointer: Phaser.Input.Pointer): void {
@@ -109,6 +116,7 @@ export default class CocinaScene extends Phaser.Scene {
       return
     }
 
+    if (pointer.id !== this.dragPointerId) return
     this.ingredientManager.dragTo(pointer.worldX, pointer.worldY)
   }
 
@@ -117,7 +125,10 @@ export default class CocinaScene extends Phaser.Scene {
       return
     }
 
-    this.ingredientManager.dropAt(pointer.worldX, pointer.worldY)
+    if (pointer.id !== this.dragPointerId) return
+    this.dragPointerId = null
+    const incorrectDrop = this.ingredientManager.dropAt(pointer.worldX, pointer.worldY)
+    if (incorrectDrop) this.ingredientErrors += 1
     this.checkRecipe()
   }
 
@@ -127,10 +138,6 @@ export default class CocinaScene extends Phaser.Scene {
     }
 
     const recipe = this.recipeManager.getSnapshot(this.ingredientManager.getIngredientsInPot())
-
-    if (recipe.incorrectCount > 0) {
-      this.ingredientErrors += 1
-    }
 
     if (recipe.complete) {
       this.startCooking()
@@ -146,8 +153,10 @@ export default class CocinaScene extends Phaser.Scene {
     }
 
     this.phase = 'COOKING'
+    this.cookingSystem?.increaseHeat()
+    this.pot?.updateFire(this.cookingSystem?.getSnapshot().fireLevel ?? COCINA_CONFIG.INITIAL_FIRE_LEVEL)
     this.heatControls?.setEnabled(true)
-    this.hud?.showMessage('¡INGREDIENTES LISTOS!')
+    this.hud?.showMessage(TEXTS.minigames.cocina.ready)
     this.refreshHud()
   }
 
@@ -223,14 +232,8 @@ export default class CocinaScene extends Phaser.Scene {
     const remainingMs = Math.max(0, COCINA_CONFIG.GAME_DURATION_MS - this.elapsedMs)
     const cooking = this.cookingSystem.getSnapshot()
     const score = this.scoreManager.calculateScore(remainingMs, cooking.burnProgress, this.ingredientErrors)
-    this.hud.showFinal(victory, score)
-
-    this.trackTimer(
-      this.time.delayedCall(COCINA_CONFIG.RESET_DELAY_MS, () => {
-        const nextScene = gameManager.completeCurrentMinigame(victory)
-        this.scene.start(nextScene === 'next' ? 'TransitionScene' : 'ResultsScene')
-      }),
-    )
+    this.session?.complete({ key: 'cocina', won: victory, rawScore: score,
+      metrics: { cooking: cooking.cookingProgress, burn: cooking.burnProgress, ingredientErrors: this.ingredientErrors } })
   }
 
   private refreshHud(): void {
@@ -295,7 +298,13 @@ export default class CocinaScene extends Phaser.Scene {
     this.cookingDisplay = undefined
   }
 
+  private cancelDrag(): void {
+    this.dragPointerId = null
+    this.ingredientManager?.cancelDrag()
+  }
+
   private removeInputHandlers(): void {
+    this.cancelDrag()
     this.input.off('pointerdown', this.handlePointerDown, this)
     this.input.off('pointermove', this.handlePointerMove, this)
     this.input.off('pointerup', this.handlePointerUp, this)

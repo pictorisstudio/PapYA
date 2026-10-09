@@ -6,22 +6,25 @@ export default class CookingSystem {
   private temperature: number = COCINA_CONFIG.INITIAL_TEMPERATURE
   private cookingProgress = 0
   private burnProgress = 0
+  private temperatureDirection: 1 | -1 = 1
 
   increaseHeat(): void {
-    this.fireLevel = Math.min(1, this.fireLevel + COCINA_CONFIG.HEAT_STEP)
+    this.temperatureDirection = 1
+    this.fireLevel = COCINA_CONFIG.INITIAL_FIRE_LEVEL
   }
 
   decreaseHeat(): void {
-    this.fireLevel = Math.max(0, this.fireLevel - COCINA_CONFIG.HEAT_STEP)
+    this.temperatureDirection = -1
+    this.fireLevel = 0.18
   }
 
   forceOptimalTemperature(): void {
-    this.fireLevel = 0.58
+    this.increaseHeat()
     this.temperature = 0.58
   }
 
   forceHighTemperature(): void {
-    this.fireLevel = 0.9
+    this.increaseHeat()
     this.temperature = 0.9
   }
 
@@ -34,10 +37,13 @@ export default class CookingSystem {
   }
 
   update(deltaMs: number, cookingActive: boolean): CookingSnapshot {
-    const deltaSeconds = deltaMs / 1000
-    this.temperature += (this.fireLevel - this.temperature) * COCINA_CONFIG.HEAT_RESPONSE * deltaSeconds
-
-    if (cookingActive) {
+    if (!cookingActive || deltaMs <= 0) return this.getSnapshot()
+    // Pasos cortos para atravesar las zonas igual con FPS variables.
+    const steps = Math.ceil(deltaMs / (1000 / 60))
+    const deltaSeconds = deltaMs / steps / 1000
+    for (let step = 0; step < steps; step++) {
+      if (this.burnProgress >= 100 || this.cookingProgress >= 100) break
+      this.temperature = Math.max(0, Math.min(1, this.temperature + this.temperatureDirection * COCINA_CONFIG.TEMPERATURE_RATE_PER_SECOND * deltaSeconds))
       const zone = this.getHeatZone()
 
       if (zone === 'LOW') {
@@ -64,6 +70,7 @@ export default class CookingSystem {
   getSnapshot(): CookingSnapshot {
     return {
       fireLevel: this.fireLevel,
+      temperatureRate: this.temperatureDirection * COCINA_CONFIG.TEMPERATURE_RATE_PER_SECOND,
       temperature: this.temperature,
       heatZone: this.getHeatZone(),
       cookingProgress: this.cookingProgress,
@@ -74,11 +81,11 @@ export default class CookingSystem {
   }
 
   private getHeatZone(): HeatZone {
-    if (this.temperature <= COCINA_CONFIG.LOW_MAX) {
+    if (this.temperature < COCINA_CONFIG.OPTIMAL_MIN) {
       return 'LOW'
     }
 
-    if (this.temperature >= COCINA_CONFIG.HIGH_MIN) {
+    if (this.temperature > COCINA_CONFIG.OPTIMAL_MAX) {
       return 'HIGH'
     }
 

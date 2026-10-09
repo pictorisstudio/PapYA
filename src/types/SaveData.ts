@@ -1,3 +1,4 @@
+import type { MinigameKey } from './Minigame'
 export type RouteId = 'route1' | 'route2' | 'route3' | 'route4' | 'route5'
 
 export interface SaveData {
@@ -8,4 +9,5 @@ export interface SaveData {
   recordScore: number
   perfectRoutes: RouteId[]
   explorationUnlocked: boolean
+  bestScores: Record<MinigameKey, number>
 }

@@ -1,3 +1,5 @@
+import { applyHudLayers, LAYERS } from '../../../config/layers'
+import { TEXTS } from '../../../config/texts'
 import Phaser from 'phaser'
 import { COCINA_CONFIG } from '../config/cocinaConfig'
 
@@ -6,13 +8,19 @@ export default class HeatControls {
   private readonly buttons: Phaser.GameObjects.Rectangle[] = []
 
   constructor(private readonly scene: Phaser.Scene, decrease: () => void, increase: () => void) {
+    const hudStart = scene.children.list.length
     this.createButton(494, COCINA_CONFIG.CONTROL_Y, '-', decrease)
     this.createButton(786, COCINA_CONFIG.CONTROL_Y, '+', increase)
+    applyHudLayers(scene, hudStart)
   }
 
   setEnabled(enabled: boolean): void {
+    for (const object of this.objects) {
+      (object as Phaser.GameObjects.Rectangle | Phaser.GameObjects.Text).setVisible(enabled)
+    }
     for (const button of this.buttons) {
-      button.setAlpha(enabled ? 1 : 0.42)
+      if (enabled) button.setInteractive({ useHandCursor: true })
+      else button.disableInteractive()
     }
   }
 

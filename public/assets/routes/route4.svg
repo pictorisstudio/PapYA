@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="440" viewBox="0 0 1000 440">
+  <rect width="1000" height="440" rx="20" fill="#c2dce6"/>
+  <circle cx="490" cy="98" r="42" fill="#fff0b6"/>
+  <path d="M0 250 160 120 350 285 530 100 740 260 890 150 1000 220V440H0Z" fill="#657d92"/>
+  <path d="M0 310Q260 230 500 335T1000 290V440H0Z" fill="#edf1e9"/>
+  <path d="M440 440Q720 335 560 290T600 230" fill="none" stroke="#faf3da" stroke-width="25"/>
+  <rect x="32" y="28" width="225" height="68" rx="12" fill="#10131a" fill-opacity=".82"/>
+  <text x="145" y="74" text-anchor="middle" font-family="Arial,sans-serif" font-size="38" fill="#f8fafc">Ruta 4</text>
+</svg>

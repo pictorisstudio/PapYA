@@ -1,3 +1,5 @@
+import { applyHudLayers, LAYERS } from '../../../config/layers'
+import { TEXTS } from '../../../config/texts'
 import Phaser from 'phaser'
 import type { CookingSnapshot } from '../types/CocinaTypes'
 
@@ -14,13 +16,15 @@ export default class CookingDisplay {
   private readonly bars: BarElements[]
 
   constructor(private readonly scene: Phaser.Scene) {
+    const hudStart = scene.children.list.length
     this.graphics = scene.add.graphics().setDepth(720)
     this.bars = [
-      this.createBar(92, 594, 260, 'TEMPERATURA'),
-      this.createBar(510, 594, 260, 'COCCION'),
-      this.createBar(928, 594, 260, 'QUEMADO'),
+      this.createBar(92, 574, 260, TEXTS.minigames.cocina.temperature),
+      this.createBar(510, 594, 260, TEXTS.minigames.cocina.cooking),
+      this.createBar(928, 594, 260, TEXTS.minigames.cocina.burn),
     ]
     this.setTextVisible(false)
+    applyHudLayers(scene, hudStart)
   }
 
   update(snapshot: CookingSnapshot, visible: boolean): void {
@@ -32,6 +36,7 @@ export default class CookingDisplay {
     }
 
     this.bars[0].value.setText(`${Math.round(snapshot.temperature * 100)}%`)
+    this.bars[0].label.setText(`${TEXTS.minigames.cocina.temperature} ${snapshot.temperatureRate > 0 ? '↑' : '↓'}`)
     this.bars[1].value.setText(`${Math.round(snapshot.cookingProgress)}%`)
     this.bars[2].value.setText(`${Math.round(snapshot.burnProgress)}%`)
     this.drawBar(this.bars[0], snapshot.temperature, snapshot.heatZone === 'OPTIMAL' ? 0x6ee7b7 : snapshot.heatZone === 'HIGH' ? 0xf87171 : 0xfbbf24)

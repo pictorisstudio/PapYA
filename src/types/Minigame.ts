@@ -11,5 +11,11 @@ export interface MinigameConfig {
 export interface MinigameResult {
   key: MinigameKey
   won: boolean
+  rawScore: number
+  metrics: Record<string, number>
+}
+
+export interface RecordedMinigameResult extends MinigameResult {
+  // Puntos de viaje comparables entre mecánicas: 100 por completar, 0 en otro caso.
   score: number
 }

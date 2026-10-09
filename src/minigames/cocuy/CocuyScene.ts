@@ -1,4 +1,6 @@
 import Phaser from 'phaser'
+import GameplaySession from '../../components/GameplaySession'
+import { TEXTS } from '../../config/texts'
 import DebugPanel from '../../components/DebugPanel'
 import { DEBUG_MODE } from '../../config/constants'
 import { gameManager } from '../../core/GameManager'
@@ -15,6 +17,7 @@ import VisibilityOverlay from './ui/VisibilityOverlay'
 import type { CocuyGameState } from './types/CocuyTypes'
 
 export default class CocuyScene extends Phaser.Scene {
+  private session?: GameplaySession
   private condor?: Condor
   private movementSystem?: CondorMovementSystem
   private ascentSystem?: AscentSystem
@@ -77,6 +80,7 @@ export default class CocuyScene extends Phaser.Scene {
     this.events.on('debug:touch-areas-changed', this.handleDebugTouchAreasChanged, this)
 
     this.setDebugVisible(DEBUG_MODE && gameManager.debugManager.areTouchAreasVisible())
+    this.session = new GameplaySession(this, { debugFinish: won => this.finish(won), cancelInput: () => this.clearInput() })
     new DebugPanel(this)
     this.state = 'PLAYING'
     this.refreshHud()
@@ -89,7 +93,7 @@ export default class CocuyScene extends Phaser.Scene {
     }
 
     this.elapsedMs += delta
-    const ascent = this.ascentSystem.update(this.elapsedMs, delta)
+    this.ascentSystem.update(this.elapsedMs, delta)
     const movement = this.movementSystem.update(delta)
     this.worldScrollSystem.update(this.elapsedMs, delta)
     this.condor.setX(movement.x)
@@ -104,7 +108,7 @@ export default class CocuyScene extends Phaser.Scene {
 
     this.refreshHud()
 
-    if (ascent.victory) {
+    if (this.ascentSystem.getSnapshot().victory) {
       this.ascentSystem.setAltitude(COCUY_CONFIG.TARGET_ALTITUDE)
       this.finish(true)
       return
@@ -152,7 +156,7 @@ export default class CocuyScene extends Phaser.Scene {
     }
 
     this.visibilityOverlay?.activate(this.elapsedMs)
-    this.hud?.showMessage('NUBE DENSA', '#bae6fd')
+    this.hud?.showMessage(TEXTS.minigames.cocuy.cloud, '#bae6fd')
   }
 
   private applyWind(force: number): void {
@@ -161,7 +165,7 @@ export default class CocuyScene extends Phaser.Scene {
     }
 
     this.movementSystem?.applyWind(force)
-    this.hud?.showMessage(force > 0 ? 'VIENTO ->' : '<- VIENTO', '#bae6fd')
+    this.hud?.showMessage(force > 0 ? TEXTS.minigames.cocuy.windRight : TEXTS.minigames.cocuy.windLeft, '#bae6fd')
   }
 
   private spawnObstacle(type: 'ROCK' | 'CLOUD' | 'WIND', windDirection: -1 | 1 = 1): void {
@@ -185,14 +189,8 @@ export default class CocuyScene extends Phaser.Scene {
     const altitude = this.ascentSystem.getSnapshot().altitude
     const remainingMs = Math.max(0, COCUY_CONFIG.GAME_DURATION_MS - this.elapsedMs)
     const score = this.scoreManager.calculateScore(altitude, remainingMs, this.rockHits)
-    this.hud.showFinal(victory, altitude, score)
-
-    this.trackTimer(
-      this.time.delayedCall(COCUY_CONFIG.RESULT_DELAY_MS, () => {
-        const nextScene = gameManager.completeCurrentMinigame(victory)
-        this.scene.start(nextScene === 'next' ? 'TransitionScene' : 'ResultsScene')
-      }),
-    )
+    this.session?.complete({ key: 'cocuy', won: victory, rawScore: score,
+      metrics: { altitude, rockHits: this.rockHits } })
   }
 
   private refreshHud(): void {

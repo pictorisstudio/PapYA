@@ -45,7 +45,7 @@ export default class BasePlaceholderScene extends Phaser.Scene {
 
   private finishAutomatically(): void {
     const won = Math.random() >= 0.35
-    const nextScene = gameManager.completeCurrentMinigame(won)
+    const nextScene = gameManager.completeCurrentMinigame({ key: this.minigameKey, won, rawScore: 0, metrics: {} })
     this.scene.start(nextScene === 'next' ? 'TransitionScene' : 'ResultsScene')
   }
 

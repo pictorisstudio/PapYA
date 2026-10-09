@@ -1,4 +1,6 @@
 import Phaser from 'phaser'
+import GameplaySession from '../../components/GameplaySession'
+import { TEXTS } from '../../config/texts'
 import DebugPanel from '../../components/DebugPanel'
 import { DEBUG_MODE } from '../../config/constants'
 import { gameManager } from '../../core/GameManager'
@@ -13,6 +15,7 @@ import type { PotatoType } from './types/PapaTypes'
 type PapaPhase = 'playing' | 'finished'
 
 export default class PapaScene extends Phaser.Scene {
+  private session?: GameplaySession
   private spawnManager?: PotatoSpawnManager
   private scoreManager?: PotatoScoreManager
   private hud?: PapaHUD
@@ -47,6 +50,7 @@ export default class PapaScene extends Phaser.Scene {
     this.inputHandler = (pointer) => this.handlePointerDown(pointer)
     this.input.on('pointerdown', this.inputHandler)
 
+    this.session = new GameplaySession(this, { debugFinish: won => this.finish(won) })
     new DebugPanel(this)
     this.refreshHud()
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.cleanup())
@@ -98,7 +102,7 @@ export default class PapaScene extends Phaser.Scene {
 
     const result = this.scoreManager.collect(potato.type)
     potato.hit()
-    this.hud.showFloatingFeedback(potato.x, potato.y, potato.type === 'GOOD' ? '+1' : 'X', potato.type)
+    this.hud.showFloatingFeedback(potato.x, potato.y, potato.type === 'GOOD' ? '+1' : '', potato.type)
 
     if (result.defeat) {
       this.finish(false)
@@ -130,12 +134,9 @@ export default class PapaScene extends Phaser.Scene {
     this.phase = 'finished'
     this.removeInputHandler()
     this.spawnManager?.pause()
-    this.hud.showFinal(victory, this.scoreManager?.getSnapshot().score ?? 0)
-
-    this.time.delayedCall(PAPA_CONFIG.RESULT_DURATION_MS, () => {
-      const nextScene = gameManager.completeCurrentMinigame(victory)
-      this.scene.start(nextScene === 'next' ? 'TransitionScene' : 'ResultsScene')
-    })
+    const score = this.scoreManager?.getSnapshot()
+    this.session?.complete({ key: 'papa', won: victory, rawScore: score?.score ?? 0,
+      metrics: { collected: score?.goodPotatoesCollected ?? 0, badTouches: score?.badPotatoesTouched ?? 0 } })
   }
 
   private refreshHud(): void {

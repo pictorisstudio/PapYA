@@ -1,3 +1,4 @@
+import { LAYERS } from '../../../config/layers'
 import Phaser from 'phaser'
 import { COCINA_CONFIG } from '../config/cocinaConfig'
 import type { CocinaPoint } from '../types/CocinaTypes'
@@ -9,6 +10,9 @@ export default class CookingPot {
   private readonly dropArea: Phaser.Geom.Rectangle
 
   constructor(private readonly scene: Phaser.Scene) {
+    scene.add.rectangle(640, 360, 1280, 720, COCINA_CONFIG.COLORS.background).setDepth(LAYERS.background)
+    scene.add.rectangle(640, 606, 1280, 228, COCINA_CONFIG.COLORS.table).setDepth(LAYERS.scenery)
+    scene.add.rectangle(640, 489, 380, 54, 0x2f1f16).setDepth(50)
     this.graphics = scene.add.graphics().setDepth(60)
     this.debugGraphics = scene.add.graphics().setDepth(920)
     this.dropArea = new Phaser.Geom.Rectangle(
@@ -17,7 +21,7 @@ export default class CookingPot {
       COCINA_CONFIG.POT_DROP_AREA.width,
       COCINA_CONFIG.POT_DROP_AREA.height,
     )
-    this.fire = scene.add.triangle(COCINA_CONFIG.POT_POSITION.x, COCINA_CONFIG.POT_POSITION.y + 126, 0, 58, 34, 0, 68, 58, COCINA_CONFIG.COLORS.fireHigh, 0.95).setDepth(55)
+    this.fire = scene.add.triangle(COCINA_CONFIG.POT_POSITION.x, COCINA_CONFIG.POT_POSITION.y + 126, 0, 58, 34, 0, 68, 58, COCINA_CONFIG.COLORS.fireHigh, 0.95).setDepth(55).setVisible(false)
     this.draw()
   }
 
@@ -30,6 +34,7 @@ export default class CookingPot {
   }
 
   updateFire(fireLevel: number): void {
+    this.fire.setVisible(fireLevel > 0)
     const scale = Phaser.Math.Linear(0.58, 1.36, fireLevel)
     this.fire.setScale(scale, scale)
     this.fire.setFillStyle(fireLevel > COCINA_CONFIG.HIGH_MIN ? COCINA_CONFIG.COLORS.fireHigh : COCINA_CONFIG.COLORS.fireLow, 0.95)
@@ -60,12 +65,6 @@ export default class CookingPot {
   private draw(): void {
     const { x, y } = COCINA_CONFIG.POT_POSITION
     this.graphics.clear()
-    this.graphics.fillStyle(COCINA_CONFIG.COLORS.background, 1)
-    this.graphics.fillRect(0, 0, 1280, 720)
-    this.graphics.fillStyle(COCINA_CONFIG.COLORS.table, 1)
-    this.graphics.fillRect(0, 492, 1280, 228)
-    this.graphics.fillStyle(0x2f1f16, 0.95)
-    this.graphics.fillRoundedRect(x - 190, y + 102, 380, 54, 18)
 
     this.graphics.fillStyle(COCINA_CONFIG.COLORS.pot, 1)
     this.graphics.fillRoundedRect(x - COCINA_CONFIG.POT_WIDTH / 2, y - 66, COCINA_CONFIG.POT_WIDTH, COCINA_CONFIG.POT_HEIGHT, 34)

@@ -1,3 +1,5 @@
+import { applyHudLayers, LAYERS } from '../../../config/layers'
+import { TEXTS } from '../../../config/texts'
 import Phaser from 'phaser'
 import { DEBUG_MODE, SAFE_MARGIN_X, SAFE_MARGIN_Y } from '../../../config/constants'
 import type { PotatoScoreSnapshot } from '../types/PapaTypes'
@@ -18,27 +20,17 @@ export default class PapaHUD {
   private readonly potatoesText: Phaser.GameObjects.Text
   private readonly scoreText: Phaser.GameObjects.Text
   private readonly timeText: Phaser.GameObjects.Text
-  private readonly finalText: Phaser.GameObjects.Text
   private readonly debugText?: Phaser.GameObjects.Text
 
   constructor(private readonly scene: Phaser.Scene, actions: PapaHUDActions) {
-    scene.add.rectangle(292, SAFE_MARGIN_Y + 30, 500, 86, 0x102132, 0.76).setStrokeStyle(2, 0xffffff, 0.32)
-    scene.add.text(SAFE_MARGIN_X, SAFE_MARGIN_Y, 'COSECHA DE PAPA', { fontSize: '28px', fontStyle: '700', color: '#f8fafc' })
+    const hudStart = scene.children.list.length
+    scene.add.rectangle(430, SAFE_MARGIN_Y + 30, 748, 86, 0x102132, 0.76).setStrokeStyle(2, 0xffffff, 0.32)
+    scene.add.text(SAFE_MARGIN_X, SAFE_MARGIN_Y, TEXTS.minigames.papa.name, { fontSize: '28px', fontStyle: '700', color: '#f8fafc' })
 
-    this.potatoesText = scene.add.text(SAFE_MARGIN_X, SAFE_MARGIN_Y + 40, 'Papas: 0 / 20', { fontSize: '22px', color: '#f8fafc' })
-    this.scoreText = scene.add.text(260, SAFE_MARGIN_Y + 40, 'Puntaje: 0', { fontSize: '22px', color: '#f8fafc' })
-    this.timeText = scene.add.text(452, SAFE_MARGIN_Y + 40, 'Tiempo: 30', { fontSize: '22px', color: '#f8fafc' })
+    this.potatoesText = scene.add.text(SAFE_MARGIN_X, SAFE_MARGIN_Y + 40, TEXTS.minigames.papa.count(0, 20), { fontSize: '22px', color: '#f8fafc' })
+    this.scoreText = scene.add.text(260, SAFE_MARGIN_Y + 40, TEXTS.score(0), { fontSize: '22px', color: '#f8fafc' })
+    this.timeText = scene.add.text(452, SAFE_MARGIN_Y + 40, TEXTS.time(30), { fontSize: '22px', color: '#f8fafc' })
 
-    this.finalText = scene.add
-      .text(640, 318, '', {
-        fontSize: '46px',
-        fontStyle: '700',
-        color: '#ffffff',
-        align: 'center',
-        lineSpacing: 12,
-      })
-      .setOrigin(0.5)
-      .setDepth(1000)
 
     if (DEBUG_MODE) {
       scene.add.rectangle(884, 288, 356, 158, 0x05070c, 0.7).setOrigin(0, 0).setDepth(900)
@@ -52,12 +44,13 @@ export default class PapaHUD {
       this.addButton(974, 406, 'SPAWN', actions.toggleSpawn)
       this.addButton(1046, 406, 'RESTART', actions.restart, 76)
     }
+    applyHudLayers(scene, hudStart)
   }
 
   update(score: PotatoScoreSnapshot, remainingMs: number, debug: PapaDebugSnapshot): void {
-    this.potatoesText.setText(`Papas: ${score.goodPotatoesCollected} / ${score.target}`)
-    this.scoreText.setText(`Puntaje: ${score.score}`)
-    this.timeText.setText(`Tiempo: ${Math.ceil(remainingMs / 1000)}`)
+    this.potatoesText.setText(TEXTS.minigames.papa.count(score.goodPotatoesCollected, score.target))
+    this.scoreText.setText(TEXTS.score(score.score))
+    this.timeText.setText(TEXTS.time(remainingMs / 1000))
 
     if (this.debugText) {
       this.debugText.setText([
@@ -78,7 +71,7 @@ export default class PapaHUD {
         color: type === 'GOOD' ? '#f8fafc' : '#ff4d4d',
       })
       .setOrigin(0.5)
-      .setDepth(950)
+      .setDepth(LAYERS.feedback)
 
     this.scene.tweens.add({
       targets: text,
@@ -90,10 +83,6 @@ export default class PapaHUD {
     })
   }
 
-  showFinal(victory: boolean, score: number): void {
-    this.finalText.setText(`${victory ? '¡Cosecha completa!' : 'Cosecha fallida'}\n${victory ? 'VICTORIA' : 'DERROTA'}\nPuntaje: ${score}`)
-    this.finalText.setColor(victory ? '#14532d' : '#991b1b')
-  }
 
   private addButton(x: number, y: number, label: string, action: () => void, width = 56): void {
     const button = this.scene.add.rectangle(x, y, width, 22, 0x1f2937, 0.94).setOrigin(0, 0).setDepth(902)

@@ -26,7 +26,7 @@ export default class TejoAimSystem {
       TEJO_CONFIG.BOARD_CENTER_X - TEJO_CONFIG.BOARD_WIDTH / 2,
       TEJO_CONFIG.BOARD_CENTER_X + TEJO_CONFIG.BOARD_WIDTH / 2,
     )
-    const targetY = Phaser.Math.Linear(TEJO_CONFIG.THROW_START_Y - 80, TEJO_CONFIG.BOARD_Y, launch.power)
+    const targetY = Phaser.Math.Linear(TEJO_CONFIG.THROW_START_Y - 80, TEJO_CONFIG.BOARD_Y - TEJO_CONFIG.BOARD_HEIGHT / 2, launch.power)
     const arcHeight = Phaser.Math.Linear(TEJO_CONFIG.ARC_HEIGHT_MIN, TEJO_CONFIG.ARC_HEIGHT_MAX, launch.power)
     const durationMs = Phaser.Math.Linear(TEJO_CONFIG.FLIGHT_DURATION_MIN, TEJO_CONFIG.FLIGHT_DURATION_MAX, launch.power)
 
@@ -90,8 +90,8 @@ export default class TejoAimSystem {
     this.preview.fillStyle(TEJO_CONFIG.COLORS.preview, 0.74)
 
     for (let index = 1; index <= TEJO_CONFIG.PREVIEW_DOTS; index += 1) {
-      const progress = (index / (TEJO_CONFIG.PREVIEW_DOTS + 2)) * 0.78
-      const point = this.getTrajectoryPoint(aim.target, aim.arcHeight * 0.72, progress)
+      const progress = index / TEJO_CONFIG.PREVIEW_DOTS
+      const point = this.getTrajectoryPoint(aim.target, aim.arcHeight, progress)
       const radius = Phaser.Math.Linear(7, 3, progress)
       this.preview.fillCircle(point.x, point.y, radius)
     }

@@ -1,4 +1,6 @@
 import Phaser from 'phaser'
+import PauseScene from '../scenes/PauseScene'
+import DevScene from '../scenes/DevScene'
 import { LOGICAL_HEIGHT, LOGICAL_WIDTH } from './constants'
 import BootScene from '../scenes/BootScene'
 import PreloaderScene from '../scenes/PreloaderScene'
@@ -18,6 +20,7 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
   parent: 'app',
   backgroundColor: '#10131a',
   pixelArt: true,
+  input: { activePointers: 2 },
   antialias: false,
   roundPixels: true,
   scale: {
@@ -28,6 +31,8 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
   },
   scene: [
     BootScene,
+    PauseScene,
+    DevScene,
     PreloaderScene,
     MenuScene,
     MapScene,

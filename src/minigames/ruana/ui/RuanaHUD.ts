@@ -1,5 +1,7 @@
+import { applyHudLayers, LAYERS } from '../../../config/layers'
+import { TEXTS } from '../../../config/texts'
 import Phaser from 'phaser'
-import { DEBUG_MODE, REQUIRED_VICTORIES, SAFE_MARGIN_X, SAFE_MARGIN_Y } from '../../../config/constants'
+import { DEBUG_MODE, SAFE_MARGIN_X, SAFE_MARGIN_Y } from '../../../config/constants'
 import { RUANA_CONFIG } from '../config/ruanaConfig'
 import type { RuanaScoreSnapshot } from '../systems/RuanaScoreManager'
 import type { RuanaDebugSnapshot, RuanaJudgeResult } from '../types/RuanaTypes'
@@ -22,12 +24,13 @@ export default class RuanaHUD {
   private readonly debugText?: Phaser.GameObjects.Text
 
   constructor(scene: Phaser.Scene, actions: RuanaHUDActions) {
-    scene.add.rectangle(640, SAFE_MARGIN_Y + 24, 1160, 74, 0x0f172a, 0.82).setStrokeStyle(2, 0x334155)
-    scene.add.text(SAFE_MARGIN_X + 28, SAFE_MARGIN_Y, 'TEJIENDO LA RUANA', { fontSize: '28px', fontStyle: '700', color: '#f8fafc' })
+    const hudStart = scene.children.list.length
+    scene.add.rectangle(430, SAFE_MARGIN_Y + 30, 748, 86, 0x0f172a, 0.82).setStrokeStyle(2, 0x334155)
+    scene.add.text(SAFE_MARGIN_X + 28, SAFE_MARGIN_Y, TEXTS.minigames.ruana.name, { fontSize: '28px', fontStyle: '700', color: '#f8fafc' })
 
-    this.accuracyText = scene.add.text(410, SAFE_MARGIN_Y, 'Precisión: 0%', { fontSize: '22px', color: '#6ee7b7' })
-    this.statsText = scene.add.text(410, SAFE_MARGIN_Y + 30, 'Perfect: 0  Good: 0  Miss: 0', { fontSize: '18px', color: '#d8dee9' })
-    this.progressText = scene.add.text(720, SAFE_MARGIN_Y + 30, `Victorias: 0/5  Meta: ${REQUIRED_VICTORIES}`, {
+    this.accuracyText = scene.add.text(56, SAFE_MARGIN_Y + 40, TEXTS.minigames.ruana.accuracy(0), { fontSize: '22px', color: '#6ee7b7' })
+    this.statsText = scene.add.text(326, SAFE_MARGIN_Y + 40, TEXTS.minigames.ruana.stats(0, 0, 0), { fontSize: '18px', color: '#d8dee9' })
+    this.progressText = scene.add.text(56, SAFE_MARGIN_Y + 88, TEXTS.victories(0, 5), {
       fontSize: '20px',
       color: '#aab3c5',
     })
@@ -43,8 +46,8 @@ export default class RuanaHUD {
       .setOrigin(0.5)
 
     if (DEBUG_MODE) {
-      scene.add.rectangle(894, 188, 360, 158, 0x05070c, 0.7).setOrigin(0, 0)
-      this.debugText = scene.add.text(908, 200, '', { fontSize: '14px', color: '#d6e4ff', lineSpacing: 4 })
+      scene.add.rectangle(894, 188, 360, 158, 0x05070c, 0.7).setOrigin(0, 0).setDepth(900)
+      this.debugText = scene.add.text(908, 200, '', { fontSize: '14px', color: '#d6e4ff', lineSpacing: 4 }).setDepth(901)
       this.addButton(scene, 908, 286, 'PERFECT', actions.forcePerfect)
       this.addButton(scene, 984, 286, 'MISS', actions.forceMiss)
       this.addButton(scene, 1044, 286, 'FIN', actions.finishNow)
@@ -57,19 +60,19 @@ export default class RuanaHUD {
       this.addButton(scene, 1108, 318, '100%', () => actions.previewProgress(1), 48)
       this.addButton(scene, 1164, 318, 'PLAY', actions.resumeClock, 56)
     }
+    applyHudLayers(scene, hudStart)
   }
 
   update(score: RuanaScoreSnapshot, currentVictories: number, totalMinigames: number): void {
-    this.accuracyText.setText(`Precisión: ${score.accuracy.toFixed(1)}%`)
-    this.statsText.setText(`Perfect: ${score.perfect}  Good: ${score.good}  Miss: ${score.miss}`)
+    this.accuracyText.setText(TEXTS.minigames.ruana.accuracy(score.accuracy))
+    this.statsText.setText(TEXTS.minigames.ruana.stats(score.perfect, score.good, score.miss))
     this.progressText.setText(
-      `Notas: ${score.perfect + score.good + score.miss}/${score.totalNotes}  Victorias: ${currentVictories}/${totalMinigames}  Meta: ${REQUIRED_VICTORIES}`,
+      TEXTS.victories(currentVictories, totalMinigames),
     )
   }
 
   showFeedback(result: RuanaJudgeResult, offsetMs?: number): void {
-    const suffix = offsetMs === undefined ? '' : ` ${offsetMs} ms`
-    this.feedbackText.setText(`${result}${suffix}`)
+    this.feedbackText.setText(result === 'PERFECT' ? TEXTS.minigames.ruana.perfect : result === 'GOOD' ? TEXTS.minigames.ruana.good : TEXTS.minigames.ruana.miss)
     this.feedbackText.setAlpha(1)
     this.feedbackText.setColor(result === 'PERFECT' ? '#6ee7b7' : result === 'GOOD' ? '#fbbf24' : '#f87171')
     this.feedbackText.scene.tweens.add({
@@ -80,11 +83,6 @@ export default class RuanaHUD {
     })
   }
 
-  showFinal(accuracy: number, victory: boolean): void {
-    this.feedbackText.setAlpha(1)
-    this.feedbackText.setText(`PRECISIÓN FINAL: ${accuracy.toFixed(1)}%\n${victory ? '¡Ruana completada!\nVICTORIA' : 'Inténtalo nuevamente\nDERROTA'}`)
-    this.feedbackText.setColor(victory ? '#6ee7b7' : '#f87171')
-  }
 
   updateDebug(snapshot: RuanaDebugSnapshot): void {
     if (!this.debugText) {
@@ -104,10 +102,10 @@ export default class RuanaHUD {
   }
 
   private addButton(scene: Phaser.Scene, x: number, y: number, label: string, action: () => void, width = 64): void {
-    const button = scene.add.rectangle(x, y, width, 22, 0x1f2937, 0.94).setOrigin(0, 0)
+    const button = scene.add.rectangle(x, y, width, 22, 0x1f2937, 0.94).setOrigin(0, 0).setDepth(902)
     button.setStrokeStyle(1, 0x64748b)
     button.setInteractive({ useHandCursor: true })
     button.on('pointerdown', action)
-    scene.add.text(x + width / 2, y + 11, label, { fontSize: '10px', color: '#ffffff' }).setOrigin(0.5)
+    scene.add.text(x + width / 2, y + 11, label, { fontSize: '10px', color: '#ffffff' }).setOrigin(0.5).setDepth(903)
   }
 }

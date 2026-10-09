@@ -1,6 +1,9 @@
 import Phaser from 'phaser'
+import GameplaySession from '../../components/GameplaySession'
+import { TEXTS } from '../../config/texts'
 import DebugPanel from '../../components/DebugPanel'
 import { DEBUG_MODE } from '../../config/constants'
+import { LAYERS } from '../../config/layers'
 import { gameManager } from '../../core/GameManager'
 import { RUANA_BEATMAP_PROTOTYPE } from './config/beatmapPrototype'
 import { RUANA_CONFIG } from './config/ruanaConfig'
@@ -18,6 +21,7 @@ import type { RuanaJudgement, RuanaLaneId } from './types/RuanaTypes'
 type RuanaPhase = 'intro' | 'countdown' | 'playing' | 'finished'
 
 export default class RuanaScene extends Phaser.Scene {
+  private session?: GameplaySession
   private clock?: RhythmClock
   private noteManager?: NoteManager
   private judge?: HitJudge
@@ -61,8 +65,9 @@ export default class RuanaScene extends Phaser.Scene {
     })
     this.refreshHud()
 
+    this.session = new GameplaySession(this, { pause: () => this.clock?.pause(), resume: () => { if (!this.finished) this.clock?.resume() }, debugFinish: won => this.finishWithScore(won) })
     new DebugPanel(this)
-    this.startIntro()
+    this.startGameplay()
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.cleanup())
   }
 
@@ -94,47 +99,6 @@ export default class RuanaScene extends Phaser.Scene {
     if (this.noteManager.isFinished()) {
       this.finishWithScore()
     }
-  }
-
-  private startIntro(): void {
-    this.phase = 'intro'
-
-    const introText = this.add
-      .text(640, 306, 'Tejiendo la Ruana\nToca cuando el hilo llegue a la marca', {
-        fontSize: '36px',
-        color: '#f8fafc',
-        align: 'center',
-        lineSpacing: 14,
-      })
-      .setOrigin(0.5)
-
-    this.trackTimer(
-      this.time.delayedCall(RUANA_CONFIG.INTRO_DURATION_MS, () => {
-        introText.destroy()
-        this.startCountdown()
-      }),
-    )
-  }
-
-  private startCountdown(): void {
-    this.phase = 'countdown'
-    const countdownSteps = ['3', '2', '1', '¡YA!']
-    const countdownText = this.add.text(640, 306, '', { fontSize: '82px', fontStyle: '700', color: '#fbbf24' }).setOrigin(0.5)
-
-    countdownSteps.forEach((step, index) => {
-      this.trackTimer(
-        this.time.delayedCall(index * RUANA_CONFIG.COUNTDOWN_STEP_MS, () => {
-          countdownText.setText(step)
-        }),
-      )
-    })
-
-    this.trackTimer(
-      this.time.delayedCall(countdownSteps.length * RUANA_CONFIG.COUNTDOWN_STEP_MS, () => {
-        countdownText.destroy()
-        this.startGameplay()
-      }),
-    )
   }
 
   private startGameplay(): void {
@@ -246,7 +210,7 @@ export default class RuanaScene extends Phaser.Scene {
     this.clock?.resume()
   }
 
-  private finishWithScore(): void {
+  private finishWithScore(forcedVictory?: boolean): void {
     if (this.finished || !this.scoreManager || !this.hud) {
       return
     }
@@ -257,14 +221,8 @@ export default class RuanaScene extends Phaser.Scene {
     this.removeInputHandler()
 
     const score = this.scoreManager.getSnapshot()
-    this.hud.showFinal(score.accuracy, score.victory)
-
-    this.trackTimer(
-      this.time.delayedCall(RUANA_CONFIG.RESULT_DURATION_MS, () => {
-        const nextScene = gameManager.completeCurrentMinigame(score.victory)
-        this.scene.start(nextScene === 'next' ? 'TransitionScene' : 'ResultsScene')
-      }),
-    )
+    this.session?.complete({ key: 'ruana', won: forcedVictory ?? score.victory, rawScore: score.score,
+      metrics: { accuracy: score.accuracy, perfect: score.perfect, good: score.good, miss: score.miss } })
   }
 
   private createPlaceholderLoom(): void {
@@ -276,18 +234,18 @@ export default class RuanaScene extends Phaser.Scene {
 
     // TODO: reemplazar por telar y ruana pixel art finales.
     this.add.rectangle(640, 386, 1080, 450, RUANA_CONFIG.COLORS.loomPanel, 0.88).setStrokeStyle(4, 0x64748b)
-    this.add.circle(RUANA_CONFIG.VANISHING_POINT_X, RUANA_CONFIG.VANISHING_POINT_Y, 8, 0xf8fafc, DEBUG_MODE ? 0.9 : 0)
+    if (DEBUG_MODE) this.add.circle(RUANA_CONFIG.VANISHING_POINT_X, RUANA_CONFIG.VANISHING_POINT_Y, 8, 0xf8fafc, 0.9).setDepth(LAYERS.debug - 1)
 
     for (const lane of this.projector.getLanes()) {
       this.add.line(0, 0, lane.startX, lane.startY, lane.endX, lane.endY, RUANA_CONFIG.COLORS.laneLine, 0.68).setOrigin(0, 0)
-      this.add.line(0, 0, RUANA_CONFIG.VANISHING_POINT_X, RUANA_CONFIG.VANISHING_POINT_Y, lane.startX, lane.startY, 0xffffff, DEBUG_MODE ? 0.3 : 0).setOrigin(0, 0)
+      if (DEBUG_MODE) this.add.line(0, 0, RUANA_CONFIG.VANISHING_POINT_X, RUANA_CONFIG.VANISHING_POINT_Y, lane.startX, lane.startY, 0xffffff, 0.3).setOrigin(0, 0).setDepth(LAYERS.debug - 1)
     }
 
     if (DEBUG_MODE) {
       for (const progress of RUANA_CONFIG.DEBUG_PROGRESS_MARKS) {
         for (const lane of this.projector.getLanes()) {
           const mark = this.projector.project(lane.id, progress)
-          this.add.circle(mark.x, mark.y, 4, 0xfbbf24, 0.55).setDepth(620)
+          this.add.circle(mark.x, mark.y, 4, 0xfbbf24, 0.55).setDepth(LAYERS.debug - 1)
         }
       }
     }

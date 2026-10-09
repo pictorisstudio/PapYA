@@ -1,4 +1,4 @@
-import type { MinigameKey, MinigameResult } from './Minigame'
+import type { MinigameKey, RecordedMinigameResult } from './Minigame'
 
 export interface GameState {
   currentIndex: number
@@ -6,6 +6,6 @@ export interface GameState {
   defeats: number
   score: number
   minigameOrder: MinigameKey[]
-  results: MinigameResult[]
+  results: RecordedMinigameResult[]
   isRunning: boolean
 }

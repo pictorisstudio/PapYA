@@ -1,8 +1,15 @@
 export default class DebugManager {
-  private autoPlaceholders = true
-  private showTouchAreas = true
+  private controlsEnabled = false
+  private autoPlaceholders = false
+  private showTouchAreas = false
   private ruanaGuides = false
   private papaHitboxes = false
+
+  areControlsEnabled(): boolean { return this.controlsEnabled }
+  toggleControls(): boolean {
+    this.controlsEnabled = !this.controlsEnabled
+    return this.controlsEnabled
+  }
 
   isAutoPlayEnabled(): boolean {
     return this.autoPlaceholders
@@ -14,7 +21,7 @@ export default class DebugManager {
   }
 
   areTouchAreasVisible(): boolean {
-    return this.showTouchAreas
+    return this.controlsEnabled && this.showTouchAreas
   }
 
   toggleTouchAreas(): boolean {
@@ -23,7 +30,7 @@ export default class DebugManager {
   }
 
   areRuanaGuidesVisible(): boolean {
-    return this.showTouchAreas || this.ruanaGuides
+    return this.controlsEnabled && (this.showTouchAreas || this.ruanaGuides)
   }
 
   toggleRuanaGuides(): boolean {
@@ -32,7 +39,7 @@ export default class DebugManager {
   }
 
   arePapaHitboxesVisible(): boolean {
-    return this.showTouchAreas || this.papaHitboxes
+    return this.controlsEnabled && (this.showTouchAreas || this.papaHitboxes)
   }
 
   togglePapaHitboxes(): boolean {

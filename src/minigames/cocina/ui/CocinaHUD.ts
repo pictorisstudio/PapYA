@@ -1,3 +1,5 @@
+import { applyHudLayers, LAYERS } from '../../../config/layers'
+import { TEXTS } from '../../../config/texts'
 import Phaser from 'phaser'
 import { DEBUG_MODE } from '../../../config/constants'
 import { COCINA_CONFIG } from '../config/cocinaConfig'
@@ -20,23 +22,22 @@ export default class CocinaHUD {
   private readonly timeText: Phaser.GameObjects.Text
   private readonly phaseText: Phaser.GameObjects.Text
   private readonly messageText: Phaser.GameObjects.Text
-  private readonly finalText: Phaser.GameObjects.Text
   private readonly debugText?: Phaser.GameObjects.Text
 
   constructor(private readonly scene: Phaser.Scene, actions: CocinaHUDActions) {
+    const hudStart = scene.children.list.length
     scene.add.rectangle(430, COCINA_CONFIG.SAFE_MARGIN_Y + 30, 748, 84, COCINA_CONFIG.COLORS.panel, 0.82).setStrokeStyle(2, 0x334155)
-    scene.add.text(COCINA_CONFIG.SAFE_MARGIN_X, COCINA_CONFIG.SAFE_MARGIN_Y, 'COCIDO BOYACENSE', {
+    scene.add.text(COCINA_CONFIG.SAFE_MARGIN_X, COCINA_CONFIG.SAFE_MARGIN_Y, TEXTS.minigames.cocina.name, {
       fontSize: '28px',
       fontStyle: '700',
       color: COCINA_CONFIG.COLORS.text,
     })
-    this.timeText = scene.add.text(940, COCINA_CONFIG.SAFE_MARGIN_Y, 'TIEMPO: 30', { fontSize: '26px', fontStyle: '700', color: COCINA_CONFIG.COLORS.text })
-    this.phaseText = scene.add.text(COCINA_CONFIG.SAFE_MARGIN_X, COCINA_CONFIG.SAFE_MARGIN_Y + 42, 'FASE: INGREDIENTES', {
+    this.timeText = scene.add.text(600, COCINA_CONFIG.SAFE_MARGIN_Y + 42, TEXTS.time(30), { fontSize: '26px', fontStyle: '700', color: COCINA_CONFIG.COLORS.text })
+    this.phaseText = scene.add.text(COCINA_CONFIG.SAFE_MARGIN_X, COCINA_CONFIG.SAFE_MARGIN_Y + 42, TEXTS.minigames.cocina.ingredients, {
       fontSize: '20px',
       color: '#d8dee9',
     })
-    this.messageText = scene.add.text(640, 500, 'Arrastra los ingredientes a la olla', { fontSize: '25px', fontStyle: '700', color: COCINA_CONFIG.COLORS.text }).setOrigin(0.5).setDepth(760)
-    this.finalText = scene.add.text(640, 330, '', { fontSize: '46px', fontStyle: '700', color: COCINA_CONFIG.COLORS.text, align: 'center', lineSpacing: 12 }).setOrigin(0.5).setDepth(1000)
+    this.messageText = scene.add.text(640, 500, TEXTS.minigames.cocina.gesture, { fontSize: '25px', fontStyle: '700', color: COCINA_CONFIG.COLORS.text }).setOrigin(0.5).setDepth(760)
 
     if (DEBUG_MODE) {
       scene.add.rectangle(856, 174, 400, 244, 0x05070c, 0.7).setOrigin(0, 0).setDepth(900)
@@ -52,26 +53,27 @@ export default class CocinaHUD {
       this.addButton(972, 368, 'LOSE', actions.forceLose, 54)
       this.addButton(1032, 368, 'RESET', actions.restart, 58)
     }
+    applyHudLayers(scene, hudStart)
   }
 
   update(phase: CocinaPhase, remainingMs: number, recipe: RecipeSnapshot, cooking: CookingSnapshot): void {
-    this.timeText.setText(`TIEMPO: ${Math.ceil(remainingMs / 1000)}`)
-    this.phaseText.setText(`FASE: ${phase === 'PREPARATION' ? 'INGREDIENTES' : phase === 'COOKING' ? 'COCCION' : 'FINAL'}`)
+    this.timeText.setText(TEXTS.time(remainingMs / 1000))
+    this.phaseText.setText(phase === 'PREPARATION' ? TEXTS.minigames.cocina.ingredients : TEXTS.minigames.cocina.cooking)
 
     if (phase === 'PREPARATION') {
       if (recipe.incorrectCount > 0) {
-        this.messageText.setText('HAY UN INGREDIENTE INCORRECTO')
+        this.messageText.setText(TEXTS.minigames.cocina.wrong)
         this.messageText.setColor(COCINA_CONFIG.COLORS.warning)
         return
       }
 
-      this.messageText.setText(`Ingredientes correctos: ${recipe.correctCount}/${COCINA_CONFIG.CORRECT_INGREDIENT_COUNT}`)
+      this.messageText.setText(TEXTS.minigames.cocina.count(recipe.correctCount, COCINA_CONFIG.CORRECT_INGREDIENT_COUNT))
       this.messageText.setColor(COCINA_CONFIG.COLORS.text)
       return
     }
 
     if (phase === 'COOKING') {
-      this.messageText.setText(`Fuego ${cooking.heatZone}`)
+      this.messageText.setText(TEXTS.minigames.cocina.heat[cooking.heatZone])
       this.messageText.setColor(cooking.heatZone === 'OPTIMAL' ? COCINA_CONFIG.COLORS.good : cooking.heatZone === 'HIGH' ? COCINA_CONFIG.COLORS.danger : COCINA_CONFIG.COLORS.warning)
     }
   }
@@ -105,10 +107,6 @@ export default class CocinaHUD {
     ])
   }
 
-  showFinal(victory: boolean, score: number): void {
-    this.finalText.setText(`${victory ? '¡Cocido listo!' : 'Cocido perdido'}\n${victory ? 'VICTORIA' : 'DERROTA'}\nPuntaje: ${score}`)
-    this.finalText.setColor(victory ? COCINA_CONFIG.COLORS.good : COCINA_CONFIG.COLORS.danger)
-  }
 
   private addButton(x: number, y: number, label: string, action: () => void, width: number): void {
     const button = this.scene.add.rectangle(x, y, width, 24, 0x1f2937, 0.94).setOrigin(0, 0).setDepth(902)

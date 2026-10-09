@@ -1,3 +1,5 @@
+import Phaser from 'phaser'
+
 export default class AudioManager {
   private muted = false
   private musicVolume = 0.7

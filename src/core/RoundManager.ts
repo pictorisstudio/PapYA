@@ -1,32 +1,38 @@
 import { MINIGAME_ORDER } from '../config/minigamesConfig'
 import type { GameState } from '../types/GameState'
-import type { MinigameKey, MinigameResult } from '../types/Minigame'
+import type { MinigameKey, MinigameResult, RecordedMinigameResult } from '../types/Minigame'
 import { shuffle } from '../utils/shuffle'
 
 export default class RoundManager {
   private state: GameState = this.createEmptyState()
 
-  start(): GameState {
+  start(order: MinigameKey[] = shuffle(MINIGAME_ORDER)): GameState {
+    if (!order.length || new Set(order).size !== order.length || order.some(key => !MINIGAME_ORDER.includes(key))) {
+      throw new Error('Orden de minijuegos inválido')
+    }
     this.state = {
       ...this.createEmptyState(),
-      minigameOrder: shuffle(MINIGAME_ORDER),
+      minigameOrder: [...order],
       isRunning: true,
     }
 
     return this.getState()
   }
 
-  recordResult(won: boolean): GameState {
+  recordResult(outcome: MinigameResult): GameState {
     const key = this.getCurrentMinigameKey()
 
-    if (!key) {
+    if (!this.state.isRunning || !key || outcome.key !== key) {
       return this.getState()
     }
 
-    const result: MinigameResult = {
+    const won = outcome.won
+    const result: RecordedMinigameResult = {
       key,
       won,
-      score: won ? 100 : 20,
+      score: won ? 100 : 0,
+      rawScore: Number.isFinite(outcome.rawScore) ? Math.max(0, outcome.rawScore) : 0,
+      metrics: Object.fromEntries(Object.entries(outcome.metrics).filter(([, value]) => Number.isFinite(value))),
     }
 
     this.state.results.push(result)
@@ -47,7 +53,7 @@ export default class RoundManager {
     return {
       ...this.state,
       minigameOrder: [...this.state.minigameOrder],
-      results: [...this.state.results],
+      results: this.state.results.map(result => ({ ...result, metrics: { ...result.metrics } })),
     }
   }
 

@@ -1,3 +1,5 @@
+import { applyHudLayers, LAYERS } from '../../../config/layers'
+import { TEXTS } from '../../../config/texts'
 import Phaser from 'phaser'
 import { DEBUG_MODE } from '../../../config/constants'
 import { TEJO_CONFIG } from '../config/tejoConfig'
@@ -17,35 +19,25 @@ export default class TejoHUD {
   private readonly mechasText: Phaser.GameObjects.Text
   private readonly timeText: Phaser.GameObjects.Text
   private readonly resultText: Phaser.GameObjects.Text
-  private readonly finalText: Phaser.GameObjects.Text
   private readonly debugText?: Phaser.GameObjects.Text
 
   constructor(private readonly scene: Phaser.Scene, actions: TejoHUDActions) {
+    const hudStart = scene.children.list.length
     scene.add.rectangle(358, TEJO_CONFIG.SAFE_MARGIN_Y + 30, 604, 84, 0x0f172a, 0.82).setStrokeStyle(2, 0x334155)
-    scene.add.text(TEJO_CONFIG.SAFE_MARGIN_X, TEJO_CONFIG.SAFE_MARGIN_Y, 'TEJO AL BOCIN', {
+    scene.add.text(TEJO_CONFIG.SAFE_MARGIN_X, TEJO_CONFIG.SAFE_MARGIN_Y, TEXTS.minigames.tejo.name, {
       fontSize: '28px',
       fontStyle: '700',
       color: '#f8fafc',
     })
 
-    this.scoreText = scene.add.text(TEJO_CONFIG.SAFE_MARGIN_X, TEJO_CONFIG.SAFE_MARGIN_Y + 40, 'PUNTAJE: 0 / 10', {
+    this.scoreText = scene.add.text(TEJO_CONFIG.SAFE_MARGIN_X, TEJO_CONFIG.SAFE_MARGIN_Y + 40, TEXTS.minigames.tejo.points(0, TEJO_CONFIG.WIN_SCORE), {
       fontSize: '21px',
       color: '#f8fafc',
     })
-    this.mechasText = scene.add.text(300, TEJO_CONFIG.SAFE_MARGIN_Y + 40, 'MECHAS: 0 / 3', { fontSize: '21px', color: '#f8fafc' })
-    this.timeText = scene.add.text(514, TEJO_CONFIG.SAFE_MARGIN_Y + 40, 'TIEMPO: 30', { fontSize: '21px', color: '#f8fafc' })
+    this.mechasText = scene.add.text(300, TEJO_CONFIG.SAFE_MARGIN_Y + 40, TEXTS.minigames.tejo.mechas(0), { fontSize: '21px', color: '#f8fafc' })
+    this.timeText = scene.add.text(514, TEJO_CONFIG.SAFE_MARGIN_Y + 40, TEXTS.time(30), { fontSize: '21px', color: '#f8fafc' })
 
     this.resultText = scene.add.text(640, 354, '', { fontSize: '34px', fontStyle: '700', color: '#ffffff' }).setOrigin(0.5).setDepth(960)
-    this.finalText = scene.add
-      .text(640, 328, '', {
-        fontSize: '46px',
-        fontStyle: '700',
-        color: '#ffffff',
-        align: 'center',
-        lineSpacing: 12,
-      })
-      .setOrigin(0.5)
-      .setDepth(1000)
 
     if (DEBUG_MODE) {
       scene.add.rectangle(888, 202, 372, 186, 0x05070c, 0.7).setOrigin(0, 0).setDepth(900)
@@ -57,12 +49,13 @@ export default class TejoHUD {
       this.addButton(1142, 336, 'LOSE', actions.forceLose, 54)
       this.addButton(1202, 336, 'RESET', actions.reset, 56)
     }
+    applyHudLayers(scene, hudStart)
   }
 
   update(score: TejoScoreSnapshot, remainingMs: number): void {
-    this.scoreText.setText(`PUNTAJE: ${score.score} / ${TEJO_CONFIG.WIN_SCORE}`)
-    this.mechasText.setText(`MECHAS: ${score.mechas} / ${TEJO_CONFIG.WIN_MECHAS}`)
-    this.timeText.setText(`TIEMPO: ${Math.ceil(remainingMs / 1000)}`)
+    this.scoreText.setText(TEXTS.minigames.tejo.points(score.score, TEJO_CONFIG.WIN_SCORE))
+    this.mechasText.setText(TEXTS.minigames.tejo.mechas(score.mechas))
+    this.timeText.setText(TEXTS.time(remainingMs / 1000))
   }
 
   updateDebug(snapshot: TejoDebugSnapshot): void {
@@ -86,7 +79,7 @@ export default class TejoHUD {
   }
 
   showImpact(result: TejoImpactResult): void {
-    this.resultText.setText(result === 'MECHA' ? 'MECHA +5' : result === 'NEAR' ? 'CERCA +1' : 'FUERA')
+    this.resultText.setText(TEXTS.minigames.tejo.impact[result])
     this.resultText.setColor(result === 'MECHA' ? '#ef4444' : result === 'NEAR' ? '#fbbf24' : '#f8fafc')
     this.resultText.setAlpha(1)
     this.scene.tweens.add({
@@ -97,10 +90,6 @@ export default class TejoHUD {
     })
   }
 
-  showFinal(victory: boolean, score: TejoScoreSnapshot): void {
-    this.finalText.setText(`${victory ? '¡Bocin conquistado!' : 'Lanzamiento finalizado'}\n${victory ? 'VICTORIA' : 'DERROTA'}\nPuntaje: ${score.score}`)
-    this.finalText.setColor(victory ? '#6ee7b7' : '#f87171')
-  }
 
   private addButton(x: number, y: number, label: string, action: () => void, width: number): void {
     const button = this.scene.add.rectangle(x, y, width, 24, 0x1f2937, 0.94).setOrigin(0, 0).setDepth(902)
