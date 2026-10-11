@@ -44,13 +44,13 @@ export const COCINA_CONFIG = {
 
   INGREDIENTS: [
     { id: 'cubios', name: 'Cubios', isCorrect: true, x: 146, y: 174, color: 0xeab308 },
-    { id: 'ibias', name: 'Ibias', isCorrect: true, x: 330, y: 150, color: 0xa855f7 },
-    { id: 'chuguas', name: 'Chuguas', isCorrect: true, x: 958, y: 150, color: 0xf97316 },
+    { id: 'mazorca', name: 'Mazorca', isCorrect: true, x: 330, y: 150, color: 0xfacc15 },
+    { id: 'costilla', name: 'Costilla de res', isCorrect: true, x: 958, y: 150, color: 0xb45309 },
     { id: 'papa', name: 'Papa', isCorrect: true, x: 1138, y: 174, color: 0xc58a3a },
     { id: 'habas', name: 'Habas', isCorrect: true, x: 168, y: 520, color: 0x22c55e },
-    { id: 'tomate', name: 'Tomate', isCorrect: false, x: 1094, y: 520, color: 0xef4444 },
-    { id: 'pimenton', name: 'Pimenton', isCorrect: false, x: 336, y: 542, color: 0xdc2626 },
-    { id: 'brocoli', name: 'Brocoli', isCorrect: false, x: 950, y: 542, color: 0x16a34a },
+    { id: 'fresa', name: 'Fresa', isCorrect: false, x: 1094, y: 520, color: 0xef4444 },
+    { id: 'berenjena', name: 'Berenjena', isCorrect: false, x: 336, y: 542, color: 0x7e22ce },
+    { id: 'brocoli', name: 'Brócoli', isCorrect: false, x: 950, y: 542, color: 0x16a34a },
   ],
 
   COLORS: {

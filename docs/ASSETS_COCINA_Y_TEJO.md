@@ -37,3 +37,8 @@ Las tres piezas de la olla son capas, no una animación. Comparten escala y posi
 Los dos discos son alternativas de arte, no cuadros de una animación. El juego usa el disco detallado; el simple permanece como alternativa. Al integrarlo, conservar las zonas circulares de impacto y toque; una mecha triangular no debe modificar por sí sola el balance del lanzamiento.
 
 Los minijuegos arrancan directamente desde TransitionScene, sin letrero ni temporizador de instrucciones.
+
+## Actualización de receta
+
+La selección vigente es cubios, papa, habas, mazorca y costilla de res, con fresa, brócoli y berenjena como distractores. La costilla ya está integrada. No hay PNG de cubios, mazorca, fresa o berenjena. Arvejas, tomate y pimentón se conservan como archivos originales, pero se retiraron del registro de carga y no aparecen en el minijuego. La tabla anterior documenta el inventario inicial, no la receta vigente.
+

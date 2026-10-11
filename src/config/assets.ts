@@ -2,13 +2,10 @@ import type { RouteId } from '../types/SaveData'
 
 // Piezas independientes, no cuadros de animación. Los originales son PNG de 64×64.
 export const COCINA_ASSETS = {
-  arvejas: { key: 'cocina-arvejas', path: 'assets/minigames/cocina/arvejas.png' },
   brocoli: { key: 'cocina-brocoli', path: 'assets/minigames/cocina/brocoli.png' },
   costilla: { key: 'cocina-costilla', path: 'assets/minigames/cocina/costilla-vaca.png' },
   habas: { key: 'cocina-habas', path: 'assets/minigames/cocina/habas.png' },
   papa: { key: 'cocina-papa', path: 'assets/minigames/cocina/papa.png' },
-  pimenton: { key: 'cocina-pimenton', path: 'assets/minigames/cocina/pimenton.png' },
-  tomate: { key: 'cocina-tomate', path: 'assets/minigames/cocina/tomate.png' },
   ollaAtras: { key: 'cocina-olla-atras', path: 'assets/minigames/cocina/olla-atras.png' },
   caldo: { key: 'cocina-caldo', path: 'assets/minigames/cocina/olla-caldo-medio.png' },
   ollaFrente: { key: 'cocina-olla-frente', path: 'assets/minigames/cocina/olla-frente.png' },

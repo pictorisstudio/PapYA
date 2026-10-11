@@ -43,7 +43,7 @@ export const TEXTS = {
     },
     cocina: {
       name: 'Cocido Boyacense', objective: 'Pon los ingredientes del cocido en la olla y regula el fuego.',
-      gesture: 'Arrastra cubios, ibias, chuguas, papa y habas a la olla.',
+      gesture: 'Arrastra cubios, papa, habas, mazorca y costilla de res a la olla.',
       ingredients: 'Preparación', cooking: 'Cocción',
       count: (count: number, target: number) => `Ingredientes: ${count}/${target}`,
       wrong: 'Retira el ingrediente que no va en el cocido', ready: '¡Ingredientes listos!',

@@ -1,3 +1,6 @@
+import RecipeManager from '../src/minigames/cocina/systems/RecipeManager.ts'
+import { COCINA_CONFIG } from '../src/minigames/cocina/config/cocinaConfig.ts'
+import { COCINA_ASSETS } from '../src/config/assets.ts'
 import HeatControls from '../src/minigames/cocina/ui/HeatControls.ts'
 import ResultsScene, { ROUTE_MESSAGE_DURATION_MS } from '../src/scenes/ResultsScene.ts'
 import test from 'node:test'
@@ -515,4 +518,22 @@ test('controles de temperatura nacen visibles y cambian dirección antes de aña
   assert.ok(page.cookingSystem.getSnapshot().temperatureRate > 0)
   controls.setEnabled(false)
   assert.ok(view.children.list.every(node => !node.visible))
+})
+test('receta actual usa cinco ingredientes y tres distractores, sin ingredientes retirados', () => {
+  const correct = COCINA_CONFIG.INGREDIENTS.filter(item => item.isCorrect).map(item => item.id).sort()
+  const wrong = COCINA_CONFIG.INGREDIENTS.filter(item => !item.isCorrect).map(item => item.id).sort()
+  assert.deepEqual(correct, ['costilla','cubios','habas','mazorca','papa'])
+  assert.deepEqual(wrong, ['berenjena','brocoli','fresa'])
+  assert.equal(new Set(COCINA_CONFIG.INGREDIENTS.map(item => item.id)).size, 8)
+  assert.equal(COCINA_CONFIG.GAME_DURATION_MS, 30000)
+  assert.ok(existsSync(new URL(`../public/${COCINA_ASSETS.costilla.path}`, import.meta.url)))
+  const manager = new IngredientManager(scene(), { containsDropPoint: () => true, getSlotPosition: () => ({ x: 640, y: 300 }) })
+  const recipe = new RecipeManager()
+  manager.forceRecipeComplete()
+  assert.deepEqual(manager.getIngredientsInPot().map(item => item.id).sort(), correct)
+  assert.equal(recipe.getSnapshot(manager.getIngredientsInPot()).complete, true)
+  manager.addWrongIngredient()
+  assert.equal(recipe.getSnapshot(manager.getIngredientsInPot()).complete, false)
+  manager.removeWrongIngredients()
+  assert.equal(recipe.getSnapshot(manager.getIngredientsInPot()).complete, true)
 })

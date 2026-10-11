@@ -59,6 +59,7 @@ export default class Ingredient {
 
   returnHome(): void {
     this.state = 'AVAILABLE'
+    this.label.setVisible(true)
     this.moveTo(this.originalPosition)
   }
 

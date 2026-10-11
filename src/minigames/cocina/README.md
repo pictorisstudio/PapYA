@@ -19,3 +19,8 @@ Solo se cocina en la zona ideal (40–70 %). Por debajo se detiene la cocción; 
 ## Debug
 
 En desarrollo, **DEV: mostrar controles** habilita los controles globales y de Cocina. Empiezan ocultos; se pueden ocultar otra vez. El HUD permite completar receta, agregar/quitar distractores, forzar temperatura ideal/alta, llevar cocción o quemado a 95 %, forzar resultado y reiniciar. En producción las herramientas se excluyen.
+
+## Ingredientes actuales
+
+Correctos: cubios, papa, habas, mazorca y costilla de res. Distractores: fresa, brócoli y berenjena. Sin ibias, chuguas, arvejas, tomate ni pimentón interactivos. Con arte: papa, habas, costilla y brócoli; los demás conservan un dibujo provisional con nombre. El reloj base sigue en 30 segundos y conserva la aceleración por sesión.
+
