@@ -8,7 +8,7 @@ Prototipo funcional para preparar un solo Cocido Boyacense en 30 segundos. La es
 
 ## Temperatura
 
-Al completar la receta, la temperatura sube constantemente a 10 puntos porcentuales por segundo. `−` cambia la dirección a descenso y `+` a ascenso, sin saltar de valor. La flecha de la barra indica la dirección actual. Durante la preparación el fuego está apagado, la temperatura no cambia y los controles y barras están ocultos. Aparecen automáticamente con la receta completa.
+Desde el inicio, la temperatura sube constantemente a 10 puntos porcentuales por segundo. `−` cambia la dirección a descenso y `+` a ascenso, sin saltar de valor. La flecha de la barra indica la dirección actual. Durante la preparación el fuego, controles y barras están activos. Hay que regular la temperatura mientras se colocan ingredientes. El quemado avanza desde el inicio; la cocción requiere receta completa.
 
 ```ts
 temperature += direction * TEMPERATURE_RATE_PER_SECOND * deltaSeconds

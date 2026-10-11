@@ -4,6 +4,11 @@ export const TEXTS = {
   map: 'Ver el mapa', menu: 'Menú', won: 'Ganaste',
   pause: 'Pausa', paused: 'Tomemos un respiro', resume: 'Continuar', leave: 'Volver al menú',
   results: 'Así va tu viaje', again: 'Viajar otra vez', backToMap: 'Volver al mapa',
+  runEnd: {
+    routeUnlocked: '¡Obtuviste una ruta! Sigue jugando por las demás.',
+    routePending: '¡Sigue jugando para obtener una ruta!',
+    allRoutes: '¡Desbloqueaste todas las rutas! Sigue disfrutando de Boyacá.',
+  },
   routePending: 'Sigamos practicando para abrir la próxima ruta', allRoutes: '¡Todas las rutas están abiertas!',
   practice: 'Práctica', dev: 'Probar minijuegos', orderedRun: 'Probar los cinco en orden',
   loading: 'Preparando el viaje…',

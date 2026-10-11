@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import { COCINA_ASSETS } from '../../../config/assets'
 import { COCINA_CONFIG } from '../config/cocinaConfig'
 import type { CocinaPoint, IngredientData, IngredientState } from '../types/CocinaTypes'
 
@@ -9,6 +10,7 @@ export default class Ingredient {
   readonly originalPosition: CocinaPoint
   private readonly container: Phaser.GameObjects.Container
   private readonly touchArea: Phaser.GameObjects.Arc
+  private readonly label: Phaser.GameObjects.Text
   private state: IngredientState = 'AVAILABLE'
 
   constructor(private readonly scene: Phaser.Scene, data: IngredientData) {
@@ -19,10 +21,14 @@ export default class Ingredient {
 
     this.touchArea = scene.add.circle(0, 0, COCINA_CONFIG.INGREDIENT_VISUAL_RADIUS + COCINA_CONFIG.INGREDIENT_TOUCH_PADDING, COCINA_CONFIG.COLORS.touchArea, 0)
     this.touchArea.setStrokeStyle(2, COCINA_CONFIG.COLORS.touchArea, 0)
-    const body = scene.add.circle(0, 0, COCINA_CONFIG.INGREDIENT_VISUAL_RADIUS, data.color, 0.96).setStrokeStyle(3, 0xfff7cc, 0.82)
+    const asset = COCINA_ASSETS[data.id as keyof typeof COCINA_ASSETS]
+    const body = asset
+      ? scene.add.image(0, 0, asset.key).setDisplaySize(88, 88)
+      : scene.add.circle(0, 0, COCINA_CONFIG.INGREDIENT_VISUAL_RADIUS, data.color, 0.96).setStrokeStyle(3, 0xfff7cc, 0.82)
     const label = scene.add
       .text(0, 48, data.name, { fontSize: '17px', fontStyle: '700', color: COCINA_CONFIG.COLORS.text })
       .setOrigin(0.5)
+    this.label = label
 
     this.container = scene.add.container(data.x, data.y, [this.touchArea, body, label]).setDepth(data.y)
   }
@@ -58,6 +64,7 @@ export default class Ingredient {
 
   placeInPot(point: CocinaPoint): void {
     this.state = 'IN_POT'
+    this.label.setVisible(false)
     this.moveTo(point, 140)
   }
 

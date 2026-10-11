@@ -1,5 +1,5 @@
 import { TEXTS } from '../config/texts'
-import { POTATO_ASSETS, ROUTE_CARD_ASSETS } from '../config/assets'
+import { COCINA_ASSETS, TEJO_ASSETS, POTATO_ASSETS, ROUTE_CARD_ASSETS } from '../config/assets'
 import Phaser from 'phaser'
 
 export default class PreloaderScene extends Phaser.Scene {
@@ -14,7 +14,7 @@ export default class PreloaderScene extends Phaser.Scene {
     const bar = this.add.rectangle(430, 360, 0, 18, 0x6ee7b7).setOrigin(0, 0.5)
 
     this.load.on('progress', (progress: number) => bar.width = 420 * progress)
-    for (const asset of [...POTATO_ASSETS.GOOD, ...POTATO_ASSETS.BAD, ...Object.values(ROUTE_CARD_ASSETS)]) {
+    for (const asset of [...POTATO_ASSETS.GOOD, ...POTATO_ASSETS.BAD, ...Object.values(ROUTE_CARD_ASSETS), ...Object.values(COCINA_ASSETS), ...Object.values(TEJO_ASSETS)]) {
       this.load.image(asset.key, asset.path)
     }
 

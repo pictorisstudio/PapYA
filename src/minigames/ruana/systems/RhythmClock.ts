@@ -3,8 +3,10 @@ export default class RhythmClock {
   private pausedAt = 0
   private accumulatedPause = 0
   private running = false
+  private rate = 1
 
-  start(): void {
+  start(rate = 1): void {
+    this.rate = rate
     this.startTime = performance.now()
     this.pausedAt = 0
     this.accumulatedPause = 0
@@ -41,6 +43,6 @@ export default class RhythmClock {
     }
 
     const now = this.pausedAt > 0 ? this.pausedAt : performance.now()
-    return now - this.startTime - this.accumulatedPause
+    return (now - this.startTime - this.accumulatedPause) * this.rate
   }
 }

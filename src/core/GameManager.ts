@@ -20,6 +20,8 @@ export default class GameManager {
   lastRoutePerfect = false
   private runFinished = false
   isPractice = false
+  private paceLevel = 0
+  get pace(): number { return 30 / [30, 27, 24, 21, 18][this.paceLevel]! }
 
   initialize(): void {
     this.saveManager = new SaveManager(new WebStorageAdapter())
@@ -27,9 +29,11 @@ export default class GameManager {
     this.roundManager = new RoundManager()
     this.audioManager = new AudioManager()
     this.debugManager = new DebugManager()
+    this.paceLevel = 0
   }
 
-  startNewRun(order?: MinigameKey[], practice = false): MinigameConfig {
+  startNewRun(order?: MinigameKey[], practice = false, continueSession = false): MinigameConfig {
+    if (!continueSession || practice) this.paceLevel = 0
     this.lastUnlockedRoute = null
     this.lastRoutePerfect = false
     this.runFinished = false
@@ -63,6 +67,7 @@ export default class GameManager {
     if (this.isPractice || state.isRunning || state.results.length === 0 || state.results.length !== state.minigameOrder.length) return
     const isSuccessful = state.victories >= REQUIRED_VICTORIES
     const isPerfect = state.victories === state.minigameOrder.length
+    if (isSuccessful) this.paceLevel = Math.min(4, this.paceLevel + 1)
 
     this.progressManager.registerRun(state.victories, state.score, state.results)
     this.lastUnlockedRoute = isSuccessful ? this.progressManager.unlockNextRoute(isPerfect) : null

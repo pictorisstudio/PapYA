@@ -6,15 +6,19 @@ import { COCINA_CONFIG } from '../config/cocinaConfig'
 export default class HeatControls {
   private readonly objects: Phaser.GameObjects.GameObject[] = []
   private readonly buttons: Phaser.GameObjects.Rectangle[] = []
+  private enabled?: boolean
 
   constructor(private readonly scene: Phaser.Scene, decrease: () => void, increase: () => void) {
     const hudStart = scene.children.list.length
     this.createButton(494, COCINA_CONFIG.CONTROL_Y, '-', decrease)
     this.createButton(786, COCINA_CONFIG.CONTROL_Y, '+', increase)
     applyHudLayers(scene, hudStart)
+    this.setEnabled(true)
   }
 
   setEnabled(enabled: boolean): void {
+    if (this.enabled === enabled) return
+    this.enabled = enabled
     for (const object of this.objects) {
       (object as Phaser.GameObjects.Rectangle | Phaser.GameObjects.Text).setVisible(enabled)
     }

@@ -37,7 +37,7 @@ export default class CookingSystem {
   }
 
   update(deltaMs: number, cookingActive: boolean): CookingSnapshot {
-    if (!cookingActive || deltaMs <= 0) return this.getSnapshot()
+    if (deltaMs <= 0) return this.getSnapshot()
     // Pasos cortos para atravesar las zonas igual con FPS variables.
     const steps = Math.ceil(deltaMs / (1000 / 60))
     const deltaSeconds = deltaMs / steps / 1000
@@ -45,6 +45,11 @@ export default class CookingSystem {
       if (this.burnProgress >= 100 || this.cookingProgress >= 100) break
       this.temperature = Math.max(0, Math.min(1, this.temperature + this.temperatureDirection * COCINA_CONFIG.TEMPERATURE_RATE_PER_SECOND * deltaSeconds))
       const zone = this.getHeatZone()
+      if (!cookingActive) {
+        if (zone === 'HIGH') this.burnProgress += COCINA_CONFIG.BURN_RATE_HIGH * deltaSeconds
+        else if (zone === 'OPTIMAL') this.burnProgress = Math.max(0, this.burnProgress - 1.5 * deltaSeconds)
+        continue
+      }
 
       if (zone === 'LOW') {
         this.cookingProgress += COCINA_CONFIG.COOK_RATE_LOW * deltaSeconds

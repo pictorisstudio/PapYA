@@ -47,8 +47,8 @@ export default class CocinaScene extends Phaser.Scene {
     this.scoreManager = new CocinaScoreManager()
     this.cookingDisplay = new CookingDisplay(this)
     this.heatControls = new HeatControls(this, () => this.decreaseHeat(), () => this.increaseHeat())
-    this.heatControls.setEnabled(false)
-    this.pot.updateFire(0)
+    this.heatControls.setEnabled(true)
+    this.pot.updateFire(COCINA_CONFIG.INITIAL_FIRE_LEVEL)
     this.hud = new CocinaHUD(this, {
       forceRecipeComplete: () => this.forceRecipeComplete(),
       addWrongIngredient: () => this.addWrongIngredient(),
@@ -80,11 +80,13 @@ export default class CocinaScene extends Phaser.Scene {
       return
     }
 
+    delta *= gameManager.pace
     this.elapsedMs += delta
     const cooking = this.cookingSystem.update(delta, this.phase === 'COOKING')
-    this.pot?.updateFire(this.phase === 'COOKING' ? cooking.fireLevel : 0)
+    this.pot?.updateFire(cooking.fireLevel)
     this.refreshHud()
 
+    if (cooking.burned) { this.finish(false); return }
     if (this.phase === 'COOKING') {
       if (cooking.victory) {
         this.finish(true)
@@ -153,15 +155,13 @@ export default class CocinaScene extends Phaser.Scene {
     }
 
     this.phase = 'COOKING'
-    this.cookingSystem?.increaseHeat()
     this.pot?.updateFire(this.cookingSystem?.getSnapshot().fireLevel ?? COCINA_CONFIG.INITIAL_FIRE_LEVEL)
-    this.heatControls?.setEnabled(true)
     this.hud?.showMessage(TEXTS.minigames.cocina.ready)
     this.refreshHud()
   }
 
   private increaseHeat(): void {
-    if (this.phase !== 'COOKING') {
+    if (this.phase === 'FINISHED') {
       return
     }
 
@@ -169,7 +169,7 @@ export default class CocinaScene extends Phaser.Scene {
   }
 
   private decreaseHeat(): void {
-    if (this.phase !== 'COOKING') {
+    if (this.phase === 'FINISHED') {
       return
     }
 
@@ -229,7 +229,7 @@ export default class CocinaScene extends Phaser.Scene {
     this.removeInputHandlers()
     this.heatControls?.setEnabled(false)
 
-    const remainingMs = Math.max(0, COCINA_CONFIG.GAME_DURATION_MS - this.elapsedMs)
+    const remainingMs = Math.max(0, COCINA_CONFIG.GAME_DURATION_MS - this.elapsedMs) / gameManager.pace
     const cooking = this.cookingSystem.getSnapshot()
     const score = this.scoreManager.calculateScore(remainingMs, cooking.burnProgress, this.ingredientErrors)
     this.session?.complete({ key: 'cocina', won: victory, rawScore: score,
@@ -237,11 +237,13 @@ export default class CocinaScene extends Phaser.Scene {
   }
 
   private refreshHud(): void {
+    // Preparación y cocción comparten controles; solo se desactivan al terminar.
+    this.heatControls?.setEnabled(this.phase !== 'FINISHED')
     if (!this.hud || !this.cookingSystem || !this.recipeManager || !this.ingredientManager || !this.cookingDisplay) {
       return
     }
 
-    const remainingMs = Math.max(0, COCINA_CONFIG.GAME_DURATION_MS - this.elapsedMs)
+    const remainingMs = Math.max(0, COCINA_CONFIG.GAME_DURATION_MS - this.elapsedMs) / gameManager.pace
     const recipe = this.recipeManager.getSnapshot(this.ingredientManager.getIngredientsInPot())
     const cooking = this.cookingSystem.getSnapshot()
 
@@ -252,7 +254,7 @@ export default class CocinaScene extends Phaser.Scene {
       cooking,
       ingredientsInPot: this.ingredientManager.getIngredientNamesInPot(),
     })
-    this.cookingDisplay.update(cooking, this.phase === 'COOKING')
+    this.cookingDisplay.update(cooking, this.phase !== 'FINISHED')
   }
 
   private handleDebugTouchAreasChanged(visible: boolean): void {

@@ -1,3 +1,5 @@
+import HeatControls from '../src/minigames/cocina/ui/HeatControls.ts'
+import ResultsScene, { ROUTE_MESSAGE_DURATION_MS } from '../src/scenes/ResultsScene.ts'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import EventEmitter from '../node_modules/phaser/src/events/EventEmitter.js'
@@ -26,6 +28,7 @@ import { POTATO_ASSETS } from '../src/config/assets.ts'
 import { existsSync } from 'node:fs'
 import CookingSystem from '../src/minigames/cocina/systems/CookingSystem.ts'
 import MapScene from '../src/scenes/MapScene.ts'
+import TransitionScene from '../src/scenes/TransitionScene.ts'
 import DebugManager from '../src/core/DebugManager.ts'
 import { openProgressReset } from '../src/dev/resetProgress.ts'
 
@@ -43,7 +46,7 @@ function browser() {
 }
 function drawable(x = 0, y = 0) {
   const object = Object.assign(new EventEmitter(), { x, y, depth: 0, alpha: 1, rotation: 0, scaleX: 1, scaleY: 1 })
-  for (const method of ['setStrokeStyle', 'setOrigin', 'setInteractive', 'setScale', 'setFillStyle', 'setAlpha',
+  for (const method of ['setVisible', 'setStrokeStyle', 'setOrigin', 'setInteractive', 'setScale', 'setFillStyle', 'setAlpha',
     'setRotation', 'fillStyle', 'fillRect', 'fillPoints', 'lineStyle', 'strokeLineShape', 'fillRoundedRect',
     'fillEllipse', 'strokeEllipse', 'strokeCircle', 'clear', 'fillCircle']) object[method] = () => object
   object.setDepth = value => { object.depth = value; return object }
@@ -123,7 +126,7 @@ test('Cocina sube por sí sola, invierte dirección y nunca salta de temperatura
   const cooking = new CookingSystem()
   const initial = cooking.getSnapshot().temperature
   cooking.update(1000, false)
-  assert.equal(cooking.getSnapshot().temperature, initial)
+  assert.ok(cooking.getSnapshot().temperature > initial)
   assert.equal(cooking.getSnapshot().cookingProgress, 0)
   assert.equal(cooking.getSnapshot().burnProgress, 0)
   const warm = cooking.update(1000, true).temperature
@@ -137,18 +140,21 @@ test('Cocina sube por sí sola, invierte dirección y nunca salta de temperatura
   assert.ok(cooking.update(1000, true).temperature > cool)
 })
 
-test('Cocina espera la receta completa antes de calentar, cocinar o quemar', () => {
+test('Cocina calienta y puede quemarse durante preparación, sin cocinar antes de la receta', () => {
   const cooking = new CookingSystem()
-  const initial = cooking.getSnapshot().temperature
-  cooking.update(10000, false)
-  assert.equal(cooking.getSnapshot().temperature, initial)
+  cooking.update(3000, false)
+  assert.ok(cooking.getSnapshot().temperature > 0.6)
   assert.equal(cooking.getSnapshot().cookingProgress, 0)
-  assert.equal(cooking.getSnapshot().burnProgress, 0)
-  cooking.update(1500, true)
-  assert.ok(cooking.getSnapshot().temperature > initial)
+  cooking.decreaseHeat()
+  cooking.update(1000, false)
+  assert.ok(cooking.getSnapshot().temperature < 0.6)
+  cooking.update(500, true)
   assert.ok(cooking.getSnapshot().cookingProgress > 0)
+  const idle = new CookingSystem()
+  idle.update(30000, false)
+  assert.equal(idle.getSnapshot().burned, true)
+  assert.equal(idle.getSnapshot().victory, false)
 })
-
 test('Cocina no se completa sin regular y sí se completa alternando en zona ideal', () => {
   const idle = new CookingSystem()
   for (let ms = 0; ms < 30000; ms += 100) idle.update(100, true)
@@ -423,4 +429,90 @@ test('no completar avanza inmediatamente sin texto; completar muestra Ganaste un
   next.timers[0].callback()
   assert.deepEqual(next.starts, ['ResultsScene'])
   assert.equal(gameManager.roundManager.getState().results.length, 2)
+})
+
+test('la transición inicia el minijuego sin instrucciones ni temporizador', () => {
+  browser(); gameManager.initialize()
+  gameManager.startNewRun(['cocina'])
+  const page = new TransitionScene(), view = scene()
+  page.scene = view.scene
+  page.create()
+  assert.deepEqual(view.starts, [gameManager.getCurrentMinigame().sceneKey])
+  assert.equal(view.timers.length, 0)
+})
+for (const scenario of [
+  { name: 'ruta obtenida', wins: 3, before: 0, message: TEXTS.runEnd.routeUnlocked },
+  { name: 'sin ruta', wins: 0, before: 0, message: TEXTS.runEnd.routePending },
+  { name: 'última ruta', wins: 3, before: 4, message: TEXTS.runEnd.allRoutes },
+  { name: 'todas abiertas y viaje sin victorias', wins: 0, before: 5, message: TEXTS.runEnd.allRoutes },
+]) {
+  test(`cierre breve: ${scenario.name}, guarda una vez y continúa automáticamente`, () => {
+    browser(); gameManager.initialize()
+    for (let i = 0; i < scenario.before; i++) gameManager.progressManager.unlockNextRoute()
+    gameManager.startNewRun([...MINIGAME_ORDER])
+    MINIGAME_ORDER.forEach((key, i) => gameManager.completeCurrentMinigame(outcome(key, i < scenario.wins)))
+    const page = new ResultsScene(), view = scene()
+    page.scene = view.scene; page.add = view.add; page.time = view.time
+    page.cameras = { main: { setBackgroundColor() {} } }
+    page.create()
+    assert.deepEqual(view.texts, [scenario.message])
+    assert.equal(gameManager.progressManager.getSaveData().totalRuns, 1)
+    gameManager.finishRun()
+    assert.equal(gameManager.progressManager.getSaveData().totalRuns, 1)
+    assert.equal(view.timers[0].delay, ROUTE_MESSAGE_DURATION_MS)
+    view.timers[0].callback()
+    assert.deepEqual(view.starts, ['TransitionScene'])
+    assert.equal(gameManager.roundManager.getState().isRunning, true)
+  })
+}
+test('ritmo progresa solo con viajes exitosos, tiene límite y se reinicia voluntariamente', () => {
+  browser(); gameManager.initialize()
+  gameManager.startNewRun([...MINIGAME_ORDER])
+  assert.equal(gameManager.pace, 1)
+  for (let run = 1; run <= 6; run++) {
+    MINIGAME_ORDER.forEach(key => gameManager.completeCurrentMinigame(outcome(key, true)))
+    gameManager.finishRun()
+    const rate = gameManager.pace
+    gameManager.finishRun()
+    assert.equal(gameManager.pace, rate)
+    assert.equal(rate, 30 / [30,27,24,21,18][Math.min(run,4)])
+    gameManager.startNewRun([...MINIGAME_ORDER], false, true)
+    assert.equal(gameManager.pace, rate)
+  }
+  MINIGAME_ORDER.forEach(key => gameManager.completeCurrentMinigame(outcome(key, false)))
+  gameManager.finishRun()
+  assert.equal(gameManager.pace, 30 / 18)
+  gameManager.startNewRun()
+  assert.equal(gameManager.pace, 1)
+})
+test('controles de temperatura nacen visibles y cambian dirección antes de añadir ingredientes', () => {
+  browser(); gameManager.initialize()
+  const view = scene()
+  view.children = { list: [] }
+  for (const method of ['rectangle','text']) {
+    const original = view.add[method]
+    view.add[method] = (...args) => {
+      const node = original(...args)
+      node.visible = true
+      node.setVisible = value => { node.visible = value; return node }
+      node.setInteractive = () => { node.inputEnabled = true; return node }
+      node.disableInteractive = () => { node.inputEnabled = false; return node }
+      view.children.list.push(node)
+      return node
+    }
+  }
+  const page = new CocinaScene()
+  page.cookingSystem = new CookingSystem()
+  page.phase = 'PREPARATION'
+  const controls = new HeatControls(view, () => page.decreaseHeat(), () => page.increaseHeat())
+  assert.equal(view.children.list.length, 4)
+  assert.ok(view.children.list.every(node => node.visible))
+  const buttons = view.children.list.filter(node => node.inputEnabled)
+  assert.equal(buttons.length, 2)
+  buttons[0].emit('pointerdown')
+  assert.ok(page.cookingSystem.update(1000, false).temperature < 0.35)
+  buttons[1].emit('pointerdown')
+  assert.ok(page.cookingSystem.getSnapshot().temperatureRate > 0)
+  controls.setEnabled(false)
+  assert.ok(view.children.list.every(node => !node.visible))
 })

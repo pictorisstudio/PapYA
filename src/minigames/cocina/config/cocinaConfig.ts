@@ -31,14 +31,15 @@ export const COCINA_CONFIG = {
   RESET_DELAY_MS: 1500,
 
   INTERNAL_POT_SLOTS: [
-    { x: 548, y: 330 },
-    { x: 608, y: 320 },
-    { x: 668, y: 320 },
-    { x: 728, y: 330 },
-    { x: 578, y: 382 },
-    { x: 640, y: 390 },
-    { x: 702, y: 382 },
-    { x: 640, y: 350 },
+    // Dos filas cerca de la abertura: el frente aún oculta la base de los ingredientes.
+    { x: 548, y: 290 },
+    { x: 608, y: 280 },
+    { x: 668, y: 280 },
+    { x: 728, y: 290 },
+    { x: 578, y: 310 },
+    { x: 640, y: 315 },
+    { x: 702, y: 310 },
+    { x: 640, y: 300 },
   ],
 
   INGREDIENTS: [

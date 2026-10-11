@@ -103,7 +103,7 @@ export default class RuanaScene extends Phaser.Scene {
 
   private startGameplay(): void {
     this.phase = 'playing'
-    this.clock?.start()
+    this.clock?.start(gameManager.pace)
     this.inputHandler = (pointer) => this.handleTap(pointer)
     this.input.on('pointerdown', this.inputHandler)
   }

@@ -21,6 +21,9 @@ export default class GameplaySession {
   private keyHandler?: (event: KeyboardEvent) => void
 
   constructor(private readonly scene: Phaser.Scene, private readonly hooks: SessionHooks = {}) {
+    // Animaciones y temporizadores siguen el mismo ritmo que la simulación.
+    if (scene.time) scene.time.timeScale = gameManager.pace
+    if (scene.tweens) scene.tweens.timeScale = gameManager.pace
     const button = scene.add.rectangle(812, 66, 122, 46, 0x1f2937).setDepth(LAYERS.hud)
     button.setStrokeStyle(2, 0xcbd5e1).setInteractive({ useHandCursor: true })
     button.on('pointerdown', () => this.requestPause())

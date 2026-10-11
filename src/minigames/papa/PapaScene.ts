@@ -61,6 +61,7 @@ export default class PapaScene extends Phaser.Scene {
       return
     }
 
+    delta *= gameManager.pace
     this.elapsedMs += delta
     this.spawnManager.update(delta)
 
@@ -144,7 +145,7 @@ export default class PapaScene extends Phaser.Scene {
       return
     }
 
-    const remainingMs = Math.max(0, PAPA_CONFIG.GAME_DURATION - this.elapsedMs)
+    const remainingMs = Math.max(0, PAPA_CONFIG.GAME_DURATION - this.elapsedMs) / gameManager.pace
     this.hud.update(this.scoreManager.getSnapshot(), remainingMs, {
       activePotatoes: this.spawnManager.getActiveCount(),
       spawnPaused: this.spawnManager.isPaused(),

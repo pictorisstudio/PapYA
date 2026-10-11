@@ -1,4 +1,5 @@
 import { LAYERS } from '../../../config/layers'
+import { TEJO_ASSETS } from '../../../config/assets'
 import Phaser from 'phaser'
 import { TEJO_CONFIG } from '../config/tejoConfig'
 import type { TejoImpactResult, TejoPoint } from '../types/TejoTypes'
@@ -12,6 +13,7 @@ export default class TejoBoard {
   private readonly debugGraphics: Phaser.GameObjects.Graphics
   private readonly impactGraphics: Phaser.GameObjects.Graphics
   private readonly mechas: MechaZone[]
+  private readonly mechaArt: Phaser.GameObjects.Image[] = []
 
   constructor(private readonly scene: Phaser.Scene) {
     this.graphics = scene.add.graphics().setDepth(LAYERS.background)
@@ -19,6 +21,9 @@ export default class TejoBoard {
     this.impactGraphics = scene.add.graphics().setDepth(920)
     this.mechas = this.createMechaZones()
     this.draw()
+    for (const mecha of this.mechas) {
+      this.mechaArt.push(scene.add.image(mecha.x, mecha.y, TEJO_ASSETS.mecha.key).setDisplaySize(44, 44).setDepth(LAYERS.scenery))
+    }
   }
 
   getBocinCenter(): TejoPoint {
@@ -76,6 +81,7 @@ export default class TejoBoard {
   }
 
   destroy(): void {
+    for (const image of this.mechaArt) image.destroy()
     this.graphics.destroy()
     this.debugGraphics.destroy()
     this.impactGraphics.destroy()
@@ -126,12 +132,6 @@ export default class TejoBoard {
     this.graphics.lineStyle(3, 0xffffff, 0.8)
     this.graphics.strokeCircle(TEJO_CONFIG.BOARD_CENTER_X, TEJO_CONFIG.BOARD_Y, TEJO_CONFIG.BOCIN_RADIUS)
 
-    for (const mecha of this.mechas) {
-      this.graphics.fillStyle(TEJO_CONFIG.COLORS.mecha, 0.95)
-      this.graphics.fillCircle(mecha.x, mecha.y, 13)
-      this.graphics.lineStyle(2, 0xfff7cc, 0.95)
-      this.graphics.strokeCircle(mecha.x, mecha.y, 17)
-    }
   }
 
   private createMechaZones(): MechaZone[] {

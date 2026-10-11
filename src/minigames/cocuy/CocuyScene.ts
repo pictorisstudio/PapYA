@@ -92,6 +92,7 @@ export default class CocuyScene extends Phaser.Scene {
       return
     }
 
+    delta *= gameManager.pace
     this.elapsedMs += delta
     this.ascentSystem.update(this.elapsedMs, delta)
     const movement = this.movementSystem.update(delta)
@@ -187,7 +188,7 @@ export default class CocuyScene extends Phaser.Scene {
     this.clearInput()
     this.removeInputHandlers()
     const altitude = this.ascentSystem.getSnapshot().altitude
-    const remainingMs = Math.max(0, COCUY_CONFIG.GAME_DURATION_MS - this.elapsedMs)
+    const remainingMs = Math.max(0, COCUY_CONFIG.GAME_DURATION_MS - this.elapsedMs) / gameManager.pace
     const score = this.scoreManager.calculateScore(altitude, remainingMs, this.rockHits)
     this.session?.complete({ key: 'cocuy', won: victory, rawScore: score,
       metrics: { altitude, rockHits: this.rockHits } })
@@ -198,7 +199,7 @@ export default class CocuyScene extends Phaser.Scene {
       return
     }
 
-    const remainingMs = Math.max(0, COCUY_CONFIG.GAME_DURATION_MS - this.elapsedMs)
+    const remainingMs = Math.max(0, COCUY_CONFIG.GAME_DURATION_MS - this.elapsedMs) / gameManager.pace
     const ascent = this.ascentSystem.getSnapshot()
     const movement = this.movementSystem.getSnapshot()
     this.hud.update(ascent.altitude, remainingMs)

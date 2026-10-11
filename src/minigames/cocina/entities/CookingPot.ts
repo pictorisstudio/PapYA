@@ -1,4 +1,5 @@
 import { LAYERS } from '../../../config/layers'
+import { COCINA_ASSETS } from '../../../config/assets'
 import Phaser from 'phaser'
 import { COCINA_CONFIG } from '../config/cocinaConfig'
 import type { CocinaPoint } from '../types/CocinaTypes'
@@ -8,6 +9,7 @@ export default class CookingPot {
   private readonly debugGraphics: Phaser.GameObjects.Graphics
   private readonly fire: Phaser.GameObjects.Triangle
   private readonly dropArea: Phaser.Geom.Rectangle
+  private readonly art: Phaser.GameObjects.Image[] = []
 
   constructor(private readonly scene: Phaser.Scene) {
     scene.add.rectangle(640, 360, 1280, 720, COCINA_CONFIG.COLORS.background).setDepth(LAYERS.background)
@@ -22,7 +24,9 @@ export default class CookingPot {
       COCINA_CONFIG.POT_DROP_AREA.height,
     )
     this.fire = scene.add.triangle(COCINA_CONFIG.POT_POSITION.x, COCINA_CONFIG.POT_POSITION.y + 126, 0, 58, 34, 0, 68, 58, COCINA_CONFIG.COLORS.fireHigh, 0.95).setDepth(55).setVisible(false)
-    this.draw()
+    for (const [asset, depth] of [[COCINA_ASSETS.ollaAtras, 60], [COCINA_ASSETS.caldo, 61], [COCINA_ASSETS.ollaFrente, 499]] as const) {
+      this.art.push(scene.add.image(640, 350, asset.key).setDisplaySize(384, 384).setDepth(depth))
+    }
   }
 
   containsDropPoint(x: number, y: number): boolean {
@@ -57,22 +61,10 @@ export default class CookingPot {
   }
 
   destroy(): void {
+    for (const image of this.art) image.destroy()
     this.graphics.destroy()
     this.debugGraphics.destroy()
     this.fire.destroy()
   }
 
-  private draw(): void {
-    const { x, y } = COCINA_CONFIG.POT_POSITION
-    this.graphics.clear()
-
-    this.graphics.fillStyle(COCINA_CONFIG.COLORS.pot, 1)
-    this.graphics.fillRoundedRect(x - COCINA_CONFIG.POT_WIDTH / 2, y - 66, COCINA_CONFIG.POT_WIDTH, COCINA_CONFIG.POT_HEIGHT, 34)
-    this.graphics.lineStyle(5, COCINA_CONFIG.COLORS.potStroke, 0.85)
-    this.graphics.strokeRoundedRect(x - COCINA_CONFIG.POT_WIDTH / 2, y - 66, COCINA_CONFIG.POT_WIDTH, COCINA_CONFIG.POT_HEIGHT, 34)
-    this.graphics.fillStyle(0x3b2052, 1)
-    this.graphics.fillEllipse(x, y - 62, COCINA_CONFIG.POT_WIDTH + 18, 62)
-    this.graphics.lineStyle(4, 0xf5d0fe, 0.65)
-    this.graphics.strokeEllipse(x, y - 62, COCINA_CONFIG.POT_WIDTH + 18, 62)
-  }
 }

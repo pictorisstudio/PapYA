@@ -71,6 +71,7 @@ export default class TejoScene extends Phaser.Scene {
       return
     }
 
+    delta *= gameManager.pace
     this.elapsedMs += delta
     this.throwSystem?.update(delta, this.disc)
     this.refreshHud()
@@ -231,7 +232,7 @@ export default class TejoScene extends Phaser.Scene {
       return
     }
 
-    const remainingMs = Math.max(0, TEJO_CONFIG.GAME_DURATION_MS - this.elapsedMs)
+    const remainingMs = Math.max(0, TEJO_CONFIG.GAME_DURATION_MS - this.elapsedMs) / gameManager.pace
     this.hud.update(this.scoreManager.getSnapshot(), remainingMs)
     this.hud.updateDebug({
       phase: this.phase,
