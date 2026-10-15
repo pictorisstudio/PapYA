@@ -138,6 +138,7 @@ export default class RuanaScene extends Phaser.Scene {
             ? RUANA_CONFIG.COLORS.threadGood
             : RUANA_CONFIG.COLORS.threadMiss
       this.noteManager.markNoteJudged(judgement.noteId, color)
+      if (judgement.result !== 'MISS') gameManager.audioManager.playEffect(this, 'ruanaHit')
       this.scoreManager.register(judgement.result)
     }
 

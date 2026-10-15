@@ -1,3 +1,5 @@
+import AudioManager from '../src/core/AudioManager.ts'
+import { AUDIO_CONFIG, audioPath } from '../src/config/audioConfig.ts'
 import RecipeManager from '../src/minigames/cocina/systems/RecipeManager.ts'
 import { COCINA_CONFIG } from '../src/minigames/cocina/config/cocinaConfig.ts'
 import { COCINA_ASSETS } from '../src/config/assets.ts'
@@ -27,7 +29,7 @@ import { TEXTS } from '../src/config/texts.ts'
 import Potato from '../src/minigames/papa/entities/Potato.ts'
 import PotatoSpawnManager from '../src/minigames/papa/systems/PotatoSpawnManager.ts'
 import { PAPA_CONFIG } from '../src/minigames/papa/config/papaConfig.ts'
-import { POTATO_ASSETS } from '../src/config/assets.ts'
+import { TEJO_ASSETS, POTATO_ASSETS } from '../src/config/assets.ts'
 import { existsSync } from 'node:fs'
 import CookingSystem from '../src/minigames/cocina/systems/CookingSystem.ts'
 import MapScene from '../src/scenes/MapScene.ts'
@@ -536,4 +538,63 @@ test('receta actual usa cinco ingredientes y tres distractores, sin ingredientes
   assert.equal(recipe.getSnapshot(manager.getIngredientsInPot()).complete, false)
   manager.removeWrongIngredients()
   assert.equal(recipe.getSnapshot(manager.getIngredientsInPot()).complete, true)
+})
+test('audio tiene 19 claves y rutas únicas existentes', () => {
+  const keys = Object.keys(AUDIO_CONFIG)
+  assert.equal(keys.length, 19)
+  assert.equal(new Set(keys.map(audioPath)).size, keys.length)
+  for (const key of keys) assert.ok(existsSync(new URL(`../public/${audioPath(key)}`, import.meta.url)))
+})
+
+test('audio reemplaza música, separa volúmenes y libera efectos al salir', () => {
+  const audio = new AudioManager(), sounds = []
+  const view = { cache: { audio: { exists: () => true } }, events: new EventEmitter(), sound: { add(key) {
+    const sound = Object.assign(new EventEmitter(), { key, destroyed: false,
+      play(config) { this.volume = config.volume; this.loop = config.loop },
+      setVolume(value) { this.volume = value }, destroy() { this.destroyed = true },
+    })
+    sounds.push(sound); return sound
+  } } }
+  audio.playMusic(view, 'menuMusic')
+  audio.playMusic(view, 'papaMusic')
+  assert.equal(sounds[0].destroyed, true)
+  assert.equal(sounds[1].loop, true)
+  audio.playEffect(view, 'papaGood')
+  audio.setMusicVolume(0.2); audio.setSfxVolume(0.4)
+  assert.equal(sounds[1].volume, 0.2); assert.equal(sounds[2].volume, 0.4)
+  audio.setMuted(true)
+  assert.equal(sounds[1].volume, 0); assert.equal(sounds[2].volume, 0)
+  audio.setMuted(false)
+  assert.equal(sounds[1].volume, 0.2)
+  view.events.emit('shutdown')
+  assert.ok(sounds.every(sound => sound.destroyed))
+})
+test('arte nuevo cubre ocho ingredientes, tres cuadros de fuego y piezas de Tejo', () => {
+  const assets = [...Object.values(COCINA_ASSETS), ...Object.values(TEJO_ASSETS)]
+  assert.equal(new Set(assets.map(asset => asset.key)).size, assets.length)
+  for (const asset of assets) assert.ok(existsSync(new URL(`../public/${asset.path}`, import.meta.url)))
+  for (const ingredient of COCINA_CONFIG.INGREDIENTS) assert.ok(COCINA_ASSETS[ingredient.id])
+  assert.equal(new Set([COCINA_ASSETS.fuego1.key, COCINA_ASSETS.fuego2.key, COCINA_ASSETS.fuego3.key]).size, 3)
+  assert.ok(audioPath('tejoExplosion').endsWith('.ogg'))
+  assert.ok(audioPath('tejoCrowd').endsWith('.ogg'))
+})
+test('explosión ganadora conserva volumen y termina después del cambio de escena', () => {
+  const audio = new AudioManager(), sounds = []
+  const view = { cache: { audio: { exists: () => true } }, events: new EventEmitter(), sound: { add(key) {
+    const sound = Object.assign(new EventEmitter(), { key, destroyed: false,
+      play(config) { this.volume = config.volume }, setVolume(value) { this.volume = value },
+      destroy() { this.destroyed = true },
+    })
+    sounds.push(sound); return sound
+  } } }
+  audio.playEffect(view, 'tejoExplosion', false, true)
+  audio.playEffect(view, 'victory')
+  assert.ok(Math.abs(sounds[0].volume - 0.8) < 0.00001)
+  assert.equal(sounds[1].volume, 1)
+  assert.equal(audio.settings.musicVolume, 0.29925)
+  view.events.emit('shutdown')
+  assert.equal(sounds[0].destroyed, false)
+  assert.equal(sounds[1].destroyed, true)
+  sounds[0].emit('complete')
+  assert.equal(sounds[0].destroyed, true)
 })

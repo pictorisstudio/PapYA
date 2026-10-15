@@ -1,6 +1,8 @@
 import { TEXTS } from '../config/texts'
 import { COCINA_ASSETS, TEJO_ASSETS, POTATO_ASSETS, ROUTE_CARD_ASSETS } from '../config/assets'
 import Phaser from 'phaser'
+import { AUDIO_CONFIG, type AudioKey } from '../config/audioConfig'
+import { gameManager } from '../core/GameManager'
 
 export default class PreloaderScene extends Phaser.Scene {
 
@@ -9,6 +11,7 @@ export default class PreloaderScene extends Phaser.Scene {
   }
 
   preload(): void {
+    gameManager.audioManager.preload(this, Object.keys(AUDIO_CONFIG) as AudioKey[])
     this.cameras.main.setBackgroundColor('#10131a')
     this.add.rectangle(640, 360, 420, 18, 0x2d3748)
     const bar = this.add.rectangle(430, 360, 0, 18, 0x6ee7b7).setOrigin(0, 0.5)
@@ -28,5 +31,11 @@ export default class PreloaderScene extends Phaser.Scene {
 
   }
 
-  create(): void { this.scene.start('MenuScene') }
+  create(): void {
+    if (!this.anims.exists('cocina-fire')) this.anims.create({
+      key: 'cocina-fire', frames: [COCINA_ASSETS.fuego1, COCINA_ASSETS.fuego2, COCINA_ASSETS.fuego3].map(asset => ({ key: asset.key })),
+      frameRate: 9, repeat: -1,
+    })
+    this.scene.start('MenuScene')
+  }
 }

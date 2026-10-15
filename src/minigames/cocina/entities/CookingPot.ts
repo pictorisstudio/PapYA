@@ -7,14 +7,14 @@ import type { CocinaPoint } from '../types/CocinaTypes'
 export default class CookingPot {
   private readonly graphics: Phaser.GameObjects.Graphics
   private readonly debugGraphics: Phaser.GameObjects.Graphics
-  private readonly fire: Phaser.GameObjects.Triangle
+  private readonly fire: Phaser.GameObjects.Sprite
   private readonly dropArea: Phaser.Geom.Rectangle
   private readonly art: Phaser.GameObjects.Image[] = []
 
   constructor(private readonly scene: Phaser.Scene) {
-    scene.add.rectangle(640, 360, 1280, 720, COCINA_CONFIG.COLORS.background).setDepth(LAYERS.background)
-    scene.add.rectangle(640, 606, 1280, 228, COCINA_CONFIG.COLORS.table).setDepth(LAYERS.scenery)
-    scene.add.rectangle(640, 489, 380, 54, 0x2f1f16).setDepth(50)
+    scene.add.image(640, 360, COCINA_ASSETS.pared.key).setDisplaySize(1280, 720).setDepth(LAYERS.background)
+    scene.add.image(640, 360, COCINA_ASSETS.mesa.key).setDisplaySize(1280, 720).setDepth(LAYERS.scenery)
+    scene.add.image(640, 465, COCINA_ASSETS.hornilla.key).setDisplaySize(300, 180).setDepth(50)
     this.graphics = scene.add.graphics().setDepth(60)
     this.debugGraphics = scene.add.graphics().setDepth(920)
     this.dropArea = new Phaser.Geom.Rectangle(
@@ -23,7 +23,7 @@ export default class CookingPot {
       COCINA_CONFIG.POT_DROP_AREA.width,
       COCINA_CONFIG.POT_DROP_AREA.height,
     )
-    this.fire = scene.add.triangle(COCINA_CONFIG.POT_POSITION.x, COCINA_CONFIG.POT_POSITION.y + 126, 0, 58, 34, 0, 68, 58, COCINA_CONFIG.COLORS.fireHigh, 0.95).setDepth(55).setVisible(false)
+    this.fire = scene.add.sprite(640, 475, COCINA_ASSETS.fuego1.key).play('cocina-fire').setDepth(55).setVisible(false)
     for (const [asset, depth] of [[COCINA_ASSETS.ollaAtras, 60], [COCINA_ASSETS.caldo, 61], [COCINA_ASSETS.ollaFrente, 499]] as const) {
       this.art.push(scene.add.image(640, 350, asset.key).setDisplaySize(384, 384).setDepth(depth))
     }
@@ -39,9 +39,9 @@ export default class CookingPot {
 
   updateFire(fireLevel: number): void {
     this.fire.setVisible(fireLevel > 0)
-    const scale = Phaser.Math.Linear(0.58, 1.36, fireLevel)
+    const scale = Phaser.Math.Linear(2.2, 3.2, fireLevel)
     this.fire.setScale(scale, scale)
-    this.fire.setFillStyle(fireLevel > COCINA_CONFIG.HIGH_MIN ? COCINA_CONFIG.COLORS.fireHigh : COCINA_CONFIG.COLORS.fireLow, 0.95)
+
   }
 
   setDebugVisible(visible: boolean): void {

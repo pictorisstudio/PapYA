@@ -2,6 +2,16 @@ import type { RouteId } from '../types/SaveData'
 
 // Piezas independientes, no cuadros de animación. Los originales son PNG de 64×64.
 export const COCINA_ASSETS = {
+  cubios: { key: 'cocina-cubios', path: 'assets/minigames/cocina/cubios.png' },
+  mazorca: { key: 'cocina-mazorca', path: 'assets/minigames/cocina/mazorca.png' },
+  fresa: { key: 'cocina-fresa', path: 'assets/minigames/cocina/fresa.png' },
+  berenjena: { key: 'cocina-berenjena', path: 'assets/minigames/cocina/berenjena.png' },
+  pared: { key: 'cocina-pared', path: 'assets/minigames/cocina/fondo-pared.png' },
+  mesa: { key: 'cocina-mesa', path: 'assets/minigames/cocina/mesa-fondo.png' },
+  hornilla: { key: 'cocina-hornilla', path: 'assets/minigames/cocina/hornilla.png' },
+  fuego1: { key: 'cocina-fuego-01', path: 'assets/minigames/cocina/fuego-01.png' },
+  fuego2: { key: 'cocina-fuego-02', path: 'assets/minigames/cocina/fuego-02.png' },
+  fuego3: { key: 'cocina-fuego-03', path: 'assets/minigames/cocina/fuego-03.png' },
   brocoli: { key: 'cocina-brocoli', path: 'assets/minigames/cocina/brocoli.png' },
   costilla: { key: 'cocina-costilla', path: 'assets/minigames/cocina/costilla-vaca.png' },
   habas: { key: 'cocina-habas', path: 'assets/minigames/cocina/habas.png' },
@@ -13,6 +23,9 @@ export const COCINA_ASSETS = {
 
 // Dos diseños alternativos del disco; no se deben alternar como una animación.
 export const TEJO_ASSETS = {
+  bocin: { key: 'tejo-bocin', path: 'assets/minigames/tejo/bocin.png' },
+  cancha: { key: 'tejo-cancha', path: 'assets/minigames/tejo/cancha.png' },
+  explosion: { key: 'tejo-explosion', path: 'assets/minigames/tejo/explosion.png' },
   mecha: { key: 'tejo-mecha', path: 'assets/minigames/tejo/mecha.png' },
   sombra: { key: 'tejo-sombra', path: 'assets/minigames/tejo/sombra.png' },
   discoSimple: { key: 'tejo-disco-simple', path: 'assets/minigames/tejo/tejo-simple.png' },

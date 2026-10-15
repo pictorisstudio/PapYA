@@ -21,6 +21,8 @@ export default class TejoBoard {
     this.impactGraphics = scene.add.graphics().setDepth(920)
     this.mechas = this.createMechaZones()
     this.draw()
+    this.mechaArt.push(scene.add.image(640, 120, TEJO_ASSETS.cancha.key).setDisplaySize(400, 300).setDepth(LAYERS.scenery - 2))
+    this.mechaArt.push(scene.add.image(640, TEJO_CONFIG.BOARD_Y, TEJO_ASSETS.bocin.key).setDisplaySize(80, 80).setDepth(LAYERS.scenery - 1))
     for (const mecha of this.mechas) {
       this.mechaArt.push(scene.add.image(mecha.x, mecha.y, TEJO_ASSETS.mecha.key).setDisplaySize(44, 44).setDepth(LAYERS.scenery))
     }
@@ -66,6 +68,10 @@ export default class TejoBoard {
   }
 
   flashResult(point: TejoPoint, result: TejoImpactResult): void {
+    if (result === 'MECHA') {
+      const burst = this.scene.add.image(point.x, point.y - 20, TEJO_ASSETS.explosion.key).setDisplaySize(120, 160).setDepth(940)
+      this.scene.tweens.add({ targets: burst, alpha: 0, duration: 450, onComplete: () => burst.destroy() })
+    }
     const label = result === 'MECHA' ? '+5' : result === 'NEAR' ? '+1' : ''
     const color = result === 'MECHA' ? '#ef4444' : result === 'NEAR' ? '#fbbf24' : '#f8fafc'
     const text = this.scene.add.text(point.x, point.y - 26, label, { fontSize: '30px', fontStyle: '700', color }).setOrigin(0.5).setDepth(940)
@@ -119,20 +125,7 @@ export default class TejoBoard {
     this.graphics.fillRoundedRect(470, 584, 340, 90, 18)
   }
 
-  private drawBoard(): void {
-    this.graphics.fillStyle(TEJO_CONFIG.COLORS.board, 1)
-    this.graphics.fillEllipse(TEJO_CONFIG.BOARD_CENTER_X, TEJO_CONFIG.BOARD_Y, TEJO_CONFIG.BOARD_WIDTH, TEJO_CONFIG.BOARD_HEIGHT)
-    this.graphics.lineStyle(5, TEJO_CONFIG.COLORS.boardStroke, 0.86)
-    this.graphics.strokeEllipse(TEJO_CONFIG.BOARD_CENTER_X, TEJO_CONFIG.BOARD_Y, TEJO_CONFIG.BOARD_WIDTH, TEJO_CONFIG.BOARD_HEIGHT)
-
-    this.graphics.lineStyle(3, TEJO_CONFIG.COLORS.near, 0.45)
-    this.graphics.strokeCircle(TEJO_CONFIG.BOARD_CENTER_X, TEJO_CONFIG.BOARD_Y, TEJO_CONFIG.NEAR_RADIUS)
-    this.graphics.fillStyle(TEJO_CONFIG.COLORS.bocin, 1)
-    this.graphics.fillCircle(TEJO_CONFIG.BOARD_CENTER_X, TEJO_CONFIG.BOARD_Y, TEJO_CONFIG.BOCIN_RADIUS)
-    this.graphics.lineStyle(3, 0xffffff, 0.8)
-    this.graphics.strokeCircle(TEJO_CONFIG.BOARD_CENTER_X, TEJO_CONFIG.BOARD_Y, TEJO_CONFIG.BOCIN_RADIUS)
-
-  }
+  private drawBoard(): void {}
 
   private createMechaZones(): MechaZone[] {
     return [

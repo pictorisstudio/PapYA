@@ -3,6 +3,7 @@ import { WIN_MESSAGE_DURATION_MS } from '../config/constants'
 import { LAYERS } from '../config/layers'
 import { TEXTS } from '../config/texts'
 import { gameManager } from '../core/GameManager'
+import type { AudioKey } from '../config/audioConfig'
 import type { MinigameResult } from '../types/Minigame'
 
 export interface SessionHooks {
@@ -21,6 +22,11 @@ export default class GameplaySession {
   private keyHandler?: (event: KeyboardEvent) => void
 
   constructor(private readonly scene: Phaser.Scene, private readonly hooks: SessionHooks = {}) {
+    const music: Record<string, AudioKey> = { PapaScene: 'papaMusic', RuanaScene: 'ruanaMusic', TejoScene: 'tejoMusic', CocinaScene: 'cocinaMusic', CocuyScene: 'cocuyMusic' }
+    const track = music[scene.scene.key]
+    if (track) gameManager.audioManager.playMusic(scene, track)
+    if (scene.scene.key === 'CocinaScene') gameManager.audioManager.playEffect(scene, 'cocinaFire', true)
+    if (scene.scene.key === 'CocuyScene') gameManager.audioManager.playEffect(scene, 'cocuyWind', true)
     // Animaciones y temporizadores siguen el mismo ritmo que la simulación.
     if (scene.time) scene.time.timeScale = gameManager.pace
     if (scene.tweens) scene.tweens.timeScale = gameManager.pace
@@ -82,6 +88,7 @@ export default class GameplaySession {
       advance()
       return
     }
+    gameManager.audioManager.playEffect(this.scene, 'victory')
     this.scene.add.rectangle(640, 340, 420, 112, 0x102132, 0.95).setDepth(LAYERS.overlay)
     this.scene.add.text(640, 340, TEXTS.won, { fontSize: '54px', fontStyle: '700', color: '#6ee7b7' })
       .setOrigin(0.5).setDepth(LAYERS.overlay + 1)

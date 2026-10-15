@@ -14,6 +14,7 @@ export default class MapScene extends Phaser.Scene {
   }
 
   create(): void {
+    gameManager.audioManager.playMusic(this, 'menuMusic')
     this.routeCard = undefined
     this.cameras.main.setBackgroundColor('#10131a')
 

@@ -42,3 +42,11 @@ Los minijuegos arrancan directamente desde TransitionScene, sin letrero ni tempo
 
 La selección vigente es cubios, papa, habas, mazorca y costilla de res, con fresa, brócoli y berenjena como distractores. La costilla ya está integrada. No hay PNG de cubios, mazorca, fresa o berenjena. Arvejas, tomate y pimentón se conservan como archivos originales, pero se retiraron del registro de carga y no aparecen en el minijuego. La tabla anterior documenta el inventario inicial, no la receta vigente.
 
+
+## Arte nuevo integrado
+
+Se revisaron y copiaron 23 PNG de ImagenesNuevas. Los nombres públicos conservan las rutas de código existentes; se añadieron cubios.png, mazorca.png, fresa.png, berenjena.png, fondo-pared.png, mesa-fondo.png, hornilla.png y fuego-01/02/03.png. Los ocho ingredientes tienen sprite. Fuego en bucle de tres cuadros a 9 FPS, con tamaño según intensidad. Pared y mesa conservan su proporción 128:72 al escalar a 1280:720. La olla mantiene la composición por capas y posiciones elevadas de ingredientes.
+
+Tejo reemplaza mecha y disco con los archivos recibidos; añade cancha, bocín y explosión visual al acertar una mecha. Se conservan las zonas y cálculos de impacto. Tejo simple queda como alternativa sin usar.
+
+Los originales de ImagenesNuevas permanecen intactos. Vista de revisión: arte-nuevo-revision.png; inventario de hashes de origen: arte-nuevo-inventario.json. Cubio-nabo.png representa visualmente una raíz blanca similar a un nabo; se integró bajo cubios según el archivo recibido, pendiente de confirmación artística del equipo.

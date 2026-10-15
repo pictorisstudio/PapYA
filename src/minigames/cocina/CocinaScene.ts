@@ -129,6 +129,7 @@ export default class CocinaScene extends Phaser.Scene {
 
     if (pointer.id !== this.dragPointerId) return
     this.dragPointerId = null
+    if (this.pot?.containsDropPoint(pointer.worldX, pointer.worldY)) gameManager.audioManager.playEffect(this, 'cocinaIngredient')
     const incorrectDrop = this.ingredientManager.dropAt(pointer.worldX, pointer.worldY)
     if (incorrectDrop) this.ingredientErrors += 1
     this.checkRecipe()
@@ -154,6 +155,7 @@ export default class CocinaScene extends Phaser.Scene {
       return
     }
 
+    gameManager.audioManager.playEffect(this, 'cocinaBubbles', true)
     this.phase = 'COOKING'
     this.pot?.updateFire(this.cookingSystem?.getSnapshot().fireLevel ?? COCINA_CONFIG.INITIAL_FIRE_LEVEL)
     this.hud?.showMessage(TEXTS.minigames.cocina.ready)

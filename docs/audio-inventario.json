@@ -1,0 +1,116 @@
+[
+  {
+    "original": "C:\\PapYA\\Sounds\\Menú principal\\Musica_Principal.wav",
+    "destination": "C:\\PapYA\\public\\assets\\audio\\00_menu\\musica-menu.wav",
+    "sha256": "015A8B9E20F6A07A63E017FAF8DC71D91E1D96ECCB30C8688F0BAF71973EBF08",
+    "bytes": 4840736
+  },
+  {
+    "original": "C:\\PapYA\\Sounds\\Tejiendo la Ruana\\Acierto_ritmico.wav",
+    "destination": "C:\\PapYA\\public\\assets\\audio\\01_ruana\\acierto-ritmico.wav",
+    "sha256": "CFF2B8312F333E7036745BFC4AA92A54626E6FAB76F6C978BB94239B37EB1746",
+    "bytes": 102736
+  },
+  {
+    "original": "C:\\PapYA\\Sounds\\Tejiendo la Ruana\\Musica_Principal.ogg",
+    "destination": "C:\\PapYA\\public\\assets\\audio\\01_ruana\\musica-ruana.ogg",
+    "sha256": "97ADAEE9B287B46126130561E944B606B5B2CA277AE97ACF39E991AC65FF67CD",
+    "bytes": 11121218
+  },
+  {
+    "original": "C:\\PapYA\\Sounds\\Cosecha de Papa\\Musica_Principal.ogg",
+    "destination": "C:\\PapYA\\public\\assets\\audio\\02_papa\\musica-papa.ogg",
+    "sha256": "52AB314DF9A171BFF09F7CB17D66E92C2238098E17C688E84564213F6DF05DBA",
+    "bytes": 170235
+  },
+  {
+    "original": "C:\\PapYA\\Sounds\\Cosecha de Papa\\Papa_Buena.ogg",
+    "destination": "C:\\PapYA\\public\\assets\\audio\\02_papa\\papa-buena.ogg",
+    "sha256": "189B05F2A278053F9B29B70F79746BF2D81E34B5E01502C10EB3691892A73B68",
+    "bytes": 6784
+  },
+  {
+    "original": "C:\\PapYA\\Sounds\\Cosecha de Papa\\Papa_Mala.ogg",
+    "destination": "C:\\PapYA\\public\\assets\\audio\\02_papa\\papa-mala.ogg",
+    "sha256": "A27F84E53293C322C53A6251BA2EF6B82FC2380A22787600B04595D1D67D16F8",
+    "bytes": 18625
+  },
+  {
+    "original": "C:\\PapYA\\Sounds\\Tejo al Bocín\\Celebracion.wav",
+    "destination": "C:\\PapYA\\public\\assets\\audio\\03_tejo\\publico.wav",
+    "sha256": "7440AC237C35274F06022A8D6BD3C3C40A3FCE11A2741FC0237EE84BC4A4D531",
+    "bytes": 51488998
+  },
+  {
+    "original": "C:\\PapYA\\Sounds\\Tejo al Bocín\\Musica_Principal.ogg",
+    "destination": "C:\\PapYA\\public\\assets\\audio\\03_tejo\\musica-tejo.ogg",
+    "sha256": "499BB210F1BF472BA74C8B8FCF57C9465075FD716309EB8E1EDABD4637BF9260",
+    "bytes": 972104
+  },
+  {
+    "original": "C:\\PapYA\\Sounds\\Tejo al Bocín\\Lanzamiento_Tejo.wav",
+    "destination": "C:\\PapYA\\public\\assets\\audio\\03_tejo\\lanzamiento.wav",
+    "sha256": "03699B54909AFD12C4F8E2E0451D678D23A8638A74C61F3A657841FA3086866D",
+    "bytes": 86410
+  },
+  {
+    "original": "C:\\PapYA\\Sounds\\Tejo al Bocín\\Mecha_Explosion.flac",
+    "destination": "C:\\PapYA\\public\\assets\\audio\\03_tejo\\explosion.flac",
+    "sha256": "CDEAC8A99829575DFB6EE5146B975AE3F2EACCFA3C412739FEE57B09BB27F5AA",
+    "bytes": 159287
+  },
+  {
+    "original": "C:\\PapYA\\Sounds\\Cocina campesia\\Fuego.wav",
+    "destination": "C:\\PapYA\\public\\assets\\audio\\04_cocina\\fuego.wav",
+    "sha256": "85CA0CC60D0C037FFF8B185E31AD1FCDBDA6CE45EEE17C3EE1318D1B8F59E330",
+    "bytes": 10324410
+  },
+  {
+    "original": "C:\\PapYA\\Sounds\\Cocina campesia\\Seleccion_Ingrediente.wav",
+    "destination": "C:\\PapYA\\public\\assets\\audio\\04_cocina\\ingrediente.wav",
+    "sha256": "F28D75C3022FBB66A5E5833FA338CD3BCF6FD20A43B3CB04E64412C2C60DD42B",
+    "bytes": 58328
+  },
+  {
+    "original": "C:\\PapYA\\Sounds\\Cocina campesia\\Musica_principal.mp3",
+    "destination": "C:\\PapYA\\public\\assets\\audio\\04_cocina\\musica-cocina.mp3",
+    "sha256": "F931B576FD9E3DF2315067791BAD437BCF963B12EB4464094891730E92220774",
+    "bytes": 3602889
+  },
+  {
+    "original": "C:\\PapYA\\Sounds\\Cocina campesia\\borbugeo.wav",
+    "destination": "C:\\PapYA\\public\\assets\\audio\\04_cocina\\burbujas.wav",
+    "sha256": "C6C7B9F3E7415E1FEE6D5CA0C9556FA03443C4CBEAA623F7A70476FC5B5A11E8",
+    "bytes": 38468
+  },
+  {
+    "original": "C:\\PapYA\\Sounds\\Ascenso al Cocuy\\Musica_principal.ogg",
+    "destination": "C:\\PapYA\\public\\assets\\audio\\05_cocuy\\musica-cocuy.ogg",
+    "sha256": "2694B53F73E81636845F6C16D14AEA588C1BFD900019726B77D45E84B89FC537",
+    "bytes": 3743797
+  },
+  {
+    "original": "C:\\PapYA\\Sounds\\Ascenso al Cocuy\\Viento.wav",
+    "destination": "C:\\PapYA\\public\\assets\\audio\\05_cocuy\\viento.wav",
+    "sha256": "A2856F794FBF77E05F8241DC4ADEADE7F62FA21C3C9DC49F7725B6C6218060C3",
+    "bytes": 5291948
+  },
+  {
+    "original": "C:\\PapYA\\Sounds\\Ascenso al Cocuy\\Colision.ogg",
+    "destination": "C:\\PapYA\\public\\assets\\audio\\05_cocuy\\colision.ogg",
+    "sha256": "970CAC3139E1530009CA87F8EE0DD800DC4DA61917A5E62BDC83D475A9BF4DA7",
+    "bytes": 30092
+  },
+  {
+    "original": "C:\\PapYA\\Sounds\\Sonidos generales y celebración final\\Victoria_minijuego.wav",
+    "destination": "C:\\PapYA\\public\\assets\\audio\\06_generales\\victoria.wav",
+    "sha256": "E4BB5377BF9490CA9BC5BC4D3D957F1EC74B930450D8AD578D15FE1C4F319CAF",
+    "bytes": 785082
+  },
+  {
+    "original": "C:\\PapYA\\Sounds\\Sonidos generales y celebración final\\Mapa_completado.ogg",
+    "destination": "C:\\PapYA\\public\\assets\\audio\\06_generales\\mapa-completado.ogg",
+    "sha256": "952E2492ABD4376D2034F4B546CADD077236E350A05B1BD05F8CEC81936680A2",
+    "bytes": 295834
+  }
+]

@@ -124,6 +124,7 @@ export default class TejoScene extends Phaser.Scene {
     this.disc.setHighlighted(false)
     this.disc.setPosition({ x: TEJO_CONFIG.THROW_START_X, y: TEJO_CONFIG.THROW_START_Y })
     this.board?.clearImpactPoint()
+    gameManager.audioManager.playEffect(this, 'tejoThrow')
     this.throwSystem.start(aim, () => this.resolveImpact(aim.target))
   }
 
@@ -157,6 +158,11 @@ export default class TejoScene extends Phaser.Scene {
 
     this.phase = 'IMPACT'
     const score = this.scoreManager.registerImpact(result)
+    if (result === 'MECHA') {
+      // La mecha ganadora acompaña a Ganaste y termina incluso si cambia la escena.
+      gameManager.audioManager.playEffect(this, 'tejoExplosion', false, score.victory)
+      gameManager.audioManager.playEffect(this, 'tejoCrowd')
+    }
     this.board?.showImpactPoint(point, result)
     this.board?.flashResult(point, result)
     this.hud.showImpact(result)

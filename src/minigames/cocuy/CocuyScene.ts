@@ -145,6 +145,7 @@ export default class CocuyScene extends Phaser.Scene {
       return
     }
 
+    gameManager.audioManager.playEffect(this, 'cocuyCollision')
     this.rockHits += 1
     this.ascentSystem?.applyRockPenalty()
     this.condor?.flashHit()

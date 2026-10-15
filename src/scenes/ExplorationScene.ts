@@ -9,6 +9,7 @@ export default class ExplorationScene extends Phaser.Scene {
   }
 
   create(): void {
+    gameManager.audioManager.playMusic(this, 'menuMusic')
     const save = gameManager.progressManager.getSaveData()
 
     this.cameras.main.setBackgroundColor('#10131a')

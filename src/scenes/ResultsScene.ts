@@ -15,6 +15,7 @@ export default class ResultsScene extends Phaser.Scene {
     }
     gameManager.finishRun()
     const allUnlocked = gameManager.progressManager.getNextRoute() === null
+    if (allUnlocked && gameManager.lastUnlockedRoute) gameManager.audioManager.playEffect(this, 'mapComplete')
     const message = allUnlocked ? TEXTS.runEnd.allRoutes
       : gameManager.lastUnlockedRoute ? TEXTS.runEnd.routeUnlocked : TEXTS.runEnd.routePending
     this.cameras.main.setBackgroundColor('#10131a')
