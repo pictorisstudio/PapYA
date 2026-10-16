@@ -1,3 +1,4 @@
+import { SCENE_ASSETS } from '../../../config/sceneAssets'
 import { LAYERS } from '../../../config/layers'
 import { TEJO_ASSETS } from '../../../config/assets'
 import Phaser from 'phaser'
@@ -21,7 +22,8 @@ export default class TejoBoard {
     this.impactGraphics = scene.add.graphics().setDepth(920)
     this.mechas = this.createMechaZones()
     this.draw()
-    this.mechaArt.push(scene.add.image(640, 120, TEJO_ASSETS.cancha.key).setDisplaySize(400, 300).setDepth(LAYERS.scenery - 2))
+    // Anclado al suelo: eleva el blanco pintado hasta la zona real de impacto.
+    this.mechaArt.push(scene.add.image(640, 720, SCENE_ASSETS.tejoBackground.key).setOrigin(0.5, 1).setDisplaySize(1280, 1080).setDepth(LAYERS.background + 1))
     this.mechaArt.push(scene.add.image(640, TEJO_CONFIG.BOARD_Y, TEJO_ASSETS.bocin.key).setDisplaySize(80, 80).setDepth(LAYERS.scenery - 1))
     for (const mecha of this.mechas) {
       this.mechaArt.push(scene.add.image(mecha.x, mecha.y, TEJO_ASSETS.mecha.key).setDisplaySize(44, 44).setDepth(LAYERS.scenery))

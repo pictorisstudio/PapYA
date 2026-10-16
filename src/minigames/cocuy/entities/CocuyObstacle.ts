@@ -1,3 +1,4 @@
+import { SCENE_ASSETS } from '../../../config/sceneAssets'
 import Phaser from 'phaser'
 import { COCUY_CONFIG } from '../config/cocuyConfig'
 import type { CocuyRect, ObstacleSpawnOptions, ObstacleState, ObstacleType } from '../types/CocuyTypes'
@@ -78,19 +79,11 @@ export default class CocuyObstacle {
 
   private createVisuals(scene: Phaser.Scene): Phaser.GameObjects.GameObject[] {
     if (this.type === 'ROCK') {
-      const rock = scene.add.circle(0, 0, this.radius, COCUY_CONFIG.COLORS.rock, 1).setStrokeStyle(3, 0x292524, 0.8)
-      const shine = scene.add.circle(-this.radius * 0.28, -this.radius * 0.2, this.radius * 0.18, 0xa8a29e, 0.65)
-      return [rock, shine]
+      return [scene.add.image(0, 0, SCENE_ASSETS.rock.key).setDisplaySize(this.radius * 2, this.radius * 2)]
     }
-
     if (this.type === 'CLOUD') {
-      return [
-        scene.add.ellipse(0, 0, COCUY_CONFIG.CLOUD_WIDTH, COCUY_CONFIG.CLOUD_HEIGHT, COCUY_CONFIG.COLORS.cloud, 0.58),
-        scene.add.circle(-48, -8, 36, COCUY_CONFIG.COLORS.cloud, 0.7),
-        scene.add.circle(18, -18, 42, COCUY_CONFIG.COLORS.cloud, 0.68),
-      ]
+      return [scene.add.image(0, 0, SCENE_ASSETS.cloud.key).setDisplaySize(COCUY_CONFIG.CLOUD_WIDTH, COCUY_CONFIG.CLOUD_HEIGHT).setAlpha(0.8)]
     }
-
     const arrowColor = this.windDirection > 0 ? 0x93c5fd : COCUY_CONFIG.COLORS.wind
     return [
       scene.add.rectangle(0, 0, COCUY_CONFIG.WIND_WIDTH, COCUY_CONFIG.WIND_HEIGHT, COCUY_CONFIG.COLORS.wind, 0.16),

@@ -1,3 +1,5 @@
+import WorldScrollSystem from '../src/minigames/cocuy/systems/WorldScrollSystem.ts'
+import { SCENE_ASSETS } from '../src/config/sceneAssets.ts'
 import AudioManager from '../src/core/AudioManager.ts'
 import { AUDIO_CONFIG, audioPath } from '../src/config/audioConfig.ts'
 import RecipeManager from '../src/minigames/cocina/systems/RecipeManager.ts'
@@ -195,7 +197,7 @@ test('papas cargan seis archivos y el toque circular no crece al rotar el sprite
   assert.equal(potato.container.rotation ?? 0, 0)
   assert.equal(potato.contains(potato.x + 25, potato.y + 25), false)
   potato.container.setScale(0.86)
-  assert.equal(potato.contains(potato.x + 26, potato.y), false)
+  assert.equal(potato.contains(potato.x + PAPA_CONFIG.POTATO_TOUCH_RADIUS * 0.86 + 1, potato.y), false)
   potato.hit()
   assert.equal(potato.contains(potato.x, potato.y), false)
 })
@@ -597,4 +599,43 @@ test('explosión ganadora conserva volumen y termina después del cambio de esce
   assert.equal(sounds[1].destroyed, true)
   sounds[0].emit('complete')
   assert.equal(sounds[0].destroyed, true)
+})
+
+test('arte del 16 de octubre conserva 28 recursos únicos y todos los estados del mapa', () => {
+  const assets = Object.values(SCENE_ASSETS)
+  assert.equal(assets.length, 28)
+  assert.equal(new Set(assets.map(asset => asset.key)).size, 28)
+  assert.equal(new Set(assets.map(asset => asset.path)).size, 28)
+  for (const asset of assets) assert.ok(existsSync(new URL(`../public/${asset.path}`, import.meta.url)))
+  for (let i = 0; i <= 5; i++) assert.ok(SCENE_ASSETS[`map${i}`])
+  for (let i = 1; i <= 6; i++) assert.ok(SCENE_ASSETS[`condorSide${i}`])
+  for (let i = 1; i <= 2; i++) assert.ok(SCENE_ASSETS[`condorFlight${i}`])
+})
+test('Cocuy desplaza montaña y vegetación continuamente sin reinicio cada 220 píxeles', () => {
+  const view = scene()
+  const graphics = drawable()
+  graphics.fillGradientStyle = () => graphics
+  view.add.graphics = () => graphics
+  const image = view.add.image
+  view.add.image = (...args) => {
+    const item = image(...args)
+    Object.defineProperty(item, 'displayHeight', { get() { return this.height } })
+    return item
+  }
+  const world = new WorldScrollSystem(view)
+  let previousY = world.scenery[0].y
+  for (let elapsed = 100; elapsed <= 30000; elapsed += 100) {
+    world.update(elapsed, 100)
+    const y = world.scenery[0].y
+    assert.ok(y > previousY)
+    assert.ok(y - previousY < 4)
+    previousY = y
+    for (const cloud of world.clouds) {
+      assert.ok(cloud.y >= -cloud.displayHeight / 2)
+      assert.ok(cloud.y <= 720 + cloud.displayHeight / 2)
+    }
+  }
+  assert.ok(world.scenery[1].y > 900)
+  assert.ok(world.scenery[2].y > 900)
+  world.destroy()
 })

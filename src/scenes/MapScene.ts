@@ -1,3 +1,4 @@
+import { SCENE_ASSETS } from '../config/sceneAssets'
 import { TEXTS } from '../config/texts'
 import Phaser from 'phaser'
 import DebugPanel from '../components/DebugPanel'
@@ -19,6 +20,8 @@ export default class MapScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#10131a')
 
     const save = gameManager.progressManager.getSaveData()
+    const mapStages = [SCENE_ASSETS.map0, SCENE_ASSETS.map1, SCENE_ASSETS.map2, SCENE_ASSETS.map3, SCENE_ASSETS.map4, SCENE_ASSETS.map5]
+    this.add.image(1040, 110, mapStages[Math.min(5, save.unlockedRoutes.length)]!.key).setDisplaySize(300, 168.75)
 
     this.add.text(74, 48, TEXTS.mapTitle, { fontSize: '44px', fontStyle: '700', color: '#f8fafc' })
     this.add.text(76, 100, TEXTS.routes(save.unlockedRoutes.length, TOTAL_ROUTES), {

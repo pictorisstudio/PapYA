@@ -22,7 +22,7 @@ export const PAPA_CONFIG = {
   POTATO_VISUAL_WIDTH: 64,
   POTATO_VISUAL_HEIGHT: 64,
   // Círculo fijo, independiente del giro del arte y de sus píxeles transparentes.
-  POTATO_TOUCH_RADIUS: 29,
+  POTATO_TOUCH_RADIUS: 34,
   POTATO_SCORE: 100,
   COLORS: {
     skyTop: 0x9bd3e8,

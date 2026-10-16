@@ -1,3 +1,4 @@
+import { SCENE_ASSETS } from '../../../config/sceneAssets'
 import Phaser from 'phaser'
 import { COCUY_CONFIG } from '../config/cocuyConfig'
 import type { CocuyRect } from '../types/CocuyTypes'
@@ -5,19 +6,15 @@ import type { CocuyRect } from '../types/CocuyTypes'
 export default class Condor {
   private readonly container: Phaser.GameObjects.Container
   private readonly hitboxGuide: Phaser.GameObjects.Rectangle
-  private readonly body: Phaser.GameObjects.Ellipse
+  private readonly body: Phaser.GameObjects.Sprite
   private bobTime = 0
 
   constructor(private readonly scene: Phaser.Scene) {
-    const leftWing = scene.add.triangle(-28, 0, 0, 8, -66, -16, -18, 26, COCUY_CONFIG.COLORS.condorWing, 1)
-    const rightWing = scene.add.triangle(28, 0, 0, 8, 66, -16, 18, 26, COCUY_CONFIG.COLORS.condorWing, 1)
-    this.body = scene.add.ellipse(0, 0, 32, 46, COCUY_CONFIG.COLORS.condor, 1).setStrokeStyle(3, 0xf8fafc, 0.8)
-    const head = scene.add.circle(0, -28, 10, 0xf8fafc, 1)
-    const beak = scene.add.triangle(0, -30, -5, 0, 5, 0, 0, -12, 0xfbbf24, 1).setRotation(Math.PI)
+    this.body = scene.add.sprite(0, 0, SCENE_ASSETS.condorFlight1.key).setDisplaySize(150, 150).play('condor-flight')
     this.hitboxGuide = scene.add.rectangle(0, 0, COCUY_CONFIG.CONDOR_HITBOX_WIDTH, COCUY_CONFIG.CONDOR_HITBOX_HEIGHT, COCUY_CONFIG.COLORS.hitbox, 0)
     this.hitboxGuide.setStrokeStyle(2, COCUY_CONFIG.COLORS.hitbox, 0)
 
-    this.container = scene.add.container(640, COCUY_CONFIG.PLAYER_Y, [leftWing, rightWing, this.body, head, beak, this.hitboxGuide]).setDepth(700)
+    this.container = scene.add.container(640, COCUY_CONFIG.PLAYER_Y, [this.body, this.hitboxGuide]).setDepth(700)
   }
 
   update(delta: number): void {

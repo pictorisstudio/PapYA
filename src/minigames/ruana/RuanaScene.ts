@@ -1,3 +1,4 @@
+import { SCENE_ASSETS } from '../../config/sceneAssets'
 import Phaser from 'phaser'
 import GameplaySession from '../../components/GameplaySession'
 import { TEXTS } from '../../config/texts'
@@ -231,10 +232,10 @@ export default class RuanaScene extends Phaser.Scene {
       return
     }
 
-    this.cameras.main.setBackgroundColor(RUANA_CONFIG.COLORS.background)
+    this.add.image(640, 360, SCENE_ASSETS.ruanaBackground.key).setDisplaySize(1280, 720).setDepth(LAYERS.background)
 
     // TODO: reemplazar por telar y ruana pixel art finales.
-    this.add.rectangle(640, 386, 1080, 450, RUANA_CONFIG.COLORS.loomPanel, 0.88).setStrokeStyle(4, 0x64748b)
+    this.add.rectangle(640, 386, 1080, 450, RUANA_CONFIG.COLORS.loomPanel, 0.5).setStrokeStyle(4, 0x64748b)
     if (DEBUG_MODE) this.add.circle(RUANA_CONFIG.VANISHING_POINT_X, RUANA_CONFIG.VANISHING_POINT_Y, 8, 0xf8fafc, 0.9).setDepth(LAYERS.debug - 1)
 
     for (const lane of this.projector.getLanes()) {

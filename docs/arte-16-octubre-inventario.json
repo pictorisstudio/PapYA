@@ -1,0 +1,142 @@
+[
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\Fondo_Cosecha_papa.png",
+    "destination": "C:\\PapYA\\public\\assets\\minigames\\papa\\fondo.png",
+    "sha256": "DC7E0A97B0B774464F90D55CD01570F9C43024424861EFF4CD194AC6A608E687"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\Fondo_Piso.png",
+    "destination": "C:\\PapYA\\public\\assets\\minigames\\papa\\piso.png",
+    "sha256": "E0CADBD1E43270440A46F521FC9664DAC30937D424109CB92AE1818B13822CF2"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\Fondo_Tejiendo.png",
+    "destination": "C:\\PapYA\\public\\assets\\minigames\\ruana\\fondo.png",
+    "sha256": "040B35A7DEB71CBFF14C1002D549359171CB000DC56647742F18BA5BAB538723"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\Fondo_Tejo.png",
+    "destination": "C:\\PapYA\\public\\assets\\minigames\\tejo\\fondo.png",
+    "sha256": "5207E61FF36627846D0D749C24EAB18E77D04B4428F7318640AF55200390FB06"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\MenuPrincipal\\A_Viajar_Boton.png",
+    "destination": "C:\\PapYA\\public\\assets\\ui\\menu\\viajar.png",
+    "sha256": "5BFC66B259BE522700BA664F85797CD62216BF3DD5434490ED11548D94EEB749"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\MenuPrincipal\\A_Viajar_Mapa.png",
+    "destination": "C:\\PapYA\\public\\assets\\ui\\menu\\mapa.png",
+    "sha256": "DEA3F82230454FBA9F300E53A95E75C46456857A9A7593D697A6F2A3DA7DBE9B"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\MenuPrincipal\\Fondo_Menu_Principal.png",
+    "destination": "C:\\PapYA\\public\\assets\\ui\\menu\\fondo.png",
+    "sha256": "BD1EF167A0BC67437F0A66894D9A410563756C94CC9DB34AC256C80A68EF6B52"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\MenuPrincipal\\Nombre_PapYa.png",
+    "destination": "C:\\PapYA\\public\\assets\\ui\\menu\\logo.png",
+    "sha256": "33D5114B68D5DE999546278A5C47060F0C0C652F80AA942D29782729A3CCB1DD"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\MenuPrincipal\\MapaBoyaca_Desbloqueo\\Mapa_Boyaca_Bloqueado.png",
+    "destination": "C:\\PapYA\\public\\assets\\ui\\mapa\\progreso-0.png",
+    "sha256": "72EC005370F45B0E4FB3C443489582D81B73D1C7CAD1ED6DEB937266A4532E1E"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\AscensoAlCocuy\\cumbre_cocuy.png",
+    "destination": "C:\\PapYA\\public\\assets\\minigames\\cocuy\\cumbre.png",
+    "sha256": "962835BB41D78C500A6E2AE9D3D50284E721D699BC56F616D1499ABA64DE2D2E"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\AscensoAlCocuy\\Frailejón.png",
+    "destination": "C:\\PapYA\\public\\assets\\minigames\\cocuy\\frailejon.png",
+    "sha256": "F51C7D845289C65C5FC191E7ACB592618B1BC0FBE9D71377A20A074F5D6FD444"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\AscensoAlCocuy\\Frailejón_varios.png",
+    "destination": "C:\\PapYA\\public\\assets\\minigames\\cocuy\\frailejones.png",
+    "sha256": "F4961DF1BF360BDF03A0AF50555ECAE0583D2131EABED6B76886662F7A36F4E0"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\AscensoAlCocuy\\Nube.png",
+    "destination": "C:\\PapYA\\public\\assets\\minigames\\cocuy\\nube.png",
+    "sha256": "BEA21FC09FEA79FCA20AB6C7E5CAEBDF8691553F19BD0BF89754D8F60787FB3E"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\AscensoAlCocuy\\Nubes.png",
+    "destination": "C:\\PapYA\\public\\assets\\minigames\\cocuy\\nubes.png",
+    "sha256": "1B1AA85E5023E6A66FC0996DDC9DA7FE9C06E522063032CEED42B2ED6F2BDA1D"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\AscensoAlCocuy\\roca.png",
+    "destination": "C:\\PapYA\\public\\assets\\minigames\\cocuy\\roca.png",
+    "sha256": "2B8D5EE38677D90B76EB8F758CB77DCD4CF4A7A0B184D71D943283FBA628C73F"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\AscensoAlCocuy\\Condor_frame1.png",
+    "destination": "C:\\PapYA\\public\\assets\\minigames\\cocuy\\condor-lateral-1.png",
+    "sha256": "5DE017C836D8B35D8AC02BE05C82D7C84430A31B5DF843E3D0C56F4A2FB273D8"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\AscensoAlCocuy\\Condor_frame2.png",
+    "destination": "C:\\PapYA\\public\\assets\\minigames\\cocuy\\condor-lateral-2.png",
+    "sha256": "9EA1C30E8CA1C83D5FDF28E076901929F4A388DAB705C57BDEEC2F401211ED0D"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\AscensoAlCocuy\\Condor_frame3.png",
+    "destination": "C:\\PapYA\\public\\assets\\minigames\\cocuy\\condor-lateral-3.png",
+    "sha256": "B7242292D9F52E014B9645E4504E6AF06F06203A3396B6490C11AB1C2C6A6B76"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\AscensoAlCocuy\\Condor_frame4.png",
+    "destination": "C:\\PapYA\\public\\assets\\minigames\\cocuy\\condor-lateral-4.png",
+    "sha256": "49A47DC32EFAB5E17E9EE2F8DB8AC6987E4D12698282DD44570ABB190EACE164"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\AscensoAlCocuy\\Condor_frame5.png",
+    "destination": "C:\\PapYA\\public\\assets\\minigames\\cocuy\\condor-lateral-5.png",
+    "sha256": "0FE83CE079630345EF249A289A252995C766EC24DAE6C88B0B1B5B460F18B767"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\AscensoAlCocuy\\Condor_frame6.png",
+    "destination": "C:\\PapYA\\public\\assets\\minigames\\cocuy\\condor-lateral-6.png",
+    "sha256": "913B7262536216B05D5EE960DB54AFB0A178906D206FD6665A31A8BF7426104B"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\AscensoAlCocuy\\Condor_volando_frame1.png",
+    "destination": "C:\\PapYA\\public\\assets\\minigames\\cocuy\\condor-vuelo-1.png",
+    "sha256": "5702C57CC483203CFAA8F1D8B3D56DF4D78E4D24B6F4641168E914B26A9E27C3"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\AscensoAlCocuy\\Condor_volando_frame2.png",
+    "destination": "C:\\PapYA\\public\\assets\\minigames\\cocuy\\condor-vuelo-2.png",
+    "sha256": "9C8246FD447EDB6277E0D718269BD9E60ED863EC7C64624EBA2E81F654EAE89F"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\MenuPrincipal\\MapaBoyaca_Desbloqueo\\Mapa_Boyaca_Desbloqueo_01.png",
+    "destination": "C:\\PapYA\\public\\assets\\ui\\mapa\\progreso-1.png",
+    "sha256": "349E9A06F232EFED93020ACACC9BC98BA6E198EC2724B0FCDD285168ED7305A0"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\MenuPrincipal\\MapaBoyaca_Desbloqueo\\Mapa_Boyaca_Desbloqueo_02.png",
+    "destination": "C:\\PapYA\\public\\assets\\ui\\mapa\\progreso-2.png",
+    "sha256": "859CB7AAD87C072026EE80569D0880B2D5558052EC9DA367B5D6B147D00BA5BA"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\MenuPrincipal\\MapaBoyaca_Desbloqueo\\Mapa_Boyaca_Desbloqueo_03.png",
+    "destination": "C:\\PapYA\\public\\assets\\ui\\mapa\\progreso-3.png",
+    "sha256": "18148303889970B9E8762BF51C8AED8745687537E0D50AE1951DC988D5800944"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\MenuPrincipal\\MapaBoyaca_Desbloqueo\\Mapa_Boyaca_Desbloqueo_04.png",
+    "destination": "C:\\PapYA\\public\\assets\\ui\\mapa\\progreso-4.png",
+    "sha256": "55AECA5A9DB8349907B7844B69C46007771A482C3E1C26E7C706A8AF8CB5373E"
+  },
+  {
+    "source": "C:\\PapYA\\ImagenesNuevas\\MenuPrincipal\\MapaBoyaca_Desbloqueo\\Mapa_Boyaca_Desbloqueo_05.png",
+    "destination": "C:\\PapYA\\public\\assets\\ui\\mapa\\progreso-5.png",
+    "sha256": "49E75626BB92B777728008CA6D05C2028F2ACA404843EEE919E23D1FE1934F5F"
+  }
+]

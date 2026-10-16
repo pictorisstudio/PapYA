@@ -1,3 +1,4 @@
+import { SCENE_ASSETS } from '../config/sceneAssets'
 import { TEXTS } from '../config/texts'
 import { DEBUG_MODE } from '../config/constants'
 import { LAYERS } from '../config/layers'
@@ -14,41 +15,22 @@ export default class MenuScene extends Phaser.Scene {
     gameManager.audioManager.playMusic(this, 'menuMusic')
     this.cameras.main.setBackgroundColor('#10131a')
 
-    this.add
-      .text(640, 96, TEXTS.title, {
-        fontFamily: 'Arial, sans-serif',
-        fontSize: '72px',
-        fontStyle: '700',
-        color: '#f8fafc',
-      })
-      .setOrigin(0.5)
-
-    this.add
-      .text(640, 154, TEXTS.subtitle, {
-        fontFamily: 'Arial, sans-serif',
-        fontSize: '26px',
-        color: '#aab3c5',
-      })
-      .setOrigin(0.5)
-
-    // TODO: reemplazar por PNG final de PapYá.
-    this.add.circle(422, 348, 78, 0x6ee7b7, 1).setStrokeStyle(4, 0xf8fafc)
-    this.add.rectangle(422, 454, 240, 28, 0x334155, 1)
-    this.add.text(422, 454, TEXTS.companion, { fontSize: '18px', color: '#f8fafc' }).setOrigin(0.5)
-
-    // TODO: reemplazar por mapa pixel art de Boyacá.
-    this.add.rectangle(806, 352, 322, 210, 0x172033, 1).setStrokeStyle(4, 0x475569)
-    this.add.circle(740, 324, 22, 0x94a3b8)
-    this.add.circle(846, 372, 28, 0x64748b)
-    this.add.circle(900, 300, 18, 0x334155)
-    this.add.text(806, 472, TEXTS.mapPreview, { fontSize: '20px', color: '#d8dee9' }).setOrigin(0.5)
-
-    this.addButton(640, 592, 300, 64, TEXTS.travel, () => {
+    this.add.image(640, 360, SCENE_ASSETS.menuBackground.key).setDisplaySize(1280, 720).setDepth(LAYERS.background)
+    this.add.rectangle(640, 360, 1280, 720, 0x000000, 0.35).setDepth(LAYERS.background + 1)
+    this.add.image(640, 112, SCENE_ASSETS.logo.key).setDisplaySize(320, 320)
+    this.add.sprite(320, 350, SCENE_ASSETS.condorSide1.key).setDisplaySize(190, 190).play('condor-side')
+    const count = Phaser.Math.Clamp(gameManager.progressManager.getSaveData().unlockedRoutes.length, 0, 5)
+    const maps = [SCENE_ASSETS.map0, SCENE_ASSETS.map1, SCENE_ASSETS.map2, SCENE_ASSETS.map3, SCENE_ASSETS.map4, SCENE_ASSETS.map5]
+    this.add.image(820, 300, maps[count]!.key).setDisplaySize(520, 292.5)
+    const artButton = (y: number, key: string, action: () => void) => {
+      this.add.image(640, y, key).setDisplaySize(360, 202.5)
+      this.add.rectangle(640, y, 340, 68, 0, 0).setInteractive({ useHandCursor: true }).on('pointerdown', action)
+    }
+    artButton(505, SCENE_ASSETS.travelButton.key, () => {
       gameManager.startNewRun()
       this.scene.start('TransitionScene')
     })
-
-    this.addButton(640, 660, 190, 34, TEXTS.map, () => this.scene.start('MapScene'))
+    artButton(615, SCENE_ASSETS.mapButton.key, () => this.scene.start('MapScene'))
     if (DEBUG_MODE) {
       const first = this.children.list.length
       this.addButton(1100, 654, 300, 34, TEXTS.dev, () => this.scene.start('DevScene'))
