@@ -3,12 +3,13 @@ export const COCINA_CONFIG = {
   CORRECT_INGREDIENT_COUNT: 5,
   DISTRACTOR_COUNT: 3,
 
-  POT_POSITION: { x: 640, y: 352 },
-  POT_DROP_AREA: { x: 480, y: 242, width: 320, height: 210 },
+  // La base visible de la olla coincide con el centro de la hornilla (Y=465).
+  POT_POSITION: { x: 640, y: 334 },
+  POT_DROP_AREA: { x: 450, y: 220, width: 380, height: 230 },
   POT_WIDTH: 300,
   POT_HEIGHT: 160,
-  INGREDIENT_VISUAL_RADIUS: 34,
-  INGREDIENT_TOUCH_PADDING: 26,
+  INGREDIENT_VISUAL_RADIUS: 44,
+  INGREDIENT_TOUCH_PADDING: 24,
   INGREDIENT_RETURN_MS: 180,
 
   TEMPERATURE_RATE_PER_SECOND: 0.1,
@@ -26,20 +27,20 @@ export const COCINA_CONFIG = {
   SAFE_MARGIN_X: 56,
   SAFE_MARGIN_Y: 44,
   CONTROL_Y: 674,
-  CONTROL_TOUCH_WIDTH: 118,
-  CONTROL_TOUCH_HEIGHT: 64,
+  CONTROL_TOUCH_WIDTH: 160,
+  CONTROL_TOUCH_HEIGHT: 76,
   RESET_DELAY_MS: 1500,
 
   INTERNAL_POT_SLOTS: [
     // Dos filas cerca de la abertura: el frente aún oculta la base de los ingredientes.
-    { x: 548, y: 282 },
-    { x: 608, y: 272 },
-    { x: 668, y: 272 },
-    { x: 728, y: 282 },
-    { x: 578, y: 302 },
-    { x: 640, y: 307 },
-    { x: 702, y: 302 },
-    { x: 640, y: 292 },
+    { x: 532, y: 260 },
+    { x: 604, y: 250 },
+    { x: 676, y: 250 },
+    { x: 748, y: 260 },
+    { x: 568, y: 280 },
+    { x: 640, y: 285 },
+    { x: 712, y: 280 },
+    { x: 640, y: 270 },
   ],
 
   INGREDIENTS: [
@@ -47,10 +48,10 @@ export const COCINA_CONFIG = {
     { id: 'mazorca', name: 'Mazorca', isCorrect: true, x: 330.01, y: 150, color: 0xfacc15 },
     { id: 'costilla', name: 'Costilla de res', isCorrect: true, x: 958.01, y: 150, color: 0xb45309 },
     { id: 'papa', name: 'Papa', isCorrect: true, x: 1138.01, y: 174, color: 0xc58a3a },
-    { id: 'habas', name: 'Habas', isCorrect: true, x: 168, y: 520, color: 0x22c55e },
-    { id: 'fresa', name: 'Fresa', isCorrect: false, x: 1094.01, y: 520, color: 0xef4444 },
-    { id: 'berenjena', name: 'Berenjena', isCorrect: false, x: 336, y: 542, color: 0x7e22ce },
-    { id: 'brocoli', name: 'Brócoli', isCorrect: false, x: 950.01, y: 542, color: 0x16a34a },
+    { id: 'habas', name: 'Habas', isCorrect: true, x: 168, y: 480, color: 0x22c55e },
+    { id: 'fresa', name: 'Fresa', isCorrect: false, x: 1094.01, y: 480, color: 0xef4444 },
+    { id: 'berenjena', name: 'Berenjena', isCorrect: false, x: 336, y: 480, color: 0x7e22ce },
+    { id: 'brocoli', name: 'Brócoli', isCorrect: false, x: 950.01, y: 480, color: 0x16a34a },
   ],
 
   COLORS: {

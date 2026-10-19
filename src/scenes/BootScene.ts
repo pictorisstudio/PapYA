@@ -11,6 +11,7 @@ export default class BootScene extends Phaser.Scene {
   create(): void {
     gameManager.initialize()
     this.registry.set('brandComplete', false)
+    this.cameras.main.setBackgroundColor('#000000')
     this.add.rectangle(640, 360, 1280, 720, 0x000000)
     // El archivo blanco tiene márgenes transparentes amplios; usar su contenido real.
     this.textures.get('brand-gobernacion').add('mark', 0, 240, 376, 1441, 328)

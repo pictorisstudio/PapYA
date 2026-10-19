@@ -47,6 +47,15 @@ import MapScene from '../src/scenes/MapScene.ts'
 import TransitionScene from '../src/scenes/TransitionScene.ts'
 import DebugManager from '../src/core/DebugManager.ts'
 import { openProgressReset } from '../src/dev/resetProgress.ts'
+import PapaScene from '../src/minigames/papa/PapaScene.ts'
+import PotatoScoreManager from '../src/minigames/papa/systems/PotatoScoreManager.ts'
+import CocuyObstacle from '../src/minigames/cocuy/entities/CocuyObstacle.ts'
+import ObstacleEffectSystem from '../src/minigames/cocuy/systems/ObstacleEffectSystem.ts'
+import CondorMovementSystem from '../src/minigames/cocuy/systems/CondorMovementSystem.ts'
+import BootScene from '../src/scenes/BootScene.ts'
+import PreloaderScene from '../src/scenes/PreloaderScene.ts'
+import CookingPot from '../src/minigames/cocina/entities/CookingPot.ts'
+import Ingredient from '../src/minigames/cocina/entities/Ingredient.ts'
 
 function storage(raw = null) {
   return { raw, writes: 0, read() { return this.raw }, has() { return this.raw !== null },
@@ -223,6 +232,96 @@ test('papas superpuestas seleccionan solo la que se dibuja delante', () => {
   assert.equal(manager.getPotatoAt(640, 360), front)
   front.contains = () => false
   assert.equal(manager.getPotatoAt(640, 360), behind)
+})
+
+test('dos dedos recogen dos papas con coordenadas actuales de cámara, sin duplicar aciertos', () => {
+  browser(); gameManager.initialize()
+  const page = new PapaScene(), view = scene()
+  page.spawnManager = new PotatoSpawnManager(view)
+  page.scoreManager = new PotatoScoreManager()
+  page.hud = { update() {}, showFloatingFeedback() {} }
+  page.refreshHud = () => {}
+  page.cameras = { main: { getWorldPoint: (x, y) => ({ x: x - 160, y: y + 20 }) } }
+  for (const [id, x] of [['left', 400], ['right', 800]]) {
+    page.spawnManager.potatoes.push(new Potato(view, { id, type: 'GOOD', x, y: 360,
+      scale: 1, velocityX: 0, velocityY: 0, rotationSpeed: 0 }))
+  }
+  page.handlePointerDown({ id: 1, x: 560, y: 340, worldX: -999, worldY: -999 })
+  page.handlePointerDown({ id: 2, x: 960, y: 340, worldX: -999, worldY: -999 })
+  page.handlePointerDown({ id: 1, x: 560, y: 340, worldX: -999, worldY: -999 })
+  assert.equal(page.scoreManager.getSnapshot().goodPotatoesCollected, 2)
+})
+
+test('viento apunta y empuja en la misma dirección con desplazamiento perceptible', () => {
+  for (const direction of [-1, 1]) {
+    const view = scene(), triangles = []
+    view.add.line = () => Object.assign(drawable(), { setLineWidth() { return this } })
+    view.add.triangle = (...args) => { triangles.push(args); return drawable() }
+    const obstacle = new CocuyObstacle(view, { id: 'wind', type: 'WIND', x: 640, y: 512,
+      speed: 0, windDirection: direction })
+    const [, , baseX, , tipX] = triangles[0]
+    assert.equal(Math.sign(tipX - baseX), direction)
+    const movement = new CondorMovementSystem()
+    const effect = new ObstacleEffectSystem()
+    const callbacks = { onRockHit() {}, onCloud() {}, onWind: force => movement.applyWind(force) }
+    effect.update({ getHitbox: () => ({ x: 620, y: 490, width: 40, height: 40 }) }, [obstacle], callbacks)
+    for (let i = 0; i < 30; i++) movement.update(1000 / 60)
+    const distance = movement.getSnapshot().x - 640
+    assert.equal(Math.sign(distance), direction)
+    assert.ok(Math.abs(distance) > 250)
+    assert.equal(obstacle.isActive(), false)
+  }
+})
+
+for (const fastLoad of [true, false]) {
+  test(`logo termina antes de mostrar carga o menú (carga ${fastLoad ? 'rápida' : 'lenta'})`, () => {
+    browser()
+    const view = scene(), boot = new BootScene(), loader = new PreloaderScene()
+    let brandComplete = false, visible = true, tween
+    const registry = { set(_key, value) { brandComplete = value }, get() { return brandComplete } }
+    const camera = { setBackgroundColor() {}, setVisible(value) { visible = value } }
+    const anims = { exists: () => true }
+    view.add.sprite = (x, y) => Object.assign(drawable(x, y), { play() { return this } })
+    Object.assign(boot, { registry, add: view.add, game: view.game, cameras: { main: camera },
+      textures: { get: () => ({ add() {} }) }, tweens: { add(config) { tween = config } },
+      scene: { launch() {}, bringToTop() {}, stop() {} } })
+    Object.assign(loader, { registry, add: view.add, game: view.game, events: view.events,
+      cameras: { main: camera }, anims, scene: view.scene,
+      textures: { exists: () => true }, cache: { audio: { exists: () => true } },
+      load: Object.assign(new EventEmitter(), { image() {} }) })
+    boot.create()
+    loader.preload()
+    assert.equal(brandComplete, false)
+    assert.equal(visible, false)
+    assert.ok(view.texts.includes(TEXTS.loading))
+    if (fastLoad) loader.create()
+    assert.deepEqual(view.starts, [])
+    assert.equal(tween.duration * 2 + tween.hold, 3000)
+    tween.onComplete()
+    assert.equal(visible, true)
+    if (!fastLoad) loader.create()
+    assert.deepEqual(view.starts, ['MenuScene'])
+  })
+}
+
+test('audio intenta autoplay y conserva el desbloqueo por toque si se bloquea', async () => {
+  for (const allowed of [true, false]) {
+    const audio = new AudioManager(), sounds = []
+    const sound = Object.assign(new EventEmitter(), { locked: true, unlocked: false,
+      context: { state: 'suspended', async resume() { if (allowed) this.state = 'running'; else throw Error('blocked') } },
+      add(key) { const music = { key, play() {}, destroy() {} }; sounds.push(music); return music },
+    })
+    const view = { cache: { audio: { exists: () => true } }, sound, events: new EventEmitter(), scene: { isActive: () => true } }
+    audio.playMusic(view, 'menuMusic')
+    await Promise.resolve(); await Promise.resolve()
+    assert.equal(sound.unlocked, allowed)
+    assert.equal(sounds.length, 0)
+    // Simula el update de Phaser o el primer gesto permitido por el navegador.
+    sound.locked = false
+    sound.emit('unlocked')
+    assert.equal(sounds.length, 1)
+    assert.equal(sound.listenerCount('unlocked'), 0)
+  }
 })
 
 test('guardado recupera JSON roto, arrays inválidos y tipos incorrectos', () => {
@@ -460,7 +559,7 @@ for (const scenario of [
   { name: 'ruta obtenida', wins: 3, before: 0, message: TEXTS.runEnd.routeUnlocked },
   { name: 'sin ruta', wins: 0, before: 0, message: TEXTS.runEnd.routePending },
   { name: 'última ruta', wins: 3, before: 4, message: TEXTS.runEnd.allRoutes },
-  { name: 'todas abiertas y viaje sin victorias', wins: 0, before: 5, message: TEXTS.runEnd.allRoutes },
+  { name: 'todas abiertas y viaje sin victorias', wins: 0, before: 5, message: TEXTS.runEnd.routePending },
 ]) {
   test(`cierre breve: ${scenario.name}, guarda una vez y continúa automáticamente`, () => {
     browser(); gameManager.initialize()
@@ -468,14 +567,22 @@ for (const scenario of [
     gameManager.startNewRun([...MINIGAME_ORDER])
     MINIGAME_ORDER.forEach((key, i) => gameManager.completeCurrentMinigame(outcome(key, i < scenario.wins)))
     const page = new ResultsScene(), view = scene()
+    const images = []
+    view.add.image = (x, y, key) => {
+      images.push(key)
+      return Object.assign(drawable(x, y), { width: 960, height: 420 })
+    }
     page.scene = view.scene; page.add = view.add; page.time = view.time
     page.cameras = { main: { setBackgroundColor() {} } }
     page.create()
-    assert.deepEqual(view.texts, [scenario.message])
+    const earned = gameManager.lastUnlockedRoute
+    assert.deepEqual(view.texts, earned ? [TEXTS.routeName(scenario.before + 1), scenario.message] : [scenario.message])
+    assert.deepEqual(images, earned ? [`route-card-${scenario.before + 1}`] : [])
     assert.equal(gameManager.progressManager.getSaveData().totalRuns, 1)
     gameManager.finishRun()
     assert.equal(gameManager.progressManager.getSaveData().totalRuns, 1)
     assert.equal(view.timers[0].delay, ROUTE_MESSAGE_DURATION_MS)
+    assert.equal(view.timers[0].delay, 5000)
     view.timers[0].callback()
     assert.deepEqual(view.starts, ['TransitionScene'])
     assert.equal(gameManager.roundManager.getState().isRunning, true)
@@ -620,6 +727,34 @@ test('arte del 16 de octubre conserva 28 recursos únicos y todos los estados de
   for (let i = 1; i <= 6; i++) assert.ok(SCENE_ASSETS[`condorSide${i}`])
   for (let i = 1; i <= 2; i++) assert.ok(SCENE_ASSETS[`condorFlight${i}`])
 })
+test('comida queda delante del borde trasero y detrás del frente de la olla', () => {
+  const view = scene(), images = []
+  const originalImage = view.add.image
+  view.add.image = (...args) => {
+    const image = originalImage(...args)
+    image.setCrop = (...crop) => { image.crop = crop; return image }
+    images.push(image)
+    return image
+  }
+  view.add.sprite = (x, y) => Object.assign(drawable(x, y), { play() { return this } })
+  view.tweens.add = config => {
+    config.targets.setPosition(config.x, config.y)
+    config.onUpdate?.()
+  }
+  const pot = new CookingPot(view)
+  const ingredient = new Ingredient(view, COCINA_CONFIG.INGREDIENTS[0])
+  ingredient.placeInPot(pot.getSlotPosition(0))
+  const [rear, front] = images.filter(image => image.texture.key === COCINA_ASSETS.ollaFrente.key)
+  assert.ok(rear.depth < ingredient.container.depth)
+  assert.ok(front.depth > ingredient.container.depth)
+  assert.ok(front.crop[1] >= 25, 'el borde trasero del PNG no se dibuja encima de la comida')
+  const stove = images.find(image => image.texture.key === COCINA_ASSETS.hornilla.key)
+  assert.equal(rear.x, stove.x)
+  // El último píxel visible de la base está en la fila 51 del PNG de 64 px.
+  const visibleBaseY = rear.y + (51.5 / 64 - 0.5) * rear.height
+  assert.ok(Math.abs(visibleBaseY - stove.y) < 1)
+})
+
 test('Cocuy desplaza montaña y vegetación continuamente sin reinicio cada 220 píxeles', () => {
   const view = scene()
   const graphics = drawable()
@@ -714,7 +849,7 @@ test('Cocina muestra temperatura, cocción y quemado sin invadir botones', () =>
   assert.deepEqual(display.bars.map(bar => bar.value.contents), ['65%','40%','25%'])
   for (const bar of display.bars) {
     assert.ok(bar.x >= 0 && bar.x + bar.width <= LOGICAL_WIDTH)
-    assert.ok(bar.y + 56 <= COCINA_CONFIG.CONTROL_Y - COCINA_CONFIG.CONTROL_TOUCH_HEIGHT / 2)
+    assert.ok(bar.y + 64 <= COCINA_CONFIG.CONTROL_Y - COCINA_CONFIG.CONTROL_TOUCH_HEIGHT / 2)
   }
   display.update(snapshot, false)
   assert.equal(graphics.visible, false)

@@ -16,8 +16,8 @@ export default class TejoDisc {
     this.body.setStrokeStyle(4, TEJO_CONFIG.COLORS.discStroke, 0.85)
 
     this.body.setFillStyle(0, 0).setStrokeStyle(0)
-    const shadow = scene.add.image(0, 24, TEJO_ASSETS.sombra.key).setDisplaySize(100, 70)
-    const sprite = scene.add.image(0, 0, TEJO_ASSETS.discoDetallado.key).setDisplaySize(90, 90)
+    const shadow = scene.add.image(0, 24, TEJO_ASSETS.sombra.key).setDisplaySize(130, 90)
+    const sprite = scene.add.image(0, 0, TEJO_ASSETS.discoDetallado.key).setDisplaySize(124, 124)
 
     this.container = scene.add.container(TEJO_CONFIG.THROW_START_X, TEJO_CONFIG.THROW_START_Y, [shadow, this.touchArea, sprite, this.body])
     this.container.setDepth(700)

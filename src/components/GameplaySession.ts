@@ -32,16 +32,16 @@ export default class GameplaySession {
     if (scene.time) scene.time.timeScale = gameManager.pace
     if (scene.tweens) scene.tweens.timeScale = gameManager.pace
     const names: Record<string, string> = { PapaScene: TEXTS.minigames.papa.name, RuanaScene: TEXTS.minigames.ruana.name, CocinaScene: TEXTS.minigames.cocina.name, TejoScene: TEXTS.minigames.tejo.name, CocuyScene: TEXTS.minigames.cocuy.name }
-    scene.add.text(56, 38, names[scene.scene.key] ?? '', { fontSize: '28px', color: '#ffffff', stroke: '#10131a', strokeThickness: 5 }).setDepth(LAYERS.hud)
-    const timeText = scene.add.text(56, 78, '', { fontSize: '27px', color: '#ffffff', stroke: '#10131a', strokeThickness: 5 }).setDepth(LAYERS.hud)
+    scene.add.text(48, 26, names[scene.scene.key] ?? '', { fontSize: '38px', color: '#ffffff', stroke: '#10131a', strokeThickness: 5 }).setDepth(LAYERS.hud)
+    const timeText = scene.add.text(48, 76, '', { fontSize: '36px', color: '#ffffff', stroke: '#10131a', strokeThickness: 5 }).setDepth(LAYERS.hud)
     const updateTime = () => timeText.setText(TEXTS.time((hooks.remainingMs?.() ?? 30000) / 1000))
     updateTime()
     scene.events.on(Phaser.Scenes.Events.UPDATE, updateTime)
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => scene.events.off(Phaser.Scenes.Events.UPDATE, updateTime))
-    const button = scene.add.rectangle(812, 66, 140, 58, 0x1f2937).setDepth(LAYERS.hud)
+    const button = scene.add.rectangle(812, 64, 180, 76, 0x1f2937).setDepth(LAYERS.hud)
     button.setStrokeStyle(2, 0xcbd5e1).setInteractive({ useHandCursor: true })
     button.on('pointerdown', () => this.requestPause())
-    scene.add.text(812, 66, TEXTS.pause, { fontSize: '24px', color: '#ffffff' }).setOrigin(0.5).setDepth(LAYERS.hud)
+    scene.add.text(812, 64, TEXTS.pause, { fontSize: '32px', color: '#ffffff' }).setOrigin(0.5).setDepth(LAYERS.hud)
     scene.game.events.on(Phaser.Core.Events.BLUR, this.requestPause, this)
     scene.events.on(Phaser.Scenes.Events.PAUSE, this.onPause, this)
     scene.events.on(Phaser.Scenes.Events.RESUME, this.onResume, this)

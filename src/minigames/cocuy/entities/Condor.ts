@@ -10,7 +10,7 @@ export default class Condor {
   private bobTime = 0
 
   constructor(private readonly scene: Phaser.Scene) {
-    this.body = scene.add.sprite(0, 0, SCENE_ASSETS.condorFlight1.key).setDisplaySize(150, 150).play('condor-flight')
+    this.body = scene.add.sprite(0, 0, SCENE_ASSETS.condorFlight1.key).setDisplaySize(210, 210).play('condor-flight')
     this.hitboxGuide = scene.add.rectangle(0, 0, COCUY_CONFIG.CONDOR_HITBOX_WIDTH, COCUY_CONFIG.CONDOR_HITBOX_HEIGHT, COCUY_CONFIG.COLORS.hitbox, 0)
     this.hitboxGuide.setStrokeStyle(2, COCUY_CONFIG.COLORS.hitbox, 0)
 

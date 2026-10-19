@@ -87,7 +87,9 @@ export default class PapaScene extends Phaser.Scene {
       return
     }
 
-    const potato = this.spawnManager.getPotatoAt(pointer.worldX, pointer.worldY)
+    // Convertir cada dedo con la cámara actual, también tras rotar o redimensionar.
+    const point = this.cameras.main.getWorldPoint(pointer.x, pointer.y)
+    const potato = this.spawnManager.getPotatoAt(point.x, point.y)
 
     if (!potato) {
       return

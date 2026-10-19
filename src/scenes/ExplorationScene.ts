@@ -24,13 +24,13 @@ export default class ExplorationScene extends Phaser.Scene {
       for (let index = 0; index < 5; index += 1) {
         const x = 186 + index * 226
         const y = 338
-        this.add.rectangle(x, y, 172, 246, 0x172033).setStrokeStyle(3, 0x6ee7b7)
-        this.add.text(x, y - 45, TEXTS.routeName(index + 1), { fontSize: '24px', color: '#f8fafc' }).setOrigin(0.5)
-        this.add.text(x, y + 35, TEXTS.exploreCard, { fontSize: '18px', color: '#aab3c5' }).setOrigin(0.5)
+        this.add.rectangle(x, y, 196, 282, 0x172033).setStrokeStyle(3, 0x6ee7b7)
+        this.add.text(x, y - 45, TEXTS.routeName(index + 1), { fontSize: '32px', color: '#f8fafc' }).setOrigin(0.5)
+        this.add.text(x, y + 35, TEXTS.exploreCard, { fontSize: '24px', color: '#aab3c5', align: 'center', wordWrap: { width: 170 } }).setOrigin(0.5)
       }
     }
 
-    this.addButton(640, 626, 220, 48, TEXTS.backToMap, () => this.scene.start('MapScene'))
+    this.addButton(640, 626, 340, 76, TEXTS.backToMap, () => this.scene.start('MapScene'))
     new DebugPanel(this)
   }
 
@@ -38,6 +38,6 @@ export default class ExplorationScene extends Phaser.Scene {
     const button = this.add.rectangle(x, y, width, height, 0xfbbf24).setStrokeStyle(2, 0xf8fafc)
     button.setInteractive({ useHandCursor: true })
     button.on('pointerdown', action)
-    this.add.text(x, y, label, { fontSize: '22px', fontStyle: '700', color: '#1f2937' }).setOrigin(0.5)
+    this.add.text(x, y, label, { fontSize: '30px', fontStyle: '700', color: '#1f2937' }).setOrigin(0.5)
   }
 }

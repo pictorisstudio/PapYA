@@ -87,9 +87,11 @@ export default class CocuyObstacle {
     const arrowColor = this.windDirection > 0 ? 0x93c5fd : COCUY_CONFIG.COLORS.wind
     return [
       scene.add.rectangle(0, 0, COCUY_CONFIG.WIND_WIDTH, COCUY_CONFIG.WIND_HEIGHT, COCUY_CONFIG.COLORS.wind, 0.16),
-      scene.add.line(0, 0, -82, -22, 82, -22, arrowColor, 0.82).setLineWidth(5),
-      scene.add.line(0, 0, -70, 2, 70, 2, arrowColor, 0.72).setLineWidth(4),
-      scene.add.triangle(this.windDirection > 0 ? 88 : -88, -22, 0, 0, 22 * this.windDirection, 10, 22 * this.windDirection, -10, arrowColor, 0.86),
+      scene.add.line(0, 0, -108, -22, 108, -22, arrowColor, 0.95).setOrigin(0, 0).setLineWidth(8),
+      scene.add.line(0, 0, -90, 8, 90, 8, arrowColor, 0.85).setOrigin(0, 0).setLineWidth(6),
+      scene.add.triangle(108 * this.windDirection, -22,
+        this.windDirection > 0 ? 0 : 36, 0, this.windDirection > 0 ? 36 : 0, 18,
+        this.windDirection > 0 ? 0 : 36, 36, arrowColor, 1),
     ]
   }
 

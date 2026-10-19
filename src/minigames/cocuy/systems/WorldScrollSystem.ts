@@ -55,12 +55,12 @@ export default class WorldScrollSystem {
 
   private createClouds(): void {
     for (const cloud of [
-      { x: 168, y: 96, width: 150, height: 50 },
-      { x: 1020, y: 182, width: 190, height: 58 },
-      { x: 330.01, y: 390, width: 130, height: 44 },
-      { x: 1128, y: 548, width: 160, height: 52 },
+      { x: 168, y: 96, width: 550, height: 180 },
+      { x: 1020, y: 182, width: 680, height: 210 },
+      { x: 330.01, y: 390, width: 480, height: 160 },
+      { x: 1128, y: 548, width: 580, height: 190 },
     ]) {
-      this.clouds.push(this.scene.add.image(cloud.x, cloud.y, SCENE_ASSETS.clouds.key).setDisplaySize(cloud.width, cloud.height).setAlpha(0.45).setDepth(LAYERS.scenery))
+      this.clouds.push(this.scene.add.image(cloud.x, cloud.y, SCENE_ASSETS.clouds.key).setDisplaySize(cloud.width, cloud.height).setAlpha(0.25).setDepth(LAYERS.scenery))
     }
   }
 

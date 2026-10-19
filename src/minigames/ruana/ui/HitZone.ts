@@ -19,8 +19,8 @@ export default class HitZone {
         .setDepth(650)
 
       const label = scene.add
-        .text(lane.endX, lane.endY - 74, '', {
-          fontSize: '24px',
+        .text(lane.endX, lane.endY - 88, '', {
+          fontSize: '30px',
           fontStyle: '700',
           color: '#ffffff',
         })

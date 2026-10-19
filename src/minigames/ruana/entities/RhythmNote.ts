@@ -23,7 +23,7 @@ export default class RhythmNote {
     const start = this.projector.project(this.lane, 0)
 
     // TODO: reemplazar por sprite pixel art de hilo/patrón textil.
-    this.shape = scene.add.rectangle(start.x, start.y, 92, 20, RUANA_CONFIG.LANE_COLORS[this.lane])
+    this.shape = scene.add.rectangle(start.x, start.y, 116, 32, RUANA_CONFIG.LANE_COLORS[this.lane])
     this.shape.setStrokeStyle(2, 0xffffff, 0.65)
     this.shape.setScale(start.scale)
   }

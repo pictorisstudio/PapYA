@@ -20,7 +20,7 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
   parent: 'game',
   backgroundColor: '#10131a',
   pixelArt: true,
-  input: { activePointers: 2 },
+  input: { activePointers: 5 },
   antialias: false,
   roundPixels: true,
   scale: {

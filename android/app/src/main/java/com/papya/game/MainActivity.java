@@ -8,6 +8,10 @@ public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // La app instalada no necesita esperar un toque para reproducir el audio.
+        if (bridge != null && bridge.getWebView() != null) {
+            bridge.getWebView().getSettings().setMediaPlaybackRequiresUserGesture(false);
+        }
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {

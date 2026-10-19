@@ -23,10 +23,10 @@ export default class Ingredient {
     this.touchArea.setStrokeStyle(2, COCINA_CONFIG.COLORS.touchArea, 0)
     const asset = COCINA_ASSETS[data.id as keyof typeof COCINA_ASSETS]
     const body = asset
-      ? scene.add.image(0, 0, asset.key).setDisplaySize(88, 88)
+      ? scene.add.image(0, 0, asset.key).setDisplaySize(120, 120)
       : scene.add.circle(0, 0, COCINA_CONFIG.INGREDIENT_VISUAL_RADIUS, data.color, 0.96).setStrokeStyle(3, 0xfff7cc, 0.82)
     const label = scene.add
-      .text(0, 48, data.name, { fontSize: '17px', fontStyle: '700', color: COCINA_CONFIG.COLORS.text })
+      .text(0, 66, data.name, { fontSize: '24px', fontStyle: '700', color: COCINA_CONFIG.COLORS.text })
       .setOrigin(0.5)
     this.label = label
 

@@ -21,7 +21,17 @@ export default class AudioManager {
     this.stopMusic()
     if (AUDIO_CONFIG[key].kind !== 'music' || !scene.cache?.audio?.exists(key)) return false
     if (scene.sound.locked) {
-      scene.sound.once('unlocked', () => { if (scene.scene.isActive()) this.playMusic(scene, key) })
+      const onUnlocked = () => { if (scene.scene.isActive()) this.playMusic(scene, key) }
+      scene.sound.once('unlocked', onUnlocked)
+      scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => scene.sound.off('unlocked', onUnlocked))
+      // Android y navegadores con autoplay permitido pueden arrancar sin un toque.
+      // Si el navegador lo bloquea, Phaser conserva su desbloqueo por gesto.
+      const sound = scene.sound as Phaser.Sound.WebAudioSoundManager
+      if (sound.context) void sound.context.resume().then(() => {
+        // Phaser procesa esta bandera y emite UNLOCKED en su siguiente update.
+        if (sound.context.state === 'running' && sound.locked)
+          (sound as Phaser.Sound.WebAudioSoundManager & { unlocked: boolean }).unlocked = true
+      }).catch(() => {})
       return true
     }
     const music = scene.sound.add(key) as PlayableSound

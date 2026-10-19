@@ -1,5 +1,13 @@
 # Horizontal y ajuste móvil — 19 de octubre
 
+## Legibilidad, controles y cierre de ronda
+
+Se ampliaron los objetos jugables y controles entre un 25 y un 40 % aproximadamente, manteniendo los fondos. Papas usa sprites de 132 px, hitbox circular de radio 62 (sin rotación), cinco punteros táctiles y conversión de cada toque con la cámara actual. Se conserva la selección de la papa dibujada delante y no se vuelve a recoger una papa ya tocada. Cocina mantiene temperatura, cocción y quemado, con ingredientes de 120 px y botones de 160×76.
+
+Las flechas de Cocuy coinciden con el empuje y el viento pasa de 270 a 900. La cámara del preloader permanece oculta mientras Boot muestra el logo durante tres segundos; después aparece el cóndor con «Cargando…» si aún faltan recursos. La música intenta reanudar Web Audio sin gesto y conserva la alternativa del primer toque cuando el navegador lo exige. Android permite autoplay en su WebView; es necesario reconstruir el APK para incluir ese ajuste nativo.
+
+Al terminar cinco juegos se muestra durante cinco segundos «Sigue intentando», o la imagen y el número de la ruta obtenida; después comienza otra ronda automáticamente. La última ruta conserva el mensaje de mapa completo. Pruebas automáticas cubren toques independientes, dirección y desplazamiento del viento, ambas velocidades de carga, autoplay permitido/bloqueado y las salidas de ronda. Falta validar tamaño y tacto en teléfono real; no se generó APK.
+
 ## Ajuste posterior: pantalla completa
 
 La configuración vigente usa Scale.EXPAND en lugar de FIT. La cámara centra el espacio lógico 1280×720 dentro del área ampliada; únicamente se estiran los fondos y capas de pantalla completa. Los sprites, HUD y áreas de toque conservan coordenadas y proporciones. El relleno CSS descrito más abajo quedó retirado: se reutilizan las texturas de Phaser antes de renderizar, sin descargar otra imagen al cambiar de escena. visualViewport y las zonas seguras siguen activos. Las secciones de FIT y relleno lateral siguientes describen la versión anterior.
