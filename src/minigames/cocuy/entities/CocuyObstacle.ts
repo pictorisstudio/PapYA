@@ -35,7 +35,7 @@ export default class CocuyObstacle {
     this.container.y += (this.speed + worldSpeed) * (delta / 1000)
     this.container.setDepth(Math.round(this.container.y))
 
-    if (this.container.y > 1400) {
+    if (this.container.y > 820) {
       this.state = 'DESTROYED'
     }
   }

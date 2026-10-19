@@ -120,7 +120,7 @@ export default class TejoScene extends Phaser.Scene {
 
     this.activeAim = aim
     this.phase = 'THROWING'
-    this.aimSystem.clear()
+    // Mantener la guía visible durante el vuelo, hasta resolver el impacto.
     this.disc.setHighlighted(false)
     this.disc.setPosition({ x: TEJO_CONFIG.THROW_START_X, y: TEJO_CONFIG.THROW_START_Y })
     this.board?.clearImpactPoint()
@@ -157,6 +157,7 @@ export default class TejoScene extends Phaser.Scene {
     }
 
     this.phase = 'IMPACT'
+    this.aimSystem?.clear()
     const score = this.scoreManager.registerImpact(result)
     if (result === 'MECHA') {
       // La mecha ganadora acompaña a Ganaste y termina incluso si cambia la escena.

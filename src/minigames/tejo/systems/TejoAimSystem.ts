@@ -87,14 +87,17 @@ export default class TejoAimSystem {
 
   private drawPreview(aim: TejoAimState): void {
     this.preview.clear()
-    this.preview.fillStyle(TEJO_CONFIG.COLORS.preview, 0.74)
-
-    for (let index = 1; index <= TEJO_CONFIG.PREVIEW_DOTS; index += 1) {
-      const progress = index / TEJO_CONFIG.PREVIEW_DOTS
-      const point = this.getTrajectoryPoint(aim.target, aim.arcHeight, progress)
-      const radius = Phaser.Math.Linear(7, 3, progress)
-      this.preview.fillCircle(point.x, point.y, radius)
+    const points = Array.from({ length: 33 }, (_, index) => this.getTrajectoryPoint(aim.target, aim.arcHeight, index / 32))
+    // Contorno oscuro y centro claro: visible sobre tierra y cielo.
+    for (const [width, color] of [[10, 0x172033], [5, 0xfff7cc]] as const) {
+      this.preview.lineStyle(width, color, 1)
+      for (let index = 1; index < points.length; index++) {
+        const previous = points[index - 1]!, point = points[index]!
+        this.preview.strokeLineShape(new Phaser.Geom.Line(previous.x, previous.y, point.x, point.y))
+      }
     }
+    this.preview.lineStyle(4, 0xfbbf24, 1)
+    this.preview.strokeCircle(aim.target.x, aim.target.y, 18)
   }
 
   private getTrajectoryPoint(target: TejoPoint, arcHeight: number, progress: number): TejoPoint {

@@ -20,13 +20,13 @@ export default class BasePlaceholderScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(minigame.backgroundColor)
 
     // TODO: reemplazar este fondo provisional por arte pixel art del microjuego.
-    this.add.rectangle(360, 640, 517.5, 746.67, 0x000000, 0.18).setStrokeStyle(4, 0xffffff, 0.36)
-    this.add.circle(229.5, 725.33, 48, 0xfbbf24, 0.9)
-    this.add.rectangle(478.13, 693.33, 73.13, 231.11, 0x6ee7b7, 0.9)
+    this.add.rectangle(640, 360, 920, 420, 0x000000, 0.18).setStrokeStyle(4, 0xffffff, 0.36)
+    this.add.circle(408, 408, 48, 0xfbbf24, 0.9)
+    this.add.rectangle(850.01, 390, 130.01, 130, 0x6ee7b7, 0.9)
 
-    this.add.text(360, 234.67, minigame.name, { fontSize: '46px', fontStyle: '700', color: '#ffffff' }).setOrigin(0.5)
-    this.add.text(360, 508.44, 'PLACEHOLDER DE MECÁNICA', { fontSize: '32px', color: '#ffffff' }).setOrigin(0.5)
-    this.add.text(360, 597.33, `Escena: ${this.minigameKey}`, { fontSize: '22px', color: '#d8dee9' }).setOrigin(0.5)
+    this.add.text(640, 132, minigame.name, { fontSize: '46px', fontStyle: '700', color: '#ffffff' }).setOrigin(0.5)
+    this.add.text(640, 286, 'PLACEHOLDER DE MECÁNICA', { fontSize: '32px', color: '#ffffff' }).setOrigin(0.5)
+    this.add.text(640, 336, `Escena: ${this.minigameKey}`, { fontSize: '22px', color: '#d8dee9' }).setOrigin(0.5)
     this.timerDisplay = new TimerDisplay(this, 640, 474)
 
     new DebugPanel(this)

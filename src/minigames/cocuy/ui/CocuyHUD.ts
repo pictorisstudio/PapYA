@@ -45,12 +45,12 @@ export default class CocuyHUD {
       fontStyle: '700',
       color: '#f8fafc',
     })
-    this.messageText = scene.add.text(360, 234.67, '', { fontSize: '26px', fontStyle: '700', color: '#f8fafc' }).setOrigin(0.5).setDepth(880)
+    this.messageText = scene.add.text(640, 132, '', { fontSize: '26px', fontStyle: '700', color: '#f8fafc' }).setOrigin(0.5).setDepth(880)
     this.progressGraphics = scene.add.graphics().setDepth(730)
 
     if (DEBUG_MODE) {
-      scene.add.rectangle(475.88, 295.11, 236.25, 455.11, 0x05070c, 0.72).setOrigin(0, 0).setDepth(900)
-      this.debugText = scene.add.text(483.75, 316.44, '', { fontSize: '13px', color: '#d6e4ff', lineSpacing: 4 }).setDepth(901)
+      scene.add.rectangle(846.01, 166, 420, 256, 0x05070c, 0.72).setOrigin(0, 0).setDepth(900)
+      this.debugText = scene.add.text(860, 178, '', { fontSize: '13px', color: '#d6e4ff', lineSpacing: 4 }).setDepth(901)
       this.addButton(860, 340, 'ROCK', actions.spawnRock, 52)
       this.addButton(918, 340, 'CLOUD', actions.spawnCloud, 60)
       this.addButton(984, 340, 'W-L', actions.spawnWindLeft, 46)

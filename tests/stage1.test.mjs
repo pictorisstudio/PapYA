@@ -1,3 +1,5 @@
+import CookingDisplay from '../src/minigames/cocina/ui/CookingDisplay.ts'
+import { installMobileViewport } from '../src/utils/mobileViewport.ts'
 import RhythmNote from '../src/minigames/ruana/entities/RhythmNote.ts'
 import HitZone from '../src/minigames/ruana/ui/HitZone.ts'
 import { LOGICAL_WIDTH, LOGICAL_HEIGHT } from '../src/config/constants.ts'
@@ -307,7 +309,7 @@ test('las cuatro mechas son alcanzables con arrastre dentro del canvas', () => {
     const power = (TEJO_CONFIG.THROW_START_Y - 80 - mecha.y) / (TEJO_CONFIG.THROW_START_Y - 80 - minY)
     const distance = Math.pow(power, 1 / TEJO_CONFIG.POWER_CURVE_EXPONENT) * TEJO_CONFIG.MAX_POWER_DRAG_DISTANCE
     const dy = Math.sqrt(distance * distance - dx * dx) / TEJO_CONFIG.DRAG_POWER_SENSITIVITY
-    assert.ok(TEJO_CONFIG.THROW_START_Y + dy <= 1280)
+    assert.ok(TEJO_CONFIG.THROW_START_Y + dy <= 720)
     const shot = aim.update(TEJO_CONFIG.THROW_START_X + dx, TEJO_CONFIG.THROW_START_Y + dy)
     assert.ok(aim.hasValidDrag())
     assert.equal(impact.evaluate(shot.target), 'MECHA')
@@ -316,14 +318,14 @@ test('las cuatro mechas son alcanzables con arrastre dentro del canvas', () => {
 
 test('guía de Tejo coincide con el vuelo y dos mechas completan 10 puntos', () => {
   const page = scene(), dots = []
-  page.add.graphics = () => Object.assign(drawable(), { fillCircle(x, y) { dots.push({ x, y }); return this } })
+  page.add.graphics = () => Object.assign(drawable(), { strokeLineShape(line) { dots.push({ x: line.x2, y: line.y2 }); return this } })
   const aim = new TejoAimSystem(page)
   const shot = aim.update(690, 690)
   const flight = new TejoThrowSystem()
   let position
   const disc = { setPosition(point) { position = point }, setScale() {}, setRotation() {} }
   flight.start(shot, () => {})
-  flight.update(shot.durationMs / TEJO_CONFIG.PREVIEW_DOTS, disc)
+  flight.update(shot.durationMs / 32, disc)
   assert.ok(Math.hypot(position.x - dots[0].x, position.y - dots[0].y) < 0.001)
   assert.ok(Math.hypot(dots.at(-1).x - shot.target.x, dots.at(-1).y - shot.target.y) < 0.001)
   const score = new TejoScoreManager()
@@ -638,22 +640,22 @@ test('Cocuy desplaza montaña y vegetación continuamente sin reinicio cada 220 
     previousY = y
     for (const cloud of world.clouds) {
       assert.ok(cloud.y >= -cloud.displayHeight / 2)
-      assert.ok(cloud.y <= 1280 + cloud.displayHeight / 2)
+      assert.ok(cloud.y <= 720 + cloud.displayHeight / 2)
     }
   }
   assert.ok(world.scenery[1].y > 900)
   assert.ok(world.scenery[2].y > 900)
   world.destroy()
 })
-test('formato vertical conserva ingredientes, carriles y controles dentro de 720x1280', () => {
-  assert.equal(LOGICAL_WIDTH, 720); assert.equal(LOGICAL_HEIGHT, 1280)
+test('formato horizontal conserva ingredientes, carriles y controles dentro de 1280x720', () => {
+  assert.equal(LOGICAL_WIDTH, 1280); assert.equal(LOGICAL_HEIGHT, 720)
   for (const item of COCINA_CONFIG.INGREDIENTS) {
     assert.ok(item.x >= 60 && item.x <= LOGICAL_WIDTH - 60)
-    assert.ok(item.y >= 200 && item.y <= LOGICAL_HEIGHT - 150)
+    assert.ok(item.y >= 120 && item.y <= LOGICAL_HEIGHT - 150)
   }
   for (const x of RUANA_CONFIG.LANE_END_POSITIONS) assert.ok(x > 50 && x < LOGICAL_WIDTH - 50)
   assert.ok(COCUY_CONFIG.PLAYER_MAX_X < LOGICAL_WIDTH)
-  assert.ok(TEJO_CONFIG.THROW_START_Y < LOGICAL_HEIGHT - 120)
+  assert.ok(TEJO_CONFIG.THROW_START_Y < LOGICAL_HEIGHT - 60)
   assert.ok(PAPA_CONFIG.POTATO_SPAWN_Y < LOGICAL_HEIGHT)
   assert.ok(existsSync(new URL('../public/assets/branding/logo-gobernacion.png', import.meta.url)))
 })
@@ -690,4 +692,87 @@ test('Ruana mantiene amarillo, azul, rojo y blanco en notas y botones', () => {
     note.markJudged(0x123456)
     assert.equal(note.shape.color, RUANA_CONFIG.LANE_COLORS[lane])
   }
+})
+test('Cocina muestra temperatura, cocción y quemado sin invadir botones', () => {
+  const view = scene()
+  view.children = { list: [] }
+  const graphics = drawable()
+  graphics.strokeRoundedRect = () => graphics
+  graphics.setVisible = value => { graphics.visible = value; return graphics }
+  view.add.graphics = () => { view.children.list.push(graphics); return graphics }
+  view.add.text = (x, y, contents) => {
+    const item = drawable(x, y)
+    item.contents = contents
+    item.setText = value => { item.contents = value; return item }
+    view.children.list.push(item)
+    return item
+  }
+  const display = new CookingDisplay(view)
+  const snapshot = { ...new CookingSystem().getSnapshot(), temperature: 0.65, cookingProgress: 40, burnProgress: 25 }
+  display.update(snapshot, true)
+  assert.deepEqual(display.bars.map(bar => bar.value.contents), ['65%','40%','25%'])
+  for (const bar of display.bars) {
+    assert.ok(bar.x >= 0 && bar.x + bar.width <= LOGICAL_WIDTH)
+    assert.ok(bar.y + 56 <= COCINA_CONFIG.CONTROL_Y - COCINA_CONFIG.CONTROL_TOUCH_HEIGHT / 2)
+  }
+  display.update(snapshot, false)
+  assert.equal(graphics.visible, false)
+})
+
+test('viewport sigue la altura visible del navegador y libera sus listeners', () => {
+  browser()
+  const previousFrame = globalThis.requestAnimationFrame, previousCancel = globalThis.cancelAnimationFrame
+  globalThis.requestAnimationFrame = callback => { callback(); return 1 }
+  globalThis.cancelAnimationFrame = () => {}
+  try {
+    const app = { style: {} }
+    document.getElementById = () => app
+    window.visualViewport = Object.assign(new EventTarget(), { width: 900, height: 380, offsetLeft: 0, offsetTop: 0 })
+    let refreshes = 0
+    const game = { scale: { refresh: () => refreshes++ }, events: new EventEmitter(), scene: { getScenes: () => [{ scene: { key: 'MenuScene' } }] } }
+    installMobileViewport(game)
+    assert.equal(app.style.height, '380px')
+    window.visualViewport.height = 340
+    window.visualViewport.dispatchEvent(new Event('resize'))
+    assert.equal(app.style.height, '340px')
+    assert.equal(refreshes, 2)
+    game.events.emit('prerender')
+    assert.equal(app.style.backgroundImage, 'none')
+    game.events.emit('destroy')
+    window.visualViewport.height = 300
+    window.visualViewport.dispatchEvent(new Event('resize'))
+    assert.equal(app.style.height, '340px')
+  } finally { globalThis.requestAnimationFrame = previousFrame; globalThis.cancelAnimationFrame = previousCancel }
+})
+test('pantalla expandida estira el fondo sin mover objetos ni cargar imágenes CSS', () => {
+  browser()
+  const previousFrame = globalThis.requestAnimationFrame, previousCancel = globalThis.cancelAnimationFrame
+  globalThis.requestAnimationFrame = callback => { callback(); return 1 }
+  globalThis.cancelAnimationFrame = () => {}
+  try {
+    const app = { style: {} }
+    document.getElementById = () => app
+    window.visualViewport = Object.assign(new EventTarget(), { width: 1000, height: 450, offsetLeft: 0, offsetTop: 0 })
+    const background = Object.assign(drawable(640, 360), { texture: { key: SCENE_ASSETS.tejoBackground.key } })
+    const foreground = Object.assign(drawable(640, 300), { texture: { key: TEJO_ASSETS.bocin.key } })
+    const mountain = Object.assign(drawable(640, 420), { texture: { key: SCENE_ASSETS.summit.key } })
+    const camera = { setScroll(x, y) { this.scrollX = x; this.scrollY = y } }
+    const world = { cameras: { main: camera }, children: { list: [background, mountain, foreground] } }
+    const game = { scale: { gameSize: { width: 1600, height: 720 }, refresh() {} }, events: new EventEmitter(), scene: { getScenes: () => [world] } }
+    installMobileViewport(game)
+    game.events.emit('prerender')
+    assert.equal(background.width, 1600)
+    assert.ok(mountain.width * 62 / 64 >= 1600)
+    assert.equal(mountain.y, 420)
+    assert.equal(background.height, 720)
+    assert.equal(foreground.x, 640)
+    assert.equal(foreground.x - camera.scrollX, 800)
+    assert.equal(app.style.backgroundImage, 'none')
+    game.scale.gameSize.width = 1800
+    game.events.emit('prerender')
+    assert.equal(background.width, 1800)
+    assert.ok(mountain.width * 62 / 64 >= 1800)
+    assert.equal(foreground.x - camera.scrollX, 900)
+    game.events.emit('destroy')
+  } finally { globalThis.requestAnimationFrame = previousFrame; globalThis.cancelAnimationFrame = previousCancel }
 })

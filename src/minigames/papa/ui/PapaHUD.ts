@@ -33,8 +33,8 @@ export default class PapaHUD {
 
 
     if (DEBUG_MODE) {
-      scene.add.rectangle(497.25, 512, 200.25, 280.89, 0x05070c, 0.7).setOrigin(0, 0).setDepth(900)
-      this.debugText = scene.add.text(505.13, 533.33, '', { fontSize: '14px', color: '#d6e4ff', lineSpacing: 4 }).setDepth(901)
+      scene.add.rectangle(884, 288, 356, 158, 0x05070c, 0.7).setOrigin(0, 0).setDepth(900)
+      this.debugText = scene.add.text(898.01, 300, '', { fontSize: '14px', color: '#d6e4ff', lineSpacing: 4 }).setDepth(901)
       this.addButton(898, 376, 'GOOD', actions.spawnGood)
       this.addButton(960, 376, 'BAD', actions.spawnBad)
       this.addButton(1018, 376, 'CLEAR', actions.clearPotatoes)

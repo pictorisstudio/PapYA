@@ -13,24 +13,24 @@ export default class ExplorationScene extends Phaser.Scene {
     const save = gameManager.progressManager.getSaveData()
 
     this.cameras.main.setBackgroundColor('#10131a')
-    this.add.text(360, 131.56, TEXTS.explore, { fontSize: '48px', fontStyle: '700', color: '#f8fafc' }).setOrigin(0.5)
+    this.add.text(640, 74, TEXTS.explore, { fontSize: '48px', fontStyle: '700', color: '#f8fafc' }).setOrigin(0.5)
 
     if (!save.explorationUnlocked) {
-      this.add.text(360, 586.67, TEXTS.exploreLocked, {
+      this.add.text(640, 330, TEXTS.exploreLocked, {
         fontSize: '28px',
         color: '#aab3c5',
       }).setOrigin(0.5)
     } else {
       for (let index = 0; index < 5; index += 1) {
-        const x = index === 4 ? 360 : 190 + (index % 2) * 340
-        const y = 380 + Math.floor(index / 2) * 270
-        this.add.rectangle(x, y, 280, 230, 0x172033).setStrokeStyle(3, 0x6ee7b7)
+        const x = 186 + index * 226
+        const y = 338
+        this.add.rectangle(x, y, 172, 246, 0x172033).setStrokeStyle(3, 0x6ee7b7)
         this.add.text(x, y - 45, TEXTS.routeName(index + 1), { fontSize: '24px', color: '#f8fafc' }).setOrigin(0.5)
         this.add.text(x, y + 35, TEXTS.exploreCard, { fontSize: '18px', color: '#aab3c5' }).setOrigin(0.5)
       }
     }
 
-    this.addButton(360, 1210, 220, 48, TEXTS.backToMap, () => this.scene.start('MapScene'))
+    this.addButton(640, 626, 220, 48, TEXTS.backToMap, () => this.scene.start('MapScene'))
     new DebugPanel(this)
   }
 

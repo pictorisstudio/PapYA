@@ -17,14 +17,14 @@ import CocuyScene from '../minigames/cocuy/CocuyScene'
 
 export const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
-  parent: 'app',
+  parent: 'game',
   backgroundColor: '#10131a',
   pixelArt: true,
   input: { activePointers: 2 },
   antialias: false,
   roundPixels: true,
   scale: {
-    mode: Phaser.Scale.FIT,
+    mode: Phaser.Scale.EXPAND,
     autoCenter: Phaser.Scale.CENTER_BOTH,
     width: LOGICAL_WIDTH,
     height: LOGICAL_HEIGHT,

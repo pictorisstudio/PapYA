@@ -53,8 +53,8 @@ export default class CocuyScene extends Phaser.Scene {
     this.visibilityOverlay = new VisibilityOverlay(this)
     this.inputDebugGraphics = this.add.graphics().setDepth(890)
     this.inputDebugLabels = [
-      this.add.text(180, 640, 'LEFT', { fontSize: '34px', fontStyle: '700', color: '#bae6fd' }).setOrigin(0.5).setDepth(891).setVisible(false),
-      this.add.text(540, 640, 'RIGHT', { fontSize: '34px', fontStyle: '700', color: '#bae6fd' }).setOrigin(0.5).setDepth(891).setVisible(false),
+      this.add.text(320, 360, 'LEFT', { fontSize: '34px', fontStyle: '700', color: '#bae6fd' }).setOrigin(0.5).setDepth(891).setVisible(false),
+      this.add.text(960, 360, 'RIGHT', { fontSize: '34px', fontStyle: '700', color: '#bae6fd' }).setOrigin(0.5).setDepth(891).setVisible(false),
     ]
     this.hud = new CocuyHUD(this, {
       spawnRock: () => this.spawnObstacle('ROCK'),

@@ -2,8 +2,10 @@ import Phaser from 'phaser'
 import { gameConfig } from './config/gameConfig'
 import type MapScene from './scenes/MapScene'
 import './style.css'
+import { installMobileViewport } from './utils/mobileViewport'
 
 const game = new Phaser.Game(gameConfig)
+installMobileViewport(game)
 
 // Android Atrás: las escenas de juego lo consumen como pausa.
 // Fuera del reto regresa una pantalla; en el menú deja actuar al sistema.

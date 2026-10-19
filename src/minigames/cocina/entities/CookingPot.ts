@@ -12,9 +12,9 @@ export default class CookingPot {
   private readonly art: Phaser.GameObjects.Image[] = []
 
   constructor(private readonly scene: Phaser.Scene) {
-    scene.add.image(360, 640, COCINA_ASSETS.pared.key).setDisplaySize(2275.56, 1280).setDepth(LAYERS.background)
-    scene.add.image(360, 640, COCINA_ASSETS.mesa.key).setDisplaySize(2275.56, 1280).setDepth(LAYERS.scenery)
-    scene.add.image(360, 826.67, COCINA_ASSETS.hornilla.key).setDisplaySize(300, 180).setDepth(50)
+    scene.add.image(640, 360, COCINA_ASSETS.pared.key).setDisplaySize(1280, 720).setDepth(LAYERS.background)
+    scene.add.image(640, 360, COCINA_ASSETS.mesa.key).setDisplaySize(1280, 720).setDepth(LAYERS.scenery)
+    scene.add.image(640, 465, COCINA_ASSETS.hornilla.key).setDisplaySize(300, 180).setDepth(50)
     this.graphics = scene.add.graphics().setDepth(60)
     this.debugGraphics = scene.add.graphics().setDepth(920)
     this.dropArea = new Phaser.Geom.Rectangle(
@@ -23,9 +23,9 @@ export default class CookingPot {
       COCINA_CONFIG.POT_DROP_AREA.width,
       COCINA_CONFIG.POT_DROP_AREA.height,
     )
-    this.fire = scene.add.sprite(360, 844.44, COCINA_ASSETS.fuego1.key).play('cocina-fire').setDepth(55).setVisible(false)
+    this.fire = scene.add.sprite(640, 467, COCINA_ASSETS.fuego1.key).setOrigin(0.5, 0.75).play('cocina-fire').setDepth(510).setVisible(false)
     for (const [asset, depth] of [[COCINA_ASSETS.ollaAtras, 60], [COCINA_ASSETS.caldo, 61], [COCINA_ASSETS.ollaFrente, 499]] as const) {
-      this.art.push(scene.add.image(360, 622.22, asset.key).setDisplaySize(384, 384).setDepth(depth))
+      this.art.push(scene.add.image(640, 342, asset.key).setDisplaySize(384, 384).setDepth(depth))
     }
   }
 

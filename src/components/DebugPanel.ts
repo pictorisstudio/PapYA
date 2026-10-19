@@ -16,39 +16,39 @@ export default class DebugPanel {
       return
     }
 
-    scene.add.rectangle(326, 64, 382, 166, 0x05070c, 0.72).setOrigin(0, 0).setDepth(LAYERS.debug)
-    this.text = scene.add.text(340, 74, '', {
+    scene.add.rectangle(886, 64, 382, 166, 0x05070c, 0.72).setOrigin(0, 0).setDepth(LAYERS.debug)
+    this.text = scene.add.text(900, 74, '', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '10px',
       color: '#d6e4ff',
       lineSpacing: 0,
     }).setDepth(LAYERS.debug)
 
-    this.addButton(344, 148, 'WIN', () => this.finishMinigame(true))
-    this.addButton(406, 148, 'LOSE', () => this.finishMinigame(false))
-    this.addButton(474, 148, 'NEXT', () => this.finishMinigame(false))
-    this.addButton(542, 148, 'TEST', () => scene.scene.start('DevScene'))
-    this.addButton(608, 148, '+RUTA', () => this.changeProgress(() => gameManager.progressManager.unlockNextRoute()))
-    this.addButton(344, 176, 'ALL', () => this.changeProgress(() => gameManager.progressManager.unlockAllRoutes()))
-    this.addButton(406, 176, 'BORRAR', () => {
+    this.addButton(904, 148, 'WIN', () => this.finishMinigame(true))
+    this.addButton(966, 148, 'LOSE', () => this.finishMinigame(false))
+    this.addButton(1034, 148, 'NEXT', () => this.finishMinigame(false))
+    this.addButton(1102, 148, 'TEST', () => scene.scene.start('DevScene'))
+    this.addButton(1168, 148, '+RUTA', () => this.changeProgress(() => gameManager.progressManager.unlockNextRoute()))
+    this.addButton(904, 176, 'ALL', () => this.changeProgress(() => gameManager.progressManager.unlockAllRoutes()))
+    this.addButton(966, 176, 'BORRAR', () => {
       // Este módulo ni siquiera se importa en una compilación de producción.
       if (import.meta.env.DEV) void import('../dev/resetProgress').then(module => {
         if (this.scene.scene.isActive() && gameManager.debugManager.areControlsEnabled()) module.openProgressReset(this.scene)
       })
     })
-    this.addButton(474, 176, 'MENU', () => scene.scene.start('MenuScene'))
-    this.addButton(542, 176, 'MAPA', () => scene.scene.start('MapScene'))
-    this.addButton(608, 176, 'RES', () => { if (!gameManager.roundManager.getState().isRunning) scene.scene.start('ResultsScene') })
-    this.addButton(344, 204, 'TOUCH', () => this.toggleTouchAreas(), 72)
+    this.addButton(1034, 176, 'MENU', () => scene.scene.start('MenuScene'))
+    this.addButton(1102, 176, 'MAPA', () => scene.scene.start('MapScene'))
+    this.addButton(1168, 176, 'RES', () => { if (!gameManager.roundManager.getState().isRunning) scene.scene.start('ResultsScene') })
+    this.addButton(904, 204, 'TOUCH', () => this.toggleTouchAreas(), 72)
 
     this.viewportOverlay = scene.add.graphics().setDepth(LAYERS.debug - 1)
     this.controls = scene.children.list.filter(object => {
       const depth = (object as Phaser.GameObjects.Rectangle).depth
       return depth >= LAYERS.debug - 1 && depth <= LAYERS.debug + 3
     }) as typeof this.controls
-    const toggle = scene.add.rectangle(586, 32, 220, 30, 0x172033)
+    const toggle = scene.add.rectangle(1146, 32, 220, 30, 0x172033)
       .setStrokeStyle(1, 0x64748b).setDepth(LAYERS.debug + 8).setInteractive({ useHandCursor: true })
-    const toggleText = scene.add.text(586, 32, '', {
+    const toggleText = scene.add.text(1146, 32, '', {
       fontFamily: 'Arial, sans-serif', fontSize: '16px', color: '#f8fafc',
     }).setOrigin(0.5).setDepth(LAYERS.debug + 8)
     const updateControls = () => {

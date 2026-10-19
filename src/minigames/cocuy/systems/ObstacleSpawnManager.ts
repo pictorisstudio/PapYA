@@ -33,7 +33,7 @@ export default class ObstacleSpawnManager {
     const obstacle = new CocuyObstacle(this.scene, {
       id: `cocuy-obstacle-${this.idCounter}`,
       type,
-      x: x ?? Phaser.Math.Between(80, 640),
+      x: x ?? Phaser.Math.Between(130, 1150),
       y: -90,
       speed,
       radius,
@@ -76,7 +76,7 @@ export default class ObstacleSpawnManager {
     const type = this.pickObstacleType()
     const minDistance = worldSpeed * COCUY_CONFIG.MIN_REACTION_TIME
     const avoidsPlayer = type === 'ROCK' && Phaser.Math.Between(0, 100) < 62
-    const x = avoidsPlayer ? this.getFairRockX(playerX, minDistance) : Phaser.Math.Between(80, 640)
+    const x = avoidsPlayer ? this.getFairRockX(playerX, minDistance) : Phaser.Math.Between(130, 1150)
     const speed = Phaser.Math.Linear(12, 74, Phaser.Math.Clamp(elapsedMs / COCUY_CONFIG.GAME_DURATION_MS, 0, 1))
     const windDirection: -1 | 1 = Phaser.Math.Between(0, 1) === 0 ? -1 : 1
 
@@ -85,7 +85,7 @@ export default class ObstacleSpawnManager {
 
   private getFairRockX(playerX: number, minDistance: number): number {
     const side: -1 | 1 = Phaser.Math.Between(0, 1) === 0 ? -1 : 1
-    return Phaser.Math.Clamp(playerX + side * Phaser.Math.Between(Math.min(200, Math.round(minDistance)), 280), 80, 640)
+    return Phaser.Math.Clamp(playerX + side * Phaser.Math.Between(Math.min(200, Math.round(minDistance)), 280), 130, 1150)
   }
 
   private pickObstacleType(): ObstacleType {

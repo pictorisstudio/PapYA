@@ -37,11 +37,11 @@ export default class TejoHUD {
     this.mechasText = scene.add.text(300, TEJO_CONFIG.SAFE_MARGIN_Y + 40, TEXTS.minigames.tejo.mechas(0), { fontSize: '21px', color: '#f8fafc' })
     this.timeText = scene.add.text(514, TEJO_CONFIG.SAFE_MARGIN_Y + 40, TEXTS.time(30), { fontSize: '21px', color: '#f8fafc' })
 
-    this.resultText = scene.add.text(360, 629.33, '', { fontSize: '34px', fontStyle: '700', color: '#ffffff' }).setOrigin(0.5).setDepth(960)
+    this.resultText = scene.add.text(640, 354, '', { fontSize: '34px', fontStyle: '700', color: '#ffffff' }).setOrigin(0.5).setDepth(960)
 
     if (DEBUG_MODE) {
-      scene.add.rectangle(499.5, 359.11, 209.25, 330.67, 0x05070c, 0.7).setOrigin(0, 0).setDepth(900)
-      this.debugText = scene.add.text(507.38, 380.44, '', { fontSize: '13px', color: '#d6e4ff', lineSpacing: 4 }).setDepth(901)
+      scene.add.rectangle(888, 202, 372, 186, 0x05070c, 0.7).setOrigin(0, 0).setDepth(900)
+      this.debugText = scene.add.text(902.01, 214, '', { fontSize: '13px', color: '#d6e4ff', lineSpacing: 4 }).setDepth(901)
       this.addButton(902, 336, 'MECHA', actions.forceMecha, 62)
       this.addButton(970, 336, 'NEAR', actions.forceNear, 56)
       this.addButton(1032, 336, 'OUT', actions.forceOut, 50)

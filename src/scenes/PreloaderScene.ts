@@ -16,7 +16,7 @@ export default class PreloaderScene extends Phaser.Scene {
     gameManager.audioManager.preload(this, Object.keys(AUDIO_CONFIG) as AudioKey[])
     this.cameras.main.setBackgroundColor('#000000')
     if (!this.anims.exists('loading-condor')) this.anims.create({ key: 'loading-condor', frames: [SCENE_ASSETS.condorSide1, SCENE_ASSETS.condorSide2, SCENE_ASSETS.condorSide3, SCENE_ASSETS.condorSide4, SCENE_ASSETS.condorSide5, SCENE_ASSETS.condorSide6].map(asset => ({ key: asset.key })), frameRate: 8, repeat: -1 })
-    this.add.sprite(360, 640, SCENE_ASSETS.condorSide1.key).setDisplaySize(160, 160).play('loading-condor')
+    this.add.sprite(640, 360, SCENE_ASSETS.condorSide1.key).setDisplaySize(160, 160).play('loading-condor')
     for (const asset of [...POTATO_ASSETS.GOOD, ...POTATO_ASSETS.BAD, ...Object.values(ROUTE_CARD_ASSETS), ...Object.values(COCINA_ASSETS), ...Object.values(TEJO_ASSETS)]) {
       this.load.image(asset.key, asset.path)
     }

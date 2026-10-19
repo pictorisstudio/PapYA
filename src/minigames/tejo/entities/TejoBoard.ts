@@ -21,11 +21,11 @@ export default class TejoBoard {
     this.debugGraphics = scene.add.graphics().setDepth(900)
     this.impactGraphics = scene.add.graphics().setDepth(920)
     this.mechas = this.createMechaZones()
-    this.mechaArt.push(scene.add.image(360, TEJO_CONFIG.BOARD_Y - 124, TEJO_ASSETS.cancha.key).setDisplaySize(440, 440).setDepth(LAYERS.scenery - 2))
+    this.mechaArt.push(scene.add.image(640, TEJO_CONFIG.BOARD_Y - 124, TEJO_ASSETS.cancha.key).setDisplaySize(440, 440).setDepth(LAYERS.scenery - 2))
     this.draw()
     // Anclado al suelo: eleva el blanco pintado hasta la zona real de impacto.
-    this.mechaArt.push(scene.add.image(360, 1280, SCENE_ASSETS.tejoBackground.key).setOrigin(0.5, 1).setDisplaySize(2275.56, 1280).setDepth(LAYERS.background + 1))
-    this.mechaArt.push(scene.add.image(360, TEJO_CONFIG.BOARD_Y, TEJO_ASSETS.bocin.key).setDisplaySize(80, 80).setDepth(LAYERS.scenery - 1))
+    this.mechaArt.push(scene.add.image(640, 720, SCENE_ASSETS.tejoBackground.key).setOrigin(0.5, 1).setDisplaySize(1280, 720).setDepth(LAYERS.background + 1))
+    this.mechaArt.push(scene.add.image(640, TEJO_CONFIG.BOARD_Y, TEJO_ASSETS.bocin.key).setDisplaySize(80, 80).setDepth(LAYERS.scenery - 1))
     for (const mecha of this.mechas) {
       this.mechaArt.push(scene.add.image(mecha.x, mecha.y, TEJO_ASSETS.mecha.key).setDisplaySize(44, 44).setDepth(LAYERS.scenery))
     }
@@ -97,7 +97,7 @@ export default class TejoBoard {
     const bottomRight = TEJO_CONFIG.BOARD_CENTER_X + TEJO_CONFIG.COURT_BOTTOM_WIDTH / 2
 
     this.graphics.fillStyle(TEJO_CONFIG.COLORS.background, 1)
-    this.graphics.fillRect(0, 0, 720, 1280)
+    this.graphics.fillRect(0, 0, 1280, 720)
     this.graphics.fillStyle(TEJO_CONFIG.COLORS.court, 1)
     this.graphics.fillPoints(
       [
