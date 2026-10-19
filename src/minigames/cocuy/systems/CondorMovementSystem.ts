@@ -3,7 +3,7 @@ import { COCUY_CONFIG } from '../config/cocuyConfig'
 import type { CocuyInputDirection, MovementSnapshot } from '../types/CocuyTypes'
 
 export default class CondorMovementSystem {
-  private x = 640
+  private x = 360
   private velocity = 0
   private inputDirection: CocuyInputDirection = 0
   private windInfluence = 0
@@ -83,6 +83,6 @@ export default class CondorMovementSystem {
   }
 
   private getDirectionForX(x: number): CocuyInputDirection {
-    return x < 640 ? -1 : 1
+    return x < 360 ? -1 : 1
   }
 }

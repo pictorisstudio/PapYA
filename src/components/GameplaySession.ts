@@ -7,6 +7,7 @@ import type { AudioKey } from '../config/audioConfig'
 import type { MinigameResult } from '../types/Minigame'
 
 export interface SessionHooks {
+  remainingMs?: () => number
   cancelInput?: () => void
   pause?: () => void
   resume?: () => void
@@ -30,10 +31,17 @@ export default class GameplaySession {
     // Animaciones y temporizadores siguen el mismo ritmo que la simulación.
     if (scene.time) scene.time.timeScale = gameManager.pace
     if (scene.tweens) scene.tweens.timeScale = gameManager.pace
-    const button = scene.add.rectangle(812, 66, 122, 46, 0x1f2937).setDepth(LAYERS.hud)
+    const names: Record<string, string> = { PapaScene: TEXTS.minigames.papa.name, RuanaScene: TEXTS.minigames.ruana.name, CocinaScene: TEXTS.minigames.cocina.name, TejoScene: TEXTS.minigames.tejo.name, CocuyScene: TEXTS.minigames.cocuy.name }
+    scene.add.text(32, 52, names[scene.scene.key] ?? '', { fontSize: '28px', color: '#ffffff', stroke: '#10131a', strokeThickness: 5 }).setDepth(LAYERS.hud)
+    const timeText = scene.add.text(32, 100, '', { fontSize: '27px', color: '#ffffff', stroke: '#10131a', strokeThickness: 5 }).setDepth(LAYERS.hud)
+    const updateTime = () => timeText.setText(TEXTS.time((hooks.remainingMs?.() ?? 30000) / 1000))
+    updateTime()
+    scene.events.on(Phaser.Scenes.Events.UPDATE, updateTime)
+    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => scene.events.off(Phaser.Scenes.Events.UPDATE, updateTime))
+    const button = scene.add.rectangle(610, 100, 140, 88, 0x1f2937).setDepth(LAYERS.hud)
     button.setStrokeStyle(2, 0xcbd5e1).setInteractive({ useHandCursor: true })
     button.on('pointerdown', () => this.requestPause())
-    scene.add.text(812, 66, TEXTS.pause, { fontSize: '22px', color: '#ffffff' }).setOrigin(0.5).setDepth(LAYERS.hud)
+    scene.add.text(610, 100, TEXTS.pause, { fontSize: '24px', color: '#ffffff' }).setOrigin(0.5).setDepth(LAYERS.hud)
     scene.game.events.on(Phaser.Core.Events.BLUR, this.requestPause, this)
     scene.events.on(Phaser.Scenes.Events.PAUSE, this.onPause, this)
     scene.events.on(Phaser.Scenes.Events.RESUME, this.onResume, this)
@@ -89,8 +97,8 @@ export default class GameplaySession {
       return
     }
     gameManager.audioManager.playEffect(this.scene, 'victory')
-    this.scene.add.rectangle(640, 340, 420, 112, 0x102132, 0.95).setDepth(LAYERS.overlay)
-    this.scene.add.text(640, 340, TEXTS.won, { fontSize: '54px', fontStyle: '700', color: '#6ee7b7' })
+    this.scene.add.rectangle(360, 604.44, 236.25, 199.11, 0x102132, 0.95).setDepth(LAYERS.overlay)
+    this.scene.add.text(360, 604.44, TEXTS.won, { fontSize: '54px', fontStyle: '700', color: '#6ee7b7' })
       .setOrigin(0.5).setDepth(LAYERS.overlay + 1)
     this.scene.time.delayedCall(WIN_MESSAGE_DURATION_MS, advance)
   }

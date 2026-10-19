@@ -7,10 +7,10 @@ export default class PauseScene extends Phaser.Scene {
   init(data: { owner: string }): void { this.owner = data.owner }
   create(): void {
     this.scene.bringToTop()
-    this.add.rectangle(640, 360, 1280, 720, 0x05070c, 0.88).setInteractive()
-    this.add.text(640, 250, TEXTS.paused, { fontSize: '44px', color: '#f8fafc' }).setOrigin(0.5)
-    this.button(360, TEXTS.resume, () => this.resumeOwner())
-    this.button(450, TEXTS.leave, () => {
+    this.add.rectangle(360, 640, 720, 1280, 0x05070c, 0.88).setInteractive()
+    this.add.text(360, 444.44, TEXTS.paused, { fontSize: '44px', color: '#f8fafc' }).setOrigin(0.5)
+    this.button(640, TEXTS.resume, () => this.resumeOwner())
+    this.button(780, TEXTS.leave, () => {
       this.scene.stop(this.owner)
       this.sound.stopAll()
       this.scene.start('MenuScene')
@@ -28,7 +28,7 @@ export default class PauseScene extends Phaser.Scene {
     this.scene.stop()
   }
   private button(y: number, text: string, action: () => void): void {
-    this.add.rectangle(640, y, 360, 62, 0xfbbf24).setInteractive({ useHandCursor: true }).on('pointerdown', action)
-    this.add.text(640, y, text, { fontSize: '26px', color: '#1f2937' }).setOrigin(0.5)
+    this.add.rectangle(360, y, 360, 62, 0xfbbf24).setInteractive({ useHandCursor: true }).on('pointerdown', action)
+    this.add.text(360, y, text, { fontSize: '26px', color: '#1f2937' }).setOrigin(0.5)
   }
 }

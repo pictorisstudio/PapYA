@@ -14,7 +14,7 @@ export default class Condor {
     this.hitboxGuide = scene.add.rectangle(0, 0, COCUY_CONFIG.CONDOR_HITBOX_WIDTH, COCUY_CONFIG.CONDOR_HITBOX_HEIGHT, COCUY_CONFIG.COLORS.hitbox, 0)
     this.hitboxGuide.setStrokeStyle(2, COCUY_CONFIG.COLORS.hitbox, 0)
 
-    this.container = scene.add.container(640, COCUY_CONFIG.PLAYER_Y, [this.body, this.hitboxGuide]).setDepth(700)
+    this.container = scene.add.container(360, COCUY_CONFIG.PLAYER_Y, [this.body, this.hitboxGuide]).setDepth(700)
   }
 
   update(delta: number): void {

@@ -19,9 +19,9 @@ export default class ResultsScene extends Phaser.Scene {
     const message = allUnlocked ? TEXTS.runEnd.allRoutes
       : gameManager.lastUnlockedRoute ? TEXTS.runEnd.routeUnlocked : TEXTS.runEnd.routePending
     this.cameras.main.setBackgroundColor('#10131a')
-    this.add.text(640, 360, message, {
-      fontFamily: 'Arial, sans-serif', fontSize: '40px', color: '#6ee7b7',
-      align: 'center', wordWrap: { width: 1000 },
+    this.add.text(360, 640, message, {
+      fontFamily: 'Arial, sans-serif', fontSize: '34px', color: '#6ee7b7',
+      align: 'center', wordWrap: { width: 620 },
     }).setOrigin(0.5)
     this.time.delayedCall(ROUTE_MESSAGE_DURATION_MS, () => {
       gameManager.startNewRun(undefined, false, true)

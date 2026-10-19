@@ -50,7 +50,7 @@ export default class PapaScene extends Phaser.Scene {
     this.inputHandler = (pointer) => this.handlePointerDown(pointer)
     this.input.on('pointerdown', this.inputHandler)
 
-    this.session = new GameplaySession(this, { debugFinish: won => this.finish(won) })
+    this.session = new GameplaySession(this, { remainingMs: () => Math.max(0, PAPA_CONFIG.GAME_DURATION - this.elapsedMs) / gameManager.pace, debugFinish: won => this.finish(won) })
     new DebugPanel(this)
     this.refreshHud()
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.cleanup())

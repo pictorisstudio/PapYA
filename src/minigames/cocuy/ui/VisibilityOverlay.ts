@@ -6,7 +6,7 @@ export default class VisibilityOverlay {
   private activeUntilMs = 0
 
   constructor(private readonly scene: Phaser.Scene) {
-    this.overlay = scene.add.rectangle(640, 360, 1280, 720, 0xe0f2fe, 0).setDepth(860)
+    this.overlay = scene.add.rectangle(360, 640, 720, 1280, 0xe0f2fe, 0).setDepth(860)
   }
 
   activate(currentTimeMs: number): void {

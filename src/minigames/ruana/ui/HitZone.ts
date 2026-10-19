@@ -14,7 +14,7 @@ export default class HitZone {
     for (const lane of projector.getLanes()) {
       // TODO: reemplazar por zona visual final del telar.
       const zone = scene.add
-        .rectangle(lane.endX, lane.endY, RUANA_CONFIG.HIT_ZONE_WIDTH, RUANA_CONFIG.HIT_ZONE_HEIGHT, RUANA_CONFIG.COLORS.hitZone, 0.82)
+        .rectangle(lane.endX, lane.endY, RUANA_CONFIG.HIT_ZONE_WIDTH, RUANA_CONFIG.HIT_ZONE_HEIGHT, RUANA_CONFIG.LANE_COLORS[lane.id], 0.82)
         .setStrokeStyle(3, 0xf8fafc, 0.85)
         .setDepth(650)
 

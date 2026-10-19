@@ -1,5 +1,5 @@
-export const LOGICAL_WIDTH = 1280
-export const LOGICAL_HEIGHT = 720
+export const LOGICAL_WIDTH = 720
+export const LOGICAL_HEIGHT = 1280
 export const SAFE_MARGIN = 48
 export const SAFE_MARGIN_X = 56
 export const SAFE_MARGIN_Y = 44

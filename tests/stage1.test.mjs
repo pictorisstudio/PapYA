@@ -1,3 +1,9 @@
+import RhythmNote from '../src/minigames/ruana/entities/RhythmNote.ts'
+import HitZone from '../src/minigames/ruana/ui/HitZone.ts'
+import { LOGICAL_WIDTH, LOGICAL_HEIGHT } from '../src/config/constants.ts'
+import { RUANA_CONFIG } from '../src/minigames/ruana/config/ruanaConfig.ts'
+import { COCUY_CONFIG } from '../src/minigames/cocuy/config/cocuyConfig.ts'
+import { applyHudLayers } from '../src/config/layers.ts'
 import WorldScrollSystem from '../src/minigames/cocuy/systems/WorldScrollSystem.ts'
 import { SCENE_ASSETS } from '../src/config/sceneAssets.ts'
 import AudioManager from '../src/core/AudioManager.ts'
@@ -53,7 +59,7 @@ function browser() {
 }
 function drawable(x = 0, y = 0) {
   const object = Object.assign(new EventEmitter(), { x, y, depth: 0, alpha: 1, rotation: 0, scaleX: 1, scaleY: 1 })
-  for (const method of ['setVisible', 'setStrokeStyle', 'setOrigin', 'setInteractive', 'setScale', 'setFillStyle', 'setAlpha',
+  for (const method of ['setCrop', 'setText', 'setVisible', 'setStrokeStyle', 'setOrigin', 'setInteractive', 'setScale', 'setFillStyle', 'setAlpha',
     'setRotation', 'fillStyle', 'fillRect', 'fillPoints', 'lineStyle', 'strokeLineShape', 'fillRoundedRect',
     'fillEllipse', 'strokeEllipse', 'strokeCircle', 'clear', 'fillCircle']) object[method] = () => object
   object.setDepth = value => { object.depth = value; return object }
@@ -191,11 +197,11 @@ test('papas cargan seis archivos y el toque circular no crece al rotar el sprite
     scale: 1, velocityX: 0, velocityY: 0, rotationSpeed: Math.PI })
   assert.ok(POTATO_ASSETS.GOOD.some(asset => asset.key === potato.sprite.texture.key))
   assert.equal(potato.contains(640 + PAPA_CONFIG.POTATO_TOUCH_RADIUS, 360), true)
-  assert.equal(potato.contains(640 + 25, 360 + 25), false)
+  assert.equal(potato.contains(640 + PAPA_CONFIG.POTATO_TOUCH_RADIUS, 360 + PAPA_CONFIG.POTATO_TOUCH_RADIUS), false)
   potato.update(250)
   assert.equal(potato.sprite.rotation, Math.PI / 4)
   assert.equal(potato.container.rotation ?? 0, 0)
-  assert.equal(potato.contains(potato.x + 25, potato.y + 25), false)
+  assert.equal(potato.contains(potato.x + PAPA_CONFIG.POTATO_TOUCH_RADIUS, potato.y + PAPA_CONFIG.POTATO_TOUCH_RADIUS), false)
   potato.container.setScale(0.86)
   assert.equal(potato.contains(potato.x + PAPA_CONFIG.POTATO_TOUCH_RADIUS * 0.86 + 1, potato.y), false)
   potato.hit()
@@ -301,7 +307,7 @@ test('las cuatro mechas son alcanzables con arrastre dentro del canvas', () => {
     const power = (TEJO_CONFIG.THROW_START_Y - 80 - mecha.y) / (TEJO_CONFIG.THROW_START_Y - 80 - minY)
     const distance = Math.pow(power, 1 / TEJO_CONFIG.POWER_CURVE_EXPONENT) * TEJO_CONFIG.MAX_POWER_DRAG_DISTANCE
     const dy = Math.sqrt(distance * distance - dx * dx) / TEJO_CONFIG.DRAG_POWER_SENSITIVITY
-    assert.ok(TEJO_CONFIG.THROW_START_Y + dy <= 720)
+    assert.ok(TEJO_CONFIG.THROW_START_Y + dy <= 1280)
     const shot = aim.update(TEJO_CONFIG.THROW_START_X + dx, TEJO_CONFIG.THROW_START_Y + dy)
     assert.ok(aim.hasValidDrag())
     assert.equal(impact.evaluate(shot.target), 'MECHA')
@@ -328,16 +334,16 @@ test('guía de Tejo coincide con el vuelo y dos mechas completan 10 puntos', () 
 test('Cocina conserva agarre, bloquea segundo arrastre y cancela limpiamente', () => {
   const pot = { containsDropPoint: () => true, getSlotPosition: () => ({ x: 640, y: 360 }) }
   const manager = new IngredientManager(scene(), pot)
-  assert.equal(manager.startDrag(156, 174), true)
-  assert.equal(manager.startDrag(330, 150), false)
+  assert.equal(manager.startDrag(COCINA_CONFIG.INGREDIENTS[0].x + 10, COCINA_CONFIG.INGREDIENTS[0].y), true)
+  assert.equal(manager.startDrag(COCINA_CONFIG.INGREDIENTS[1].x, COCINA_CONFIG.INGREDIENTS[1].y), false)
   manager.dragTo(300, 300)
   assert.equal(manager.dropAt(300, 300), false)
   assert.equal(manager.getIngredientsInPot()[0].id, 'cubios')
-  assert.equal(manager.startDrag(1094, 520), true)
+  assert.equal(manager.startDrag(COCINA_CONFIG.INGREDIENTS[5].x, COCINA_CONFIG.INGREDIENTS[5].y), true)
   assert.equal(manager.dropAt(640, 360), true)
   assert.equal(manager.dropAt(640, 360), false)
-  manager.startDrag(330, 150); manager.cancelDrag()
-  assert.equal(manager.startDrag(330, 150), true)
+  manager.startDrag(COCINA_CONFIG.INGREDIENTS[1].x, COCINA_CONFIG.INGREDIENTS[1].y); manager.cancelDrag()
+  assert.equal(manager.startDrag(COCINA_CONFIG.INGREDIENTS[1].x, COCINA_CONFIG.INGREDIENTS[1].y), true)
 })
 
 test('Cocina solo cuenta el distractor al soltar el dedo dueño', () => {
@@ -632,10 +638,56 @@ test('Cocuy desplaza montaña y vegetación continuamente sin reinicio cada 220 
     previousY = y
     for (const cloud of world.clouds) {
       assert.ok(cloud.y >= -cloud.displayHeight / 2)
-      assert.ok(cloud.y <= 720 + cloud.displayHeight / 2)
+      assert.ok(cloud.y <= 1280 + cloud.displayHeight / 2)
     }
   }
   assert.ok(world.scenery[1].y > 900)
   assert.ok(world.scenery[2].y > 900)
   world.destroy()
+})
+test('formato vertical conserva ingredientes, carriles y controles dentro de 720x1280', () => {
+  assert.equal(LOGICAL_WIDTH, 720); assert.equal(LOGICAL_HEIGHT, 1280)
+  for (const item of COCINA_CONFIG.INGREDIENTS) {
+    assert.ok(item.x >= 60 && item.x <= LOGICAL_WIDTH - 60)
+    assert.ok(item.y >= 200 && item.y <= LOGICAL_HEIGHT - 150)
+  }
+  for (const x of RUANA_CONFIG.LANE_END_POSITIONS) assert.ok(x > 50 && x < LOGICAL_WIDTH - 50)
+  assert.ok(COCUY_CONFIG.PLAYER_MAX_X < LOGICAL_WIDTH)
+  assert.ok(TEJO_CONFIG.THROW_START_Y < LOGICAL_HEIGHT - 120)
+  assert.ok(PAPA_CONFIG.POTATO_SPAWN_Y < LOGICAL_HEIGHT)
+  assert.ok(existsSync(new URL('../public/assets/branding/logo-gobernacion.png', import.meta.url)))
+})
+
+test('HUD mínimo oculta los indicadores anteriores sin eliminar los controles DEV', () => {
+  const objects = [drawable(), drawable()]
+  objects[1].depth = 902
+  for (const node of objects) node.setVisible = value => { node.visible = value; return node }
+  applyHudLayers({ children: { list: objects } }, 0)
+  assert.equal(objects[0].visible, false)
+  assert.equal(objects[1].depth, 1802)
+  const control = drawable()
+  control.setVisible = value => { control.visible = value; return control }
+  applyHudLayers({ children: { list: [control] } }, 0, false)
+  assert.notEqual(control.visible, false)
+})
+test('Ruana mantiene amarillo, azul, rojo y blanco en notas y botones', () => {
+  assert.deepEqual(RUANA_CONFIG.LANE_COLORS, [0xfacc15, 0x2563eb, 0xef4444, 0xffffff])
+  const lanes = RUANA_CONFIG.LANE_END_POSITIONS.map((x, id) => ({ id, startX: x, startY: 300, endX: x, endY: 1040 }))
+  const projector = { getLanes: () => lanes, project: lane => ({ x: lanes[lane].endX, y: 500, scale: 1 }) }
+  const view = scene(), colors = []
+  view.add.rectangle = (x, y, width, height, color) => {
+    const item = drawable(x, y)
+    item.color = color
+    item.setFillStyle = next => { item.color = next; return item }
+    colors.push(item)
+    return item
+  }
+  new HitZone(view, projector)
+  assert.deepEqual(colors.slice(0, 4).map(item => item.color), [...RUANA_CONFIG.LANE_COLORS])
+  for (let lane = 0; lane < 4; lane++) {
+    const note = new RhythmNote(view, { id: `test-${lane}`, lane, hitTime: 500 }, projector)
+    assert.equal(note.shape.color, RUANA_CONFIG.LANE_COLORS[lane])
+    note.markJudged(0x123456)
+    assert.equal(note.shape.color, RUANA_CONFIG.LANE_COLORS[lane])
+  }
 })

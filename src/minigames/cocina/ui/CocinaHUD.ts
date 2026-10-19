@@ -37,11 +37,11 @@ export default class CocinaHUD {
       fontSize: '20px',
       color: '#d8dee9',
     })
-    this.messageText = scene.add.text(640, 500, TEXTS.minigames.cocina.gesture, { fontSize: '25px', fontStyle: '700', color: COCINA_CONFIG.COLORS.text }).setOrigin(0.5).setDepth(760)
+    this.messageText = scene.add.text(360, 888.89, TEXTS.minigames.cocina.gesture, { fontSize: '25px', fontStyle: '700', color: COCINA_CONFIG.COLORS.text }).setOrigin(0.5).setDepth(760)
 
     if (DEBUG_MODE) {
-      scene.add.rectangle(856, 174, 400, 244, 0x05070c, 0.7).setOrigin(0, 0).setDepth(900)
-      this.debugText = scene.add.text(870, 186, '', { fontSize: '13px', color: '#d6e4ff', lineSpacing: 4 }).setDepth(901)
+      scene.add.rectangle(481.5, 309.33, 225, 433.78, 0x05070c, 0.7).setOrigin(0, 0).setDepth(900)
+      this.debugText = scene.add.text(489.38, 330.67, '', { fontSize: '13px', color: '#d6e4ff', lineSpacing: 4 }).setDepth(901)
       this.addButton(870, 338, 'RECIPE', actions.forceRecipeComplete, 64)
       this.addButton(940, 338, 'WRONG', actions.addWrongIngredient, 60)
       this.addButton(1006, 338, 'CLEAN', actions.removeWrongIngredients, 58)

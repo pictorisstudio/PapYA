@@ -46,8 +46,8 @@ export default class RuanaHUD {
       .setOrigin(0.5)
 
     if (DEBUG_MODE) {
-      scene.add.rectangle(894, 188, 360, 158, 0x05070c, 0.7).setOrigin(0, 0).setDepth(900)
-      this.debugText = scene.add.text(908, 200, '', { fontSize: '14px', color: '#d6e4ff', lineSpacing: 4 }).setDepth(901)
+      scene.add.rectangle(502.88, 334.22, 202.5, 280.89, 0x05070c, 0.7).setOrigin(0, 0).setDepth(900)
+      this.debugText = scene.add.text(510.75, 355.56, '', { fontSize: '14px', color: '#d6e4ff', lineSpacing: 4 }).setDepth(901)
       this.addButton(scene, 908, 286, 'PERFECT', actions.forcePerfect)
       this.addButton(scene, 984, 286, 'MISS', actions.forceMiss)
       this.addButton(scene, 1044, 286, 'FIN', actions.finishNow)

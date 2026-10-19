@@ -66,7 +66,7 @@ export default class RuanaScene extends Phaser.Scene {
     })
     this.refreshHud()
 
-    this.session = new GameplaySession(this, { pause: () => this.clock?.pause(), resume: () => { if (!this.finished) this.clock?.resume() }, debugFinish: won => this.finishWithScore(won) })
+    this.session = new GameplaySession(this, { remainingMs: () => Math.max(0, 13420 - (this.clock?.getCurrentTime() ?? 0)) / gameManager.pace, pause: () => this.clock?.pause(), resume: () => { if (!this.finished) this.clock?.resume() }, debugFinish: won => this.finishWithScore(won) })
     new DebugPanel(this)
     this.startGameplay()
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.cleanup())
@@ -232,14 +232,14 @@ export default class RuanaScene extends Phaser.Scene {
       return
     }
 
-    this.add.image(640, 360, SCENE_ASSETS.ruanaBackground.key).setDisplaySize(1280, 720).setDepth(LAYERS.background)
+    this.add.image(360, 640, SCENE_ASSETS.ruanaBackground.key).setDisplaySize(2275.56, 1280).setDepth(LAYERS.background)
 
     // TODO: reemplazar por telar y ruana pixel art finales.
-    this.add.rectangle(640, 386, 1080, 450, RUANA_CONFIG.COLORS.loomPanel, 0.5).setStrokeStyle(4, 0x64748b)
+    this.add.rectangle(360, 686.22, 607.5, 800, RUANA_CONFIG.COLORS.loomPanel, 0.5).setStrokeStyle(4, 0x64748b)
     if (DEBUG_MODE) this.add.circle(RUANA_CONFIG.VANISHING_POINT_X, RUANA_CONFIG.VANISHING_POINT_Y, 8, 0xf8fafc, 0.9).setDepth(LAYERS.debug - 1)
 
     for (const lane of this.projector.getLanes()) {
-      this.add.line(0, 0, lane.startX, lane.startY, lane.endX, lane.endY, RUANA_CONFIG.COLORS.laneLine, 0.68).setOrigin(0, 0)
+      this.add.line(0, 0, lane.startX, lane.startY, lane.endX, lane.endY, RUANA_CONFIG.LANE_COLORS[lane.id], 0.5).setOrigin(0, 0)
       if (DEBUG_MODE) this.add.line(0, 0, RUANA_CONFIG.VANISHING_POINT_X, RUANA_CONFIG.VANISHING_POINT_Y, lane.startX, lane.startY, 0xffffff, 0.3).setOrigin(0, 0).setDepth(LAYERS.debug - 1)
     }
 

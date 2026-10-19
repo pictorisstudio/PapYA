@@ -60,7 +60,7 @@ export default class TejoScene extends Phaser.Scene {
     this.input.on('pointerupoutside', this.handlePointerUp, this)
     this.events.on('debug:touch-areas-changed', this.handleDebugTouchAreasChanged, this)
 
-    this.session = new GameplaySession(this, { debugFinish: won => this.finish(won), cancelInput: () => this.cancelAim() })
+    this.session = new GameplaySession(this, { remainingMs: () => Math.max(0, TEJO_CONFIG.GAME_DURATION_MS - this.elapsedMs) / gameManager.pace, debugFinish: won => this.finish(won), cancelInput: () => this.cancelAim() })
     new DebugPanel(this)
     this.refreshHud()
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.cleanup())

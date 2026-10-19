@@ -33,8 +33,8 @@ export default class PapaHUD {
 
 
     if (DEBUG_MODE) {
-      scene.add.rectangle(884, 288, 356, 158, 0x05070c, 0.7).setOrigin(0, 0).setDepth(900)
-      this.debugText = scene.add.text(898, 300, '', { fontSize: '14px', color: '#d6e4ff', lineSpacing: 4 }).setDepth(901)
+      scene.add.rectangle(497.25, 512, 200.25, 280.89, 0x05070c, 0.7).setOrigin(0, 0).setDepth(900)
+      this.debugText = scene.add.text(505.13, 533.33, '', { fontSize: '14px', color: '#d6e4ff', lineSpacing: 4 }).setDepth(901)
       this.addButton(898, 376, 'GOOD', actions.spawnGood)
       this.addButton(960, 376, 'BAD', actions.spawnBad)
       this.addButton(1018, 376, 'CLEAR', actions.clearPotatoes)
@@ -63,26 +63,7 @@ export default class PapaHUD {
     }
   }
 
-  showFloatingFeedback(x: number, y: number, label: string, type: PotatoType): void {
-    const text = this.scene.add
-      .text(x, y - 28, label, {
-        fontSize: '30px',
-        fontStyle: '700',
-        color: type === 'GOOD' ? '#f8fafc' : '#ff4d4d',
-      })
-      .setOrigin(0.5)
-      .setDepth(LAYERS.feedback)
-
-    this.scene.tweens.add({
-      targets: text,
-      y: y - 76,
-      alpha: 0,
-      duration: 520,
-      ease: 'Sine.easeOut',
-      onComplete: () => text.destroy(),
-    })
-  }
-
+  showFloatingFeedback(_x: number, _y: number, _label: string, _type: PotatoType): void {}
 
   private addButton(x: number, y: number, label: string, action: () => void, width = 56): void {
     const button = this.scene.add.rectangle(x, y, width, 22, 0x1f2937, 0.94).setOrigin(0, 0).setDepth(902)

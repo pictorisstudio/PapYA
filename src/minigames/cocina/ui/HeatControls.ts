@@ -10,9 +10,9 @@ export default class HeatControls {
 
   constructor(private readonly scene: Phaser.Scene, decrease: () => void, increase: () => void) {
     const hudStart = scene.children.list.length
-    this.createButton(494, COCINA_CONFIG.CONTROL_Y, '-', decrease)
-    this.createButton(786, COCINA_CONFIG.CONTROL_Y, '+', increase)
-    applyHudLayers(scene, hudStart)
+    this.createButton(230, COCINA_CONFIG.CONTROL_Y, '-', decrease)
+    this.createButton(490, COCINA_CONFIG.CONTROL_Y, '+', increase)
+    applyHudLayers(scene, hudStart, false)
     this.setEnabled(true)
   }
 
