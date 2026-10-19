@@ -1,4 +1,5 @@
 import { SCENE_ASSETS } from '../config/sceneAssets'
+import { requestFullscreenOnPlay } from '../utils/fullscreen'
 import { TEXTS } from '../config/texts'
 import Phaser from 'phaser'
 import DebugPanel from '../components/DebugPanel'
@@ -54,6 +55,7 @@ export default class MapScene extends Phaser.Scene {
     })
 
     this.addButton(344, 616, 270, 56, TEXTS.travel, () => {
+      requestFullscreenOnPlay()
       gameManager.startNewRun()
       this.scene.start('TransitionScene')
     })

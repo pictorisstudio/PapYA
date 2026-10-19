@@ -1,3 +1,4 @@
+import { requestGameFullscreen, requestFullscreenOnPlay } from '../src/utils/fullscreen.ts'
 import CookingDisplay from '../src/minigames/cocina/ui/CookingDisplay.ts'
 import { installMobileViewport } from '../src/utils/mobileViewport.ts'
 import RhythmNote from '../src/minigames/ruana/entities/RhythmNote.ts'
@@ -775,4 +776,33 @@ test('pantalla expandida estira el fondo sin mover objetos ni cargar imágenes C
     assert.equal(foreground.x - camera.scrollX, 900)
     game.events.emit('destroy')
   } finally { globalThis.requestAnimationFrame = previousFrame; globalThis.cancelAnimationFrame = previousCancel }
+})
+test('pantalla completa se solicita al soltar el botón de jugar, una sola vez', async () => {
+  browser()
+  let calls = 0
+  document.documentElement = { requestFullscreen: async options => { calls++; assert.equal(options.navigationUI, 'hide') } }
+  requestFullscreenOnPlay()
+  assert.equal(calls, 0)
+  window.dispatchEvent(new Event('pointerup'))
+  await Promise.resolve()
+  assert.equal(calls, 1)
+  window.dispatchEvent(new Event('pointerup'))
+  assert.equal(calls, 1)
+})
+
+test('rechazar o no soportar fullscreen no interrumpe el inicio del juego', async () => {
+  browser()
+  assert.equal(await requestGameFullscreen(), false)
+  document.documentElement = { requestFullscreen: async () => { throw new Error('denegado') } }
+  assert.equal(await requestGameFullscreen(), false)
+  document.fullscreenElement = {}
+  assert.equal(await requestGameFullscreen(), true)
+})
+
+test('fullscreen admite la variante WebKit cuando está disponible', async () => {
+  browser()
+  let calls = 0
+  document.documentElement = { webkitRequestFullscreen: () => { calls++ } }
+  assert.equal(await requestGameFullscreen(), true)
+  assert.equal(calls, 1)
 })

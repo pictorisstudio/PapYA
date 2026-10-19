@@ -23,3 +23,9 @@ Boot carga `public/assets/branding/logo-gobernacion-horizontal.png`, copiado del
 40 pruebas aprobadas, revisión de tipos y compilación web. Las nuevas pruebas verifican actualizaciones del viewport y eliminación de listeners, así como los tres porcentajes de Cocina y los límites inferiores de las barras. Falta validación visual y táctil en teléfono con barras del navegador visibles/ocultas, notch y APK reconstruido. No se generó un APK en esta actualización.
 
 `MOVIL_VERTICAL.md` queda como registro histórico de la adaptación anterior; esta configuración horizontal lo sustituye.
+
+## Pantalla completa web
+
+Al pulsar A viajar en menú o mapa se registra una solicitud para pointerup, porque el toque debe finalizar para obtener la activación requerida en móvil. Se solicita fullscreen sobre el documento completo para conservar overlays y diálogos; navigationUI=hide cuando existe la API estándar, con alternativa WebKit. Rechazo o ausencia de soporte no impiden comenzar la partida. No se vuelve a forzar la entrada si el usuario sale voluntariamente. Los cambios de fullscreen refrescan el viewport y se liberan sus listeners al destruir el juego.
+
+La compatibilidad depende del navegador y sus políticas: https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullscreen . El cambio se verifica con pruebas del gesto, rechazo y fallback; falta probarlo en el navegador del teléfono.

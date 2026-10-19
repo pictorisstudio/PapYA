@@ -1,4 +1,5 @@
 import { SCENE_ASSETS } from '../config/sceneAssets'
+import { requestFullscreenOnPlay } from '../utils/fullscreen'
 import { TEXTS } from '../config/texts'
 import { DEBUG_MODE } from '../config/constants'
 import { LAYERS } from '../config/layers'
@@ -27,6 +28,7 @@ export default class MenuScene extends Phaser.Scene {
       this.add.rectangle(640, y, 340, 68, 0, 0).setInteractive({ useHandCursor: true }).on('pointerdown', action)
     }
     artButton(505, SCENE_ASSETS.travelButton.key, () => {
+      requestFullscreenOnPlay()
       gameManager.startNewRun()
       this.scene.start('TransitionScene')
     })

@@ -56,6 +56,8 @@ export function installMobileViewport(game: Phaser.Game): void {
   }
   window.addEventListener('resize', refresh)
   window.addEventListener('orientationchange', refresh)
+  document.addEventListener('fullscreenchange', refresh)
+  document.addEventListener('webkitfullscreenchange', refresh)
   window.visualViewport?.addEventListener('resize', refresh)
   window.visualViewport?.addEventListener('scroll', refresh)
   game.events.on('prerender', updateLayout)
@@ -63,6 +65,8 @@ export function installMobileViewport(game: Phaser.Game): void {
     cancelAnimationFrame(frame)
     window.removeEventListener('resize', refresh)
     window.removeEventListener('orientationchange', refresh)
+    document.removeEventListener('fullscreenchange', refresh)
+    document.removeEventListener('webkitfullscreenchange', refresh)
     window.visualViewport?.removeEventListener('resize', refresh)
     window.visualViewport?.removeEventListener('scroll', refresh)
     game.events.off('prerender', updateLayout)
