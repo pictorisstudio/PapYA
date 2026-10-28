@@ -72,6 +72,132 @@ import { PAPA_GUIDE_ASSET, guidePages } from '../src/config/guideConfig.ts'
 import ObstacleSpawnManager from '../src/minigames/cocuy/systems/ObstacleSpawnManager.ts'
 import Condor from '../src/minigames/cocuy/entities/Condor.ts'
 import VisibilityOverlay from '../src/minigames/cocuy/ui/VisibilityOverlay.ts'
+import CondorControls from '../src/minigames/cocuy/ui/CondorControls.ts'
+import HarvestBasket from '../src/minigames/papa/ui/HarvestBasket.ts'
+import { installLandscapeOnly } from '../src/utils/landscapeOnly.ts'
+import { requestLandscapeOrientation } from '../src/utils/landscapeLock.ts'
+
+test('vertical bloquea entrada y simulación; volver a horizontal conserva la pausa del jugador', () => {
+  browser()
+  const app = {}, notice = {}, button = new EventTarget()
+  document.getElementById = id => ({ app, 'orientation-guard': notice, 'orientation-fullscreen': button })[id]
+  window.innerWidth = 390; window.innerHeight = 844
+  window.screen = { orientation: new EventTarget() }
+  let suspensions = 0, resumes = 0
+  let rhythmPaused = false
+  let soundPaused = 0, soundResumed = 0
+  const sound = { isPaused: false, pause() { this.isPaused = true; soundPaused++ },
+    resume() { this.isPaused = false; soundResumed++ } }
+  window.addEventListener('papya:suspend', () => suspensions++)
+  const game = { events: new EventEmitter(), input: { enabled: true }, isPaused: false,
+    scene: { getScenes: () => [{ scene: { key: 'RuanaScene' } }],
+      pause(key) { assert.equal(key, 'RuanaScene'); rhythmPaused = true } },
+    sound: { getAllPlaying: () => [sound] },
+    pause() { assert.equal(rhythmPaused, true); this.isPaused = true }, resume() { this.isPaused = false; resumes++ } }
+  installLandscapeOnly(game)
+  assert.equal(notice.hidden, false)
+  assert.equal(app.inert, true)
+  assert.equal(game.input.enabled, false)
+  assert.equal(game.isPaused, true)
+  assert.equal(suspensions, 1)
+  assert.equal(soundPaused, 1)
+  game.events.emit('ready')
+  window.dispatchEvent(new Event('resize'))
+  assert.equal(suspensions, 1, 'no repite la pausa mientras continúa en vertical')
+  window.innerWidth = 844; window.innerHeight = 390
+  window.dispatchEvent(new Event('resize'))
+  assert.equal(notice.hidden, true)
+  assert.equal(app.inert, false)
+  assert.equal(game.input.enabled, true)
+  assert.equal(game.isPaused, false)
+  assert.equal(resumes, 1)
+  assert.equal(soundResumed, 1)
+  // Una suspensión ajena al bloqueo no debe reanudarse al girar.
+  game.isPaused = true
+  window.innerWidth = 390; window.innerHeight = 844
+  window.dispatchEvent(new Event('orientationchange'))
+  window.innerWidth = 844; window.innerHeight = 390
+  window.dispatchEvent(new Event('resize'))
+  assert.equal(game.isPaused, true)
+  assert.equal(resumes, 1)
+  game.events.emit('destroy')
+  window.innerWidth = 390; window.innerHeight = 844
+  window.dispatchEvent(new Event('resize'))
+  assert.equal(notice.hidden, true, 'se liberan los listeners al destruir el juego')
+})
+
+test('bloqueo de orientación solicita horizontal y tolera navegadores que lo rechazan', async () => {
+  browser()
+  assert.equal(await requestLandscapeOrientation(), false)
+  const calls = []
+  window.screen = { orientation: { lock: async direction => calls.push(direction) } }
+  assert.equal(await requestLandscapeOrientation(), true)
+  assert.deepEqual(calls, ['landscape'])
+  document.documentElement = { requestFullscreen: async () => calls.push('fullscreen') }
+  await requestGameFullscreen()
+  assert.deepEqual(calls.slice(-2), ['fullscreen', 'landscape'])
+  window.screen.orientation.lock = async () => { throw new Error('no permitido') }
+  assert.equal(await requestLandscapeOrientation(), false)
+  assert.equal(await requestGameFullscreen(), true, 'el aviso de giro sirve como respaldo')
+})
+
+test('botones del cóndor mantienen dirección, admiten dos dedos y liberan al salir o pausar', () => {
+  const view = scene()
+  const movement = new CondorMovementSystem()
+  const controls = new CondorControls(view,
+    (id, direction) => movement.pointerDown(id, direction < 0 ? 0 : 1280),
+    id => movement.pointerUp(id))
+  const [left, right] = controls.buttons
+  left.emit('pointerdown', { id: 1 })
+  assert.equal(movement.getSnapshot().inputDirection, -1)
+  assert.ok(movement.update(200).x < 640)
+  right.emit('pointerdown', { id: 2 })
+  assert.equal(movement.getSnapshot().inputDirection, 1)
+  right.emit('pointerup', { id: 2 })
+  assert.equal(movement.getSnapshot().inputDirection, -1)
+  left.emit('pointerout', { id: 1 })
+  assert.equal(movement.getSnapshot().inputDirection, 0)
+  right.emit('pointerdown', { id: 3 })
+  const page = new CocuyScene()
+  Object.assign(page, { movementSystem: movement, controls })
+  page.clearInput()
+  assert.equal(movement.getSnapshot().inputDirection, 0)
+  let destroyed = 0
+  for (const object of [...controls.buttons, ...controls.labels]) object.destroy = () => destroyed++
+  controls.destroy()
+  assert.equal(destroyed, 4)
+})
+
+test('canasta cuenta solo papas buenas, muestra faltantes y libera animaciones al salir', () => {
+  const view = scene()
+  const image = view.add.image
+  view.add.image = (...args) => {
+    const object = image(...args)
+    object.setVisible = value => { object.visible = value; return object }
+    return object
+  }
+  const basket = new HarvestBasket(view)
+  const counts = [], remaining = []
+  basket.countText.setText = text => counts.push(text)
+  basket.remainingText.setText = text => remaining.push(text)
+  const score = new PotatoScoreManager()
+  basket.update(score.getSnapshot())
+  assert.equal(counts.at(-1), '0 / 20')
+  assert.equal(remaining.at(-1), 'Faltan 20')
+  score.collect('GOOD'); score.collect('GOOD')
+  basket.update(score.getSnapshot())
+  assert.equal(counts.at(-1), '2 / 20')
+  assert.equal(remaining.at(-1), 'Faltan 18')
+  assert.equal(basket.potatoes.filter(item => item.visible).length, 2)
+  score.collect('BAD')
+  basket.update(score.getSnapshot())
+  assert.equal(counts.at(-1), '2 / 20')
+  assert.ok(basket.container.depth < 0, 'la canasta no tapa papas que se puedan tocar')
+  basket.collect(600, 300)
+  assert.equal(basket.flights.size, 1)
+  basket.destroy()
+  assert.equal(basket.flights.size, 0)
+})
 
 test('niebla visible dura tres segundos reales, se desvanece y cubre pantallas anchas', () => {
   const view = scene()

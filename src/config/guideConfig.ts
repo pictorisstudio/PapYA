@@ -15,7 +15,7 @@ export const GUIDE_TEXTS = {
     trompo: 'Mueve el joystick con un dedo y empuja al rival fuera del círculo.',
     papa: 'Toca las papas buenas cerca de lo más alto. Evita las podridas.',
     tejo: 'Arrastra hacia atrás y suelta. Haz estallar dos mechas distintas.',
-    cocuy: 'Mantén pulsado a cada lado para dirigir al cóndor. Las flechas indican hacia dónde te empuja el viento.',
+    cocuy: 'Mantén pulsados los botones ◀ o ▶ para dirigir al cóndor. Las flechas de las nubes indican hacia dónde te empuja el viento.',
     cocina: 'Pon los ingredientes correctos en la olla y regula la temperatura.',
   } satisfies Record<MinigameKey, string>,
   goals: {

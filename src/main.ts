@@ -4,9 +4,11 @@ import type MapScene from './scenes/MapScene'
 import type MenuScene from './scenes/MenuScene'
 import './style.css'
 import { installMobileViewport } from './utils/mobileViewport'
+import { installLandscapeOnly } from './utils/landscapeOnly'
 
 const game = new Phaser.Game(gameConfig)
 installMobileViewport(game)
+installLandscapeOnly(game)
 
 // Android Atrás: las escenas de juego lo consumen como pausa.
 // Fuera del reto regresa una pantalla; en el menú deja actuar al sistema.

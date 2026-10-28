@@ -14,6 +14,7 @@ import WorldScrollSystem from './systems/WorldScrollSystem'
 import CocuyHUD from './ui/CocuyHUD'
 import VisibilityOverlay from './ui/VisibilityOverlay'
 import CocuyFeedback from './ui/CocuyFeedback'
+import CondorControls from './ui/CondorControls'
 import type { CocuyGameState } from './types/CocuyTypes'
 
 export default class CocuyScene extends Phaser.Scene {
@@ -27,6 +28,7 @@ export default class CocuyScene extends Phaser.Scene {
   private scoreManager?: CocuyScoreManager
   private visibilityOverlay?: VisibilityOverlay
   private hud?: CocuyHUD
+  private controls?: CondorControls
   private inputDebugGraphics?: Phaser.GameObjects.Graphics
   private inputDebugLabels: Phaser.GameObjects.Text[] = []
   private state: CocuyGameState = 'READY'
@@ -75,6 +77,11 @@ export default class CocuyScene extends Phaser.Scene {
       restart: () => this.scene.restart(),
     })
 
+    this.controls = new CondorControls(this, (id, direction) => {
+      if (this.state !== 'PLAYING') return
+      this.movementSystem?.pointerDown(id, direction < 0 ? 0 : 1280)
+      this.controls?.update(direction)
+    }, id => this.handlePointerUp({ id } as Phaser.Input.Pointer))
     this.input.on('pointerdown', this.handlePointerDown, this)
     this.input.on('pointermove', this.handlePointerMove, this)
     this.input.on('pointerup', this.handlePointerUp, this)
@@ -99,6 +106,7 @@ export default class CocuyScene extends Phaser.Scene {
     this.elapsedMs += delta
     this.ascentSystem.update(this.elapsedMs, delta)
     const movement = this.movementSystem.update(delta)
+    this.controls?.update(movement.inputDirection)
     this.worldScrollSystem.update(this.elapsedMs, delta)
     this.condor.setX(movement.x)
     this.condor.update(delta, movement.velocity, movement.windInfluence)
@@ -261,6 +269,7 @@ export default class CocuyScene extends Phaser.Scene {
 
   private clearInput(): void {
     this.movementSystem?.clearInput()
+    this.controls?.update(0)
   }
 
   private resetState(): void {
@@ -290,6 +299,8 @@ export default class CocuyScene extends Phaser.Scene {
     this.visibilityOverlay?.destroy()
     this.condor?.destroy()
     this.hud?.destroy()
+    this.controls?.destroy()
+    this.controls = undefined
     this.inputDebugGraphics?.destroy()
     for (const label of this.inputDebugLabels) {
       label.destroy()

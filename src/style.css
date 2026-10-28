@@ -13,3 +13,28 @@ html, body {
 }
 #game { width: 100%; height: 100%; overflow: hidden; }
 canvas { display: block; }
+
+#orientation-guard {
+  display: none; position: fixed; inset: 0; z-index: 10000;
+  box-sizing: border-box; padding: 32px; background: #101c24;
+  color: #fff; font-family: Arial, sans-serif; text-align: center;
+  align-items: center; justify-content: center; flex-direction: column;
+  touch-action: manipulation;
+}
+#orientation-guard[hidden] { display: none; }
+#orientation-guard h1 { font-size: clamp(28px, 7vw, 40px); margin: 28px 0 8px; }
+#orientation-guard p { font-size: 20px; line-height: 1.4; margin: 8px 0; }
+#orientation-guard .orientation-hint { font-size: 16px; max-width: 280px; color: #bed3dc; }
+.orientation-phone {
+  width: 105px; height: 62px; border: 5px solid #fbbf24;
+  border-radius: 12px; font-size: 56px; line-height: 60px; color: #fbbf24;
+}
+#orientation-fullscreen {
+  margin: 24px 0 12px; padding: 16px 24px; border: 0; border-radius: 10px;
+  background: #fbbf24; color: #14232b; font: bold 20px Arial, sans-serif; cursor: pointer;
+}
+/* Bloquea desde el primer dibujo, incluso antes de cargar JavaScript. */
+@media (orientation: portrait) {
+  #app { visibility: hidden; pointer-events: none; }
+  #orientation-guard:not([hidden]) { display: flex; }
+}

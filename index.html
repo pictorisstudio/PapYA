@@ -8,6 +8,13 @@
   </head>
   <body>
     <div id="app"><div id="game"></div></div>
+    <div id="orientation-guard" role="dialog" aria-modal="true" aria-labelledby="orientation-title">
+      <div class="orientation-phone" aria-hidden="true">↻</div>
+      <h1 id="orientation-title">Gira tu celular</h1>
+      <p>PapYá se juega en horizontal.</p>
+      <button id="orientation-fullscreen" type="button">Pantalla completa</button>
+      <p class="orientation-hint">Coloca el celular de lado para continuar.</p>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

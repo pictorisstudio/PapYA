@@ -10,6 +10,7 @@ import PotatoScoreManager from './systems/PotatoScoreManager'
 import PotatoSpawnManager from './systems/PotatoSpawnManager'
 import FieldDisplay from './ui/FieldDisplay'
 import PapaHUD from './ui/PapaHUD'
+import HarvestBasket from './ui/HarvestBasket'
 import type { PotatoType } from './types/PapaTypes'
 
 type PapaPhase = 'playing' | 'finished'
@@ -19,6 +20,7 @@ export default class PapaScene extends Phaser.Scene {
   private spawnManager?: PotatoSpawnManager
   private scoreManager?: PotatoScoreManager
   private hud?: PapaHUD
+  private basket?: HarvestBasket
   private inputHandler?: (pointer: Phaser.Input.Pointer) => void
   private phase: PapaPhase = 'playing'
   private elapsedMs = 0
@@ -47,6 +49,7 @@ export default class PapaScene extends Phaser.Scene {
       restart: () => this.scene.restart(),
     })
 
+    this.basket = new HarvestBasket(this)
     this.inputHandler = (pointer) => this.handlePointerDown(pointer)
     this.input.on('pointerdown', this.inputHandler)
 
@@ -104,6 +107,7 @@ export default class PapaScene extends Phaser.Scene {
     }
 
     const result = this.scoreManager.collect(potato.type)
+    if (potato.type === 'GOOD') this.basket?.collect(potato.x, potato.y)
     gameManager.audioManager.playEffect(this, potato.type === 'GOOD' ? 'papaGood' : 'papaBad')
     potato.hit()
     this.hud.showFloatingFeedback(potato.x, potato.y, potato.type === 'GOOD' ? '+1' : '', potato.type)
@@ -149,6 +153,7 @@ export default class PapaScene extends Phaser.Scene {
     }
 
     const remainingMs = Math.max(0, PAPA_CONFIG.GAME_DURATION - this.elapsedMs) / gameManager.pace
+    this.basket?.update(this.scoreManager.getSnapshot())
     this.hud.update(this.scoreManager.getSnapshot(), remainingMs, {
       activePotatoes: this.spawnManager.getActiveCount(),
       spawnPaused: this.spawnManager.isPaused(),
@@ -166,6 +171,8 @@ export default class PapaScene extends Phaser.Scene {
     this.removeInputHandler()
     this.events.off('debug:touch-areas-changed', this.handleDebugTouchAreasChanged, this)
     this.spawnManager?.destroy()
+    this.basket?.destroy()
+    this.basket = undefined
     this.spawnManager = undefined
     this.scoreManager = undefined
     this.hud = undefined
