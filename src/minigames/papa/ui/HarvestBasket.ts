@@ -33,7 +33,7 @@ export default class HarvestBasket {
     this.remainingText = scene.add.text(0, 126, '', {
       fontFamily: 'Arial', fontSize: '28px', color: '#ffe2a2',
     }).setOrigin(0.5)
-    this.container = scene.add.container(145, 320,
+    this.container = scene.add.container(145, 550,
       [back, ...this.potatoes, front, this.countText, this.remainingText]).setDepth(LAYERS.scenery + 1)
   }
 
@@ -50,7 +50,7 @@ export default class HarvestBasket {
     const potato = this.scene.add.image(x, y, POTATO_ASSETS.GOOD[0].key)
       .setDisplaySize(90, 90).setDepth(LAYERS.feedback)
     this.flights.add(potato)
-    this.scene.tweens.add({ targets: potato, x: 145, y: 345, scaleX: potato.scaleX * 0.4,
+    this.scene.tweens.add({ targets: potato, x: 145, y: 575, scaleX: potato.scaleX * 0.4,
       scaleY: potato.scaleY * 0.4, duration: 320, ease: 'Sine.easeInOut',
       onComplete: () => { this.flights.delete(potato); potato.destroy() } })
   }
