@@ -1,4 +1,4 @@
-import { MINIGAME_ORDER } from '../config/minigamesConfig'
+import { MINIGAME_ORDER, MINIGAMES_CONFIG } from '../config/minigamesConfig'
 import type { GameState } from '../types/GameState'
 import type { MinigameKey, MinigameResult, RecordedMinigameResult } from '../types/Minigame'
 import { shuffle } from '../utils/shuffle'
@@ -7,7 +7,7 @@ export default class RoundManager {
   private state: GameState = this.createEmptyState()
 
   start(order: MinigameKey[] = shuffle(MINIGAME_ORDER)): GameState {
-    if (!order.length || new Set(order).size !== order.length || order.some(key => !MINIGAME_ORDER.includes(key))) {
+    if (!order.length || new Set(order).size !== order.length || order.some(key => !Object.hasOwn(MINIGAMES_CONFIG, key))) {
       throw new Error('Orden de minijuegos inválido')
     }
     this.state = {

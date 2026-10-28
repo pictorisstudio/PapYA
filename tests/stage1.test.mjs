@@ -56,6 +56,21 @@ import BootScene from '../src/scenes/BootScene.ts'
 import PreloaderScene from '../src/scenes/PreloaderScene.ts'
 import CookingPot from '../src/minigames/cocina/entities/CookingPot.ts'
 import Ingredient from '../src/minigames/cocina/entities/Ingredient.ts'
+import TrompoScene from '../src/minigames/trompo/TrompoScene.ts'
+import TrompoJoystick from '../src/minigames/trompo/systems/TrompoJoystick.ts'
+import TrompoSimulation from '../src/minigames/trompo/systems/TrompoSimulation.ts'
+import { TROMPO_CONFIG } from '../src/minigames/trompo/config/trompoConfig.ts'
+import { MINIGAMES_CONFIG, USE_TROMPO_PROTOTYPE } from '../src/config/minigamesConfig.ts'
+import { buildRuanaBeatmap, ruanaDuration } from '../src/minigames/ruana/config/ruanaDifficulty.ts'
+import RuanaScoreManager from '../src/minigames/ruana/systems/RuanaScoreManager.ts'
+import RuanaScene from '../src/minigames/ruana/RuanaScene.ts'
+import NoteManager from '../src/minigames/ruana/systems/NoteManager.ts'
+import LaneProjector from '../src/minigames/ruana/systems/LaneProjector.ts'
+import HitJudge from '../src/minigames/ruana/systems/HitJudge.ts'
+import PapaGuide from '../src/components/PapaGuide.ts'
+import { PAPA_GUIDE_ASSET, guidePages } from '../src/config/guideConfig.ts'
+import ObstacleSpawnManager from '../src/minigames/cocuy/systems/ObstacleSpawnManager.ts'
+import Condor from '../src/minigames/cocuy/entities/Condor.ts'
 
 function storage(raw = null) {
   return { raw, writes: 0, read() { return this.raw }, has() { return this.raw !== null },
@@ -78,6 +93,9 @@ function drawable(x = 0, y = 0) {
   object.setScale = value => { object.scaleX = value; object.scaleY = value; return object }
   object.setDisplaySize = (width, height) => { object.width = width; object.height = height; return object }
   object.setPosition = (x, y) => { object.x = x; object.y = y; return object }
+  object.setTint = value => { object.tint = value; return object }
+  object.clearTint = () => { delete object.tint; return object }
+  object.setAlpha = value => { object.alpha = value; return object }
   object.destroy = () => {}
   return object
 }
@@ -89,6 +107,7 @@ function scene() {
     timers, texts, starts, events, game: { events: new EventEmitter() },
     add: {
       rectangle: (x, y) => drawable(x, y), circle: (x, y) => drawable(x, y),
+      triangle: (x, y) => drawable(x, y),
       image: (x, y, key) => Object.assign(drawable(x, y), { texture: { key } }),
       text: (x, y, text) => { texts.push(text); return drawable(x, y) },
       container: (x, y, list) => Object.assign(drawable(x, y), { list }), graphics: () => drawable(),
@@ -234,6 +253,30 @@ test('papas superpuestas seleccionan solo la que se dibuja delante', () => {
   assert.equal(manager.getPotatoAt(640, 360), behind)
 })
 
+test('papas mantienen altura y dan más tiempo cerca de la cima a distintos FPS', () => {
+  const peaks = []
+  for (const fps of [30, 60, 120]) {
+    const potato = new Potato(scene(), { id: `arc-${fps}`, type: 'GOOD', x: 640, y: PAPA_CONFIG.POTATO_SPAWN_Y,
+      scale: 1, velocityX: 0, velocityY: -PAPA_CONFIG.MIN_VERTICAL_SPEED, rotationSpeed: 0 })
+    const positions = []
+    for (let elapsed = 0; elapsed < 5000 && potato.isActive(); elapsed += 1000 / fps) {
+      potato.update(1000 / fps)
+      positions.push(potato.y)
+    }
+    const peak = Math.min(...positions)
+    peaks.push(peak)
+    const oldPeak = PAPA_CONFIG.POTATO_SPAWN_Y - 760 ** 2 / (2 * 900)
+    assert.ok(Math.abs(peak - oldPeak) < 4)
+    const timeNearPeak = positions.filter(y => y <= peak + 60).length / fps
+    const oldTimeNearPeak = 2 * Math.sqrt(2 * 60 / 900)
+    assert.ok(timeNearPeak > oldTimeNearPeak * 1.25, 'hay al menos un 25 % más de tiempo cerca de la cima')
+    const peakIndex = positions.indexOf(peak)
+    assert.ok(positions[peakIndex - 1] > peak && positions[peakIndex + 1] > peak)
+    assert.ok(positions[peakIndex + 1] - peak < 1, 'comienza a descender suavemente')
+  }
+  assert.ok(Math.max(...peaks) - Math.min(...peaks) < 1)
+})
+
 test('dos dedos recogen dos papas con coordenadas actuales de cámara, sin duplicar aciertos', () => {
   browser(); gameManager.initialize()
   const page = new PapaScene(), view = scene()
@@ -273,6 +316,177 @@ test('viento apunta y empuja en la misma dirección con desplazamiento perceptib
   }
 })
 
+test('papa guía abre ayuda solo al tocar, recorre los cinco retos y cierra sin cambiar progreso', () => {
+  browser(); gameManager.initialize()
+  const view = scene()
+  view.input = { keyboard: new EventEmitter() }
+  const before = gameManager.progressManager.getSaveData()
+  const guide = new PapaGuide(view)
+  assert.equal(guide.modal, undefined)
+  assert.ok(existsSync(new URL(`../public/${PAPA_GUIDE_ASSET.path}`, import.meta.url)))
+  assert.equal(guidePages().length, 6)
+  assert.deepEqual(guidePages().slice(1).map(page => page.title), MINIGAME_ORDER.map(key => MINIGAMES_CONFIG[key].name))
+  guide.fairy.emit('pointerdown')
+  assert.ok(guide.modal)
+  assert.equal(guide.page, 0)
+  for (let i = 0; i < 5; i++) guide.next()
+  assert.equal(guide.page, 5)
+  guide.previous()
+  assert.equal(guide.page, 4)
+  guide.next(); guide.next()
+  assert.equal(guide.modal, undefined)
+  guide.open()
+  view.input.keyboard.emit('keydown-ESC')
+  assert.equal(guide.modal, undefined)
+  assert.equal(guide.close(), false)
+  assert.deepEqual(view.starts, [])
+  assert.deepEqual(gameManager.progressManager.getSaveData(), before)
+  view.events.emit('shutdown')
+  assert.equal(view.input.keyboard.listenerCount('keydown-ESC'), 0)
+})
+
+test('corrientes animadas se distinguen de las nubes y desplazan las flechas según su sentido', () => {
+  for (const direction of [-1, 1]) {
+    const view = scene()
+    const wind = new CocuyObstacle(view, { id: 'flow', type: 'WIND', x: 640, y: 300, speed: 0, windDirection: direction })
+    assert.equal(wind.windArrows.length, 3)
+    wind.update(100, 126)
+    const x = wind.windArrows[0].x
+    wind.update(100, 126)
+    assert.equal(Math.sign(wind.windArrows[0].x - x), direction)
+    assert.ok(wind.windArrows[0].alpha < 1)
+    const cloud = wind.container.list[0]
+    assert.equal(cloud.texture.key, SCENE_ASSETS.cloud.key)
+    assert.equal(cloud.tint, 0x7dd3fc)
+  }
+})
+
+test('ayuda cubre el viewport ampliado y conserva la página al cambiar de tamaño', () => {
+  const view = scene(), rectangles = []
+  view.input = { keyboard: new EventEmitter() }
+  view.scale = Object.assign(new EventEmitter(), { gameSize: { width: 1600, height: 720 } })
+  const rectangle = view.add.rectangle
+  view.add.rectangle = (x, y, width, height, ...rest) => {
+    const result = Object.assign(rectangle(x, y, ...rest), { width, height })
+    rectangles.push(result)
+    return result
+  }
+  const guide = new PapaGuide(view)
+  guide.open(); guide.next()
+  assert.equal(guide.modal.list[0].width, 1600)
+  view.scale.gameSize = { width: 1280, height: 1600 }
+  view.scale.emit('resize')
+  assert.equal(guide.page, 1)
+  assert.equal(guide.modal.list[0].height, 1600)
+  view.events.emit('shutdown')
+  assert.equal(view.scale.listenerCount('resize'), 0)
+})
+
+test('Cocuy dirige con la cámara actual y no confunde botones del HUD con controles de vuelo', () => {
+  const page = new CocuyScene()
+  page.state = 'PLAYING'
+  page.movementSystem = new CondorMovementSystem()
+  page.cameras = { main: { getWorldPoint: (x, y) => ({ x: x - 160, y }) } }
+  page.handlePointerDown({ id: 1, x: 700, y: 500, worldX: 999 })
+  assert.equal(page.movementSystem.getSnapshot().inputDirection, -1)
+  page.handlePointerDown({ id: 2, x: 1100, y: 60 }, [{}])
+  assert.equal(page.movementSystem.getSnapshot().inputDirection, -1)
+  page.handlePointerMove({ id: 1, x: 1000, y: 500 })
+  assert.equal(page.movementSystem.getSnapshot().inputDirection, 1)
+  page.handlePointerUp({ id: 1 })
+  assert.equal(page.movementSystem.getSnapshot().inputDirection, 0)
+})
+
+test('patrones de viento ponen una roca del lado del empuje con margen real al acelerar', () => {
+  for (const direction of [-1, 1]) for (const pace of [1, 30 / 18]) {
+    const manager = new ObstacleSpawnManager(scene())
+    assert.equal(manager.spawnWindPattern(direction, direction === 1 ? 1150 : 130, 70, pace), true)
+    const [wind, rock] = manager.getActiveObstacles()
+    const center = item => { const box = item.getHitbox(); return { x: box.x + box.width / 2, y: box.y + box.height / 2 } }
+    const w = center(wind), r = center(rock)
+    assert.equal(rock.type, 'ROCK')
+    assert.equal(Math.sign(r.x - w.x), direction)
+    assert.ok(r.x >= 130 && r.x <= 1150)
+    const delay = (w.y - r.y) / (COCUY_CONFIG.WORLD_SCROLL_SPEED_END + 70) / pace
+    assert.ok(delay >= COCUY_CONFIG.WIND_ROCK_REACTION_SECONDS - 0.001)
+    assert.ok(Math.abs(r.x - w.x) > wind.getHitbox().width / 2 + rock.getHitbox().width / 2)
+    manager.spawnWindPattern(direction, 640, 70, pace)
+    manager.spawnWindPattern(direction, 640, 70, pace)
+    assert.equal(manager.getActiveObstacles().length, COCUY_CONFIG.MAX_ACTIVE_OBSTACLES)
+    assert.equal(manager.spawnWindPattern(direction, 640), false)
+  }
+})
+
+test('un golpe de roca baja altura y retrocede; la protección evita golpes encadenados', () => {
+  browser(); gameManager.initialize()
+  const page = new CocuyScene(), cues = []
+  page.state = 'PLAYING'
+  page.ascentSystem = new AscentSystem()
+  page.ascentSystem.setAltitude(200)
+  page.movementSystem = new CondorMovementSystem()
+  let flashes = 0
+  page.condor = { flashHit() { flashes++ } }
+  page.feedback = { rock: (...args) => cues.push(args) }
+  page.cameras = { main: { shake() {} } }
+  page.applyRockHit(700)
+  page.applyRockHit(700)
+  assert.equal(page.ascentSystem.getSnapshot().altitude, 175)
+  assert.equal(flashes, 1)
+  assert.equal(cues.length, 1)
+  assert.ok(page.movementSystem.update(100).x < 640)
+  page.elapsedMs = COCUY_CONFIG.ROCK_PROTECTION_MS - 1
+  page.applyRockHit(700)
+  assert.equal(page.rockHits, 1)
+  page.elapsedMs++
+  page.applyRockHit(700)
+  assert.equal(page.rockHits, 2)
+  assert.equal(page.ascentSystem.getSnapshot().altitude, 150)
+})
+
+test('corregir contra el viento evita la roca del patrón sin exigir un choque inevitable', () => {
+  for (const direction of [-1, 1]) for (const pace of [1, 30 / 18]) {
+    const hits = []
+    for (const steer of [false, true]) {
+      const manager = new ObstacleSpawnManager(scene())
+      manager.spawnWindPattern(direction, 640, 70, pace)
+      const obstacles = manager.getActiveObstacles()
+      const offset = COCUY_CONFIG.PLAYER_Y - obstacles[0].container.y
+      obstacles.forEach(obstacle => { obstacle.container.y += offset })
+      const movement = new CondorMovementSystem(), effects = new ObstacleEffectSystem()
+      let collisions = 0
+      const condor = { getHitbox: () => ({ x: movement.getSnapshot().x - 28, y: COCUY_CONFIG.PLAYER_Y - 19, width: 56, height: 38 }) }
+      const callbacks = { onRockHit() { collisions++ }, onCloud() {}, onWind: force => movement.applyWind(force) }
+      effects.update(condor, obstacles, callbacks)
+      if (steer) movement.pointerDown(1, direction === 1 ? 0 : 1280)
+      for (let elapsed = 0; elapsed < 2500; elapsed += 1000 / 60) {
+        movement.update(1000 / 60 * pace)
+        obstacles.forEach(obstacle => obstacle.update(1000 / 60 * pace, COCUY_CONFIG.WORLD_SCROLL_SPEED_END))
+        effects.update(condor, obstacles, callbacks)
+      }
+      hits.push(collisions)
+    }
+    assert.equal(hits[0], 1, 'sin corregir, la corriente conduce hacia la roca')
+    assert.equal(hits[1], 0, 'contradirigir permite esquivarla')
+  }
+})
+
+test('cóndor muestra descenso, inclinación y parpadeo con hitbox alineada al cuerpo', () => {
+  const view = scene()
+  view.add.sprite = (x, y) => Object.assign(drawable(x, y), { play() { return this } })
+  const condor = new Condor(view)
+  condor.flashHit()
+  assert.ok(condor.container.y > COCUY_CONFIG.PLAYER_Y + 50)
+  condor.update(100, 200, 900)
+  assert.ok(condor.body.rotation > 0)
+  const box = condor.getHitbox()
+  assert.equal(box.y + box.height / 2, condor.container.y)
+  assert.ok(condor.body.tint)
+  condor.update(1000, 0, 0)
+  assert.equal(condor.body.alpha, 1)
+  assert.equal(condor.body.tint, undefined)
+  assert.ok(Math.abs(condor.container.y - COCUY_CONFIG.PLAYER_Y) < 6)
+})
+
 for (const fastLoad of [true, false]) {
   test(`logo termina antes de mostrar carga o menú (carga ${fastLoad ? 'rápida' : 'lenta'})`, () => {
     browser()
@@ -309,10 +523,10 @@ test('audio intenta autoplay y conserva el desbloqueo por toque si se bloquea', 
     const audio = new AudioManager(), sounds = []
     const sound = Object.assign(new EventEmitter(), { locked: true, unlocked: false,
       context: { state: 'suspended', async resume() { if (allowed) this.state = 'running'; else throw Error('blocked') } },
-      add(key) { const music = { key, play() {}, destroy() {} }; sounds.push(music); return music },
+      add(key) { const music = { key, play(config) { this.rate = config.rate }, destroy() {} }; sounds.push(music); return music },
     })
     const view = { cache: { audio: { exists: () => true } }, sound, events: new EventEmitter(), scene: { isActive: () => true } }
-    audio.playMusic(view, 'menuMusic')
+    audio.playMusic(view, 'ruanaMusic', 1.5)
     await Promise.resolve(); await Promise.resolve()
     assert.equal(sound.unlocked, allowed)
     assert.equal(sounds.length, 0)
@@ -320,6 +534,7 @@ test('audio intenta autoplay y conserva el desbloqueo por toque si se bloquea', 
     sound.locked = false
     sound.emit('unlocked')
     assert.equal(sounds.length, 1)
+    assert.equal(sounds[0].rate, 1.5)
     assert.equal(sound.listenerCount('unlocked'), 0)
   }
 })
@@ -416,21 +631,237 @@ test('las cuatro mechas son alcanzables con arrastre dentro del canvas', () => {
   }
 })
 
-test('guía de Tejo coincide con el vuelo y dos mechas completan 10 puntos', () => {
+test('guía corta de Tejo muestra dirección y fuerza sin revelar el destino', () => {
   const page = scene(), dots = []
   page.add.graphics = () => Object.assign(drawable(), { strokeLineShape(line) { dots.push({ x: line.x2, y: line.y2 }); return this } })
   const aim = new TejoAimSystem(page)
   const shot = aim.update(690, 690)
+  assert.equal(dots.length, 6)
+  assert.ok(Math.hypot(dots[0].x - TEJO_CONFIG.THROW_START_X, dots[0].y - TEJO_CONFIG.THROW_START_Y) <= 140)
+  assert.ok(dots.every(point => Math.hypot(point.x - shot.target.x, point.y - shot.target.y) > 100))
+  aim.clear()
+  assert.equal(aim.getCurrentAim(), null)
   const flight = new TejoThrowSystem()
   let position
-  const disc = { setPosition(point) { position = point }, setScale() {}, setRotation() {} }
   flight.start(shot, () => {})
-  flight.update(shot.durationMs / 32, disc)
-  assert.ok(Math.hypot(position.x - dots[0].x, position.y - dots[0].y) < 0.001)
-  assert.ok(Math.hypot(dots.at(-1).x - shot.target.x, dots.at(-1).y - shot.target.y) < 0.001)
+  flight.update(shot.durationMs, { setPosition(point) { position = point }, setScale() {}, setRotation() {} })
+  assert.deepEqual(position, shot.target)
   const score = new TejoScoreManager()
   assert.equal(score.registerImpact('MECHA').victory, false)
   assert.equal(score.registerImpact('MECHA').victory, true)
+})
+
+test('barra de fuerza vertical sigue al disco a su derecha y se borra al soltar', () => {
+  const view = scene(), drawings = []
+  view.add.graphics = () => {
+    const graphics = drawable()
+    graphics.rects = []
+    graphics.frames = []
+    graphics.clear = () => { graphics.rects = []; graphics.frames = []; return graphics }
+    graphics.fillRoundedRect = (x, y, width, height) => { graphics.frames.push({ x, y, width, height }); return graphics }
+    graphics.fillRect = (x, y, width, height) => { graphics.rects.push({ x, y, width, height }); return graphics }
+    drawings.push(graphics)
+    return graphics
+  }
+  const aim = new TejoAimSystem(view), meter = drawings[1]
+  const frames = []
+  for (const point of [{ x: 650, y: 650 }, { x: 720, y: 700 }, { x: 1000, y: 950 }]) {
+    const shot = aim.update(point.x, point.y)
+    const frame = meter.frames[0]
+    frames.push(frame)
+    const discX = TEJO_CONFIG.THROW_START_X + shot.dragX
+    assert.ok(frame.height > frame.width * 4)
+    assert.ok(frame.x > discX + 62, 'no se superpone con el sprite del disco')
+    assert.ok(frame.y >= 140 && frame.y + frame.height <= 720)
+    assert.ok(meter.depth > TEJO_CONFIG.THROW_START_Y + shot.dragY + 300)
+    assert.ok(Math.abs(meter.rects[1].height / (frame.height - 10) - shot.power) < 1e-9)
+  }
+  assert.equal(frames[1].x - frames[0].x, 70)
+  assert.equal(frames[1].y - frames[0].y, 50)
+  aim.clear()
+  assert.equal(meter.frames.length, 0)
+  assert.equal(meter.rects.length, 0)
+})
+
+test('Ruana aumenta densidad y agrega notas dobles solo en niveles avanzados', () => {
+  const counts = [18, 22, 26, 30, 34]
+  for (let level = 0; level < counts.length; level++) {
+    const beatmap = buildRuanaBeatmap(level)
+    assert.equal(beatmap.length, counts[level])
+    assert.equal(new Set(beatmap.map(note => note.id)).size, beatmap.length)
+    const groups = new Map()
+    for (let i = 0; i < beatmap.length; i++) {
+      const note = beatmap[i]
+      assert.ok([0, 1, 2, 3].includes(note.lane))
+      if (i) assert.ok(note.hitTime >= beatmap[i - 1].hitTime)
+      const group = groups.get(note.hitTime) ?? []
+      group.push(note.lane); groups.set(note.hitTime, group)
+    }
+    assert.equal([...groups.values()].some(group => group.length === 2), level >= 3)
+    assert.ok([...groups.values()].every(group => group.length <= 2 && new Set(group).size === group.length))
+    assert.equal(ruanaDuration(beatmap), beatmap.at(-1).hitTime + RUANA_CONFIG.NOTE_FINISH_DELAY_MS)
+  }
+  assert.deepEqual(buildRuanaBeatmap(100), buildRuanaBeatmap(4))
+  assert.deepEqual(buildRuanaBeatmap(-1), buildRuanaBeatmap(0))
+})
+
+test('Ruana cuenta Bien para ganar y reserva la precisión para puntuar', () => {
+  const good = new RuanaScoreManager(20), perfect = new RuanaScoreManager(20), insufficient = new RuanaScoreManager(20)
+  for (let i = 0; i < 20; i++) {
+    good.register(i < 17 ? 'GOOD' : 'MISS')
+    perfect.register(i < 17 ? 'PERFECT' : 'MISS')
+    insufficient.register(i < 16 ? 'PERFECT' : 'MISS')
+  }
+  assert.equal(good.isVictory(), true)
+  assert.equal(perfect.isVictory(), true)
+  assert.equal(insufficient.isVictory(), false)
+  assert.ok(good.getAccuracy() < 85)
+  assert.ok(perfect.getSnapshot().score > good.getSnapshot().score)
+  assert.equal(new RuanaScoreManager(0).isVictory(), false)
+})
+
+test('dos dedos resuelven un acorde de Ruana con cámara desplazada sin contar dos veces', () => {
+  browser(); gameManager.initialize()
+  const page = new RuanaScene(), view = scene(), projector = new LaneProjector()
+  const fullBeatmap = buildRuanaBeatmap(3)
+  const time = fullBeatmap.find((note, i) => fullBeatmap[i + 1]?.hitTime === note.hitTime).hitTime
+  const chord = fullBeatmap.filter(note => note.hitTime === time)
+  const zones = new HitZone(view, projector)
+  page.phase = 'playing'
+  page.clock = { getCurrentTime: () => time }
+  page.noteManager = new NoteManager(view, chord, projector)
+  page.noteManager.update(time)
+  page.judge = new HitJudge()
+  page.hitZone = { getLaneAt: (x, y) => zones.getLaneAt(x, y), pulse() {} }
+  page.hud = { showFeedback() {} }
+  page.scoreManager = new RuanaScoreManager(2)
+  page.refreshHud = () => {}
+  page.cameras = { main: { getWorldPoint: (x, y) => ({ x: x - 160, y }) } }
+  chord.forEach((note, index) => page.handleTap({ id: index + 1, x: RUANA_CONFIG.LANE_END_POSITIONS[note.lane] + 160,
+    y: RUANA_CONFIG.LANE_END_Y, worldX: -999, worldY: -999 }))
+  page.handleTap({ id: 1, x: RUANA_CONFIG.LANE_END_POSITIONS[chord[0].lane] + 160, y: RUANA_CONFIG.LANE_END_Y })
+  assert.equal(page.scoreManager.getSnapshot().perfect, 2)
+  page.noteManager.update(time + RUANA_CONFIG.NOTE_FINISH_DELAY_MS)
+  assert.equal(page.noteManager.isFinished(), true)
+})
+
+test('Tejo consume y oculta una mecha una sola vez; requiere dos distintas para ganar', () => {
+  browser(); gameManager.initialize()
+  const view = scene(), page = new TejoScene(), images = []
+  const image = view.add.image
+  view.add.image = (...args) => {
+    const item = image(...args)
+    item.visible = true
+    item.setVisible = value => { item.visible = value; return item }
+    images.push(item)
+    return item
+  }
+  page.board = new TejoBoard(view)
+  page.scoreManager = new TejoScoreManager()
+  page.impactSystem = new TejoImpactSystem(page.board)
+  page.hud = { showImpact() {} }
+  page.aimSystem = { clear() {} }
+  page.time = view.time
+  page.refreshHud = () => {}
+  const finishes = []
+  page.finish = won => finishes.push(won)
+  const [first, second] = page.board.getMechaZones()
+  page.resolveImpact(first)
+  assert.equal(page.scoreManager.getSnapshot().mechas, 1)
+  assert.equal(page.board.getMechaZones().length, 3)
+  assert.equal(images.find(item => item.texture.key === TEJO_ASSETS.mecha.key && item.x === first.x && item.y === first.y).visible, false)
+  page.resolveImpact(first)
+  assert.equal(page.scoreManager.getSnapshot().mechas, 1)
+  for (let i = 0; i < 15; i++) page.resolveImpact(first)
+  assert.deepEqual(finishes, [])
+  page.resolveImpact(second)
+  assert.equal(page.scoreManager.getSnapshot().mechas, 2)
+  assert.deepEqual(finishes, [true])
+  assert.equal(page.board.consumeMecha(first), false)
+  assert.equal(new TejoBoard(scene()).getMechaZones().length, 4)
+})
+
+test('Trompo reemplaza solo el puesto de Cocina y conserva guardados anteriores', () => {
+  assert.equal(USE_TROMPO_PROTOTYPE, true)
+  assert.equal(MINIGAME_ORDER.length, 5)
+  assert.ok(MINIGAME_ORDER.includes('trompo'))
+  assert.ok(!MINIGAME_ORDER.includes('cocina'))
+  assert.equal(MINIGAMES_CONFIG.cocina.sceneKey, 'CocinaScene')
+  const manager = new SaveManager(storage(JSON.stringify({ version: 2, unlockedRoutes: ['route1'],
+    perfectRoutes: ['route1'], totalRuns: 8, bestScores: { cocina: 471 }, bestVictories: 5, recordScore: 500 })))
+  const saved = manager.load()
+  assert.equal(saved.bestScores.cocina, 471)
+  assert.equal(saved.bestScores.trompo, 0)
+  assert.equal(saved.totalRuns, 8)
+  assert.deepEqual(saved.unlockedRoutes, ['route1'])
+})
+
+test('joystick de Trompo limita el movimiento diagonal y respeta el dedo dueño', () => {
+  const stick = new TrompoJoystick(), area = TROMPO_CONFIG.JOYSTICK
+  assert.equal(stick.start(1, 1000, 300), false)
+  assert.equal(stick.start(1, area.x + 4, area.y), true)
+  assert.deepEqual(stick.direction, { x: 0, y: 0 })
+  assert.equal(stick.start(2, area.x, area.y), false)
+  stick.move(2, area.x + 300, area.y)
+  assert.deepEqual(stick.direction, { x: 0, y: 0 })
+  stick.move(1, area.x + 300, area.y - 300)
+  assert.ok(Math.abs(Math.hypot(stick.direction.x, stick.direction.y) - 1) < 1e-9)
+  stick.release(2)
+  assert.ok(stick.direction.x > 0)
+  stick.release(1)
+  assert.deepEqual(stick.direction, { x: 0, y: 0 })
+})
+
+test('Trompo permite sacar al rival y pierde por inactividad en distintos FPS', () => {
+  for (const fps of [30, 60, 120]) {
+    for (const chase of [true, false]) {
+      const simulation = new TrompoSimulation()
+      for (let ms = 0; ms < 30000 && !simulation.winner; ms += 1000 / fps) {
+        const dx = simulation.enemy.x - simulation.player.x, dy = simulation.enemy.y - simulation.player.y
+        const distance = Math.hypot(dx, dy) || 1
+        simulation.update(1000 / fps, chase ? { x: dx / distance, y: dy / distance } : { x: 0, y: 0 })
+      }
+      assert.equal(simulation.winner, chase ? 'player' : 'enemy')
+      assert.ok(simulation.collisions > 0)
+    }
+  }
+})
+
+test('Trompo resuelve cuerpos superpuestos y salida simultánea sin victoria contradictoria', () => {
+  const simulation = new TrompoSimulation(), arena = TROMPO_CONFIG.ARENA
+  Object.assign(simulation.player, { x: arena.x, y: arena.y })
+  Object.assign(simulation.enemy, { x: arena.x, y: arena.y })
+  simulation.update(16, { x: 1, y: 0 })
+  assert.ok(Number.isFinite(simulation.player.x))
+  assert.ok(Math.hypot(simulation.enemy.x - simulation.player.x, simulation.enemy.y - simulation.player.y) >= TROMPO_CONFIG.TOP_RADIUS * 2 - 0.01)
+  simulation.player.x = arena.x - arena.radius - 50
+  simulation.enemy.x = arena.x + arena.radius + 50
+  simulation.update(16, { x: 0, y: 0 })
+  assert.equal(simulation.winner, 'enemy')
+})
+
+test('Trompo limpia joystick al pausar y emite resultado único al ganar o agotar tiempo', () => {
+  for (const won of [true, false]) {
+    browser(); gameManager.initialize()
+    const page = new TrompoScene(), results = [], stick = new TrompoJoystick(), area = TROMPO_CONFIG.JOYSTICK
+    page.simulation = new TrompoSimulation()
+    page.joystick = stick
+    page.stick = drawable()
+    stick.start(1, area.x, area.y)
+    stick.move(1, area.x + 80, area.y)
+    page.cancelInput()
+    assert.deepEqual(stick.direction, { x: 0, y: 0 })
+    assert.equal(page.stick.x, area.x)
+    page.renderBodies = () => {}
+    page.session = { complete: result => results.push(result) }
+    if (won) page.simulation.winner = 'player'
+    else page.elapsedMs = TROMPO_CONFIG.GAME_DURATION_MS
+    page.update(0, 16)
+    page.update(0, 16)
+    assert.equal(results.length, 1)
+    assert.equal(results[0].key, 'trompo')
+    assert.equal(results[0].won, won)
+  }
 })
 
 test('Cocina conserva agarre, bloquea segundo arrastre y cancela limpiamente', () => {
@@ -464,19 +895,28 @@ test('Cocina solo cuenta el distractor al soltar el dedo dueño', () => {
 
 test('Tejo solo lanza al soltar el dedo dueño y cancela el apuntado al pausar', () => {
   const page = new TejoScene()
-  let launches = 0
+  page.cameras = { main: { getWorldPoint: (x, y) => ({ x, y }) } }
+  let launches = 0, clears = 0, lastPoint, impactClears = 0
   page.disc = { contains: () => true, setHighlighted() {}, setPosition() {}, reset() {}, setTouchAreaVisible() {} }
-  page.aimSystem = { update: () => ({}), getCurrentAim: () => ({}), hasValidDrag: () => true, clear() {} }
+  page.aimSystem = { update: (x, y) => { lastPoint = { x, y }; return {} }, getCurrentAim: () => ({}), hasValidDrag: () => true, clear() { clears++ } }
+  page.board = { clearImpactPoint() { impactClears++ } }
   page.throwSystem = { start() { launches++ } }
   page.refreshHud = () => {}
-  page.handlePointerDown({ id: 1, worldX: 640, worldY: 622 })
+  page.handlePointerDown({ id: 1, x: 640, y: 622 })
   page.handlePointerUp({ id: 2 })
   assert.equal(launches, 0)
-  page.handlePointerUp({ id: 1 })
+  page.handlePointerUp({ id: 1, x: 660, y: 690 })
   page.handlePointerUp({ id: 1 })
   assert.equal(launches, 1)
+  assert.deepEqual(lastPoint, { x: 660, y: 690 })
+  assert.equal(page.activeAim, null)
+  assert.equal(page.aimPointerId, null)
+  assert.equal(clears, 1)
+  page.resetDisc()
+  assert.equal(impactClears, 2)
+  assert.equal(page.phase, 'READY')
   page.phase = 'READY'
-  page.handlePointerDown({ id: 3, worldX: 640, worldY: 622 })
+  page.handlePointerDown({ id: 3, x: 640, y: 622 })
   page.cancelAim()
   page.handlePointerUp({ id: 3 })
   assert.equal(launches, 1)
@@ -592,6 +1032,7 @@ test('ritmo progresa solo con viajes exitosos, tiene límite y se reinicia volun
   browser(); gameManager.initialize()
   gameManager.startNewRun([...MINIGAME_ORDER])
   assert.equal(gameManager.pace, 1)
+  assert.equal(gameManager.difficultyLevel, 0)
   for (let run = 1; run <= 6; run++) {
     MINIGAME_ORDER.forEach(key => gameManager.completeCurrentMinigame(outcome(key, true)))
     gameManager.finishRun()
@@ -599,14 +1040,17 @@ test('ritmo progresa solo con viajes exitosos, tiene límite y se reinicia volun
     gameManager.finishRun()
     assert.equal(gameManager.pace, rate)
     assert.equal(rate, 30 / [30,27,24,21,18][Math.min(run,4)])
+    assert.equal(gameManager.difficultyLevel, Math.min(run, 4))
     gameManager.startNewRun([...MINIGAME_ORDER], false, true)
     assert.equal(gameManager.pace, rate)
   }
   MINIGAME_ORDER.forEach(key => gameManager.completeCurrentMinigame(outcome(key, false)))
   gameManager.finishRun()
   assert.equal(gameManager.pace, 30 / 18)
+  assert.equal(gameManager.difficultyLevel, 4)
   gameManager.startNewRun()
   assert.equal(gameManager.pace, 1)
+  assert.equal(gameManager.difficultyLevel, 0)
 })
 test('controles de temperatura nacen visibles y cambian dirección antes de añadir ingredientes', () => {
   browser(); gameManager.initialize()
@@ -853,6 +1297,31 @@ test('Cocina muestra temperatura, cocción y quemado sin invadir botones', () =>
   }
   display.update(snapshot, false)
   assert.equal(graphics.visible, false)
+})
+
+test('viewport lee el contenedor nuevo antes de escalar al rotar un celular', () => {
+  browser()
+  const oldFrame = globalThis.requestAnimationFrame, oldCancel = globalThis.cancelAnimationFrame
+  globalThis.requestAnimationFrame = callback => { callback(); return 1 }
+  globalThis.cancelAnimationFrame = () => {}
+  try {
+    const app = { style: {} }, rendered = [], parent = { width: 1280, height: 720 }
+    document.getElementById = () => app
+    window.visualViewport = Object.assign(new EventTarget(), { width: 844, height: 390, offsetLeft: 0, offsetTop: 0 })
+    const game = { scale: {
+      getParentBounds() { parent.width = parseFloat(app.style.width); parent.height = parseFloat(app.style.height) },
+      refresh() { rendered.push({ ...parent }) },
+    }, events: new EventEmitter(), scene: { getScenes: () => [] } }
+    installMobileViewport(game)
+    assert.deepEqual(rendered.at(-1), { width: 844, height: 390 })
+    window.visualViewport.width = 390; window.visualViewport.height = 844
+    window.visualViewport.dispatchEvent(new Event('resize'))
+    assert.deepEqual(rendered.at(-1), { width: 390, height: 844 })
+    window.visualViewport.width = 900; window.visualViewport.height = 420
+    window.visualViewport.dispatchEvent(new Event('resize'))
+    assert.deepEqual(rendered.at(-1), { width: 900, height: 420 })
+    game.events.emit('destroy')
+  } finally { globalThis.requestAnimationFrame = oldFrame; globalThis.cancelAnimationFrame = oldCancel }
 })
 
 test('viewport sigue la altura visible del navegador y libera sus listeners', () => {

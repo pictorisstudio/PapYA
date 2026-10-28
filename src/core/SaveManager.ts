@@ -1,5 +1,6 @@
 import { SAVE_KEY, SAVE_VERSION, TOTAL_ROUTES } from '../config/constants'
-import { MINIGAME_ORDER } from '../config/minigamesConfig'
+import { MINIGAME_ORDER, MINIGAMES_CONFIG } from '../config/minigamesConfig'
+import type { MinigameKey } from '../types/Minigame'
 import type { StorageAdapter } from '../storage/StorageAdapter'
 import type { RouteId, SaveData } from '../types/SaveData'
 
@@ -71,7 +72,7 @@ export default class SaveManager {
     const unlockedRoutes = routes(value.unlockedRoutes)
     const bestScores = { ...defaults.bestScores }
     if (object(value.bestScores)) {
-      for (const key of MINIGAME_ORDER) bestScores[key] = count(value.bestScores[key])
+      for (const key of Object.keys(MINIGAMES_CONFIG) as MinigameKey[]) bestScores[key] = count(value.bestScores[key])
     }
     return {
       version: SAVE_VERSION, unlockedRoutes,
@@ -89,7 +90,7 @@ export default class SaveManager {
     return {
       version: SAVE_VERSION, unlockedRoutes: [], perfectRoutes: [], totalRuns: 0,
       bestVictories: 0, recordScore: 0, explorationUnlocked: false,
-      bestScores: { papa: 0, cocina: 0, ruana: 0, tejo: 0, cocuy: 0 },
+      bestScores: { papa: 0, cocina: 0, trompo: 0, ruana: 0, tejo: 0, cocuy: 0 },
     }
   }
 }

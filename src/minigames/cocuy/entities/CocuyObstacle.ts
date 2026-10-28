@@ -12,6 +12,8 @@ export default class CocuyObstacle {
   private readonly radius: number
   private readonly speed: number
   private state: ObstacleState = 'ACTIVE'
+  private flowTime = 0
+  private readonly windArrows: Phaser.GameObjects.Container[] = []
 
   constructor(scene: Phaser.Scene, options: ObstacleSpawnOptions) {
     this.id = options.id
@@ -34,6 +36,12 @@ export default class CocuyObstacle {
 
     this.container.y += (this.speed + worldSpeed) * (delta / 1000)
     this.container.setDepth(Math.round(this.container.y))
+    this.flowTime += delta
+    this.windArrows.forEach((arrow, index) => {
+      const phase = ((this.flowTime + index * 150) % 650) / 650
+      arrow.x = -72 + index * 68 + this.windDirection * phase * 30
+      arrow.setAlpha(1 - phase * 0.75)
+    })
 
     if (this.container.y > 820) {
       this.state = 'DESTROYED'
@@ -84,15 +92,16 @@ export default class CocuyObstacle {
     if (this.type === 'CLOUD') {
       return [scene.add.image(0, 0, SCENE_ASSETS.cloud.key).setDisplaySize(COCUY_CONFIG.CLOUD_WIDTH, COCUY_CONFIG.CLOUD_HEIGHT).setAlpha(0.8)]
     }
-    const arrowColor = this.windDirection > 0 ? 0x93c5fd : COCUY_CONFIG.COLORS.wind
-    return [
-      scene.add.rectangle(0, 0, COCUY_CONFIG.WIND_WIDTH, COCUY_CONFIG.WIND_HEIGHT, COCUY_CONFIG.COLORS.wind, 0.16),
-      scene.add.line(0, 0, -108, -22, 108, -22, arrowColor, 0.95).setOrigin(0, 0).setLineWidth(8),
-      scene.add.line(0, 0, -90, 8, 90, 8, arrowColor, 0.85).setOrigin(0, 0).setLineWidth(6),
-      scene.add.triangle(108 * this.windDirection, -22,
-        this.windDirection > 0 ? 0 : 36, 0, this.windDirection > 0 ? 36 : 0, 18,
-        this.windDirection > 0 ? 0 : 36, 36, arrowColor, 1),
-    ]
+    const cloud = scene.add.image(0, 0, SCENE_ASSETS.cloud.key)
+      .setDisplaySize(COCUY_CONFIG.WIND_WIDTH * 1.3, COCUY_CONFIG.WIND_HEIGHT * 1.7).setTint(0x7dd3fc).setAlpha(0.78)
+    for (let index = 0; index < 3; index++) {
+      const points = [this.windDirection > 0 ? 0 : 44, 0, this.windDirection > 0 ? 44 : 0, 26,
+        this.windDirection > 0 ? 0 : 44, 52] as const
+      const outline = scene.add.triangle(0, 0, ...points, 0x10263d, 1).setStrokeStyle(4, 0x10263d)
+      const arrow = scene.add.triangle(0, 0, ...points, 0xe0faff, 1).setScale(0.72)
+      this.windArrows.push(scene.add.container(-72 + index * 68, 0, [outline, arrow]))
+    }
+    return [cloud, ...this.windArrows]
   }
 
   private getLocalHitboxSize(): { width: number; height: number } {

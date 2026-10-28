@@ -7,6 +7,7 @@ export default class CondorMovementSystem {
   private velocity = 0
   private inputDirection: CocuyInputDirection = 0
   private windInfluence = 0
+  private recoil = 0
   private readonly activePointers = new Map<number, CocuyInputDirection>()
   private lastPointerId: number | null = null
 
@@ -43,8 +44,9 @@ export default class CondorMovementSystem {
     const response = this.inputDirection === 0 ? COCUY_CONFIG.HORIZONTAL_DECELERATION : COCUY_CONFIG.HORIZONTAL_ACCELERATION
 
     this.velocity = Phaser.Math.Linear(this.velocity, targetVelocity, Math.min(1, response * seconds))
-    this.x += (this.velocity + this.windInfluence) * seconds
+    this.x += (this.velocity + this.windInfluence + this.recoil) * seconds
     this.windInfluence = Phaser.Math.Linear(this.windInfluence, 0, Math.min(1, 2.2 * seconds))
+    this.recoil *= Math.exp(-6 * seconds)
 
     if (this.x <= COCUY_CONFIG.PLAYER_MIN_X || this.x >= COCUY_CONFIG.PLAYER_MAX_X) {
       this.x = Phaser.Math.Clamp(this.x, COCUY_CONFIG.PLAYER_MIN_X, COCUY_CONFIG.PLAYER_MAX_X)
@@ -56,6 +58,12 @@ export default class CondorMovementSystem {
 
   applyWind(force: number): void {
     this.windInfluence = Phaser.Math.Clamp(this.windInfluence + force, -COCUY_CONFIG.WIND_FORCE, COCUY_CONFIG.WIND_FORCE)
+  }
+
+  applyRockKnockback(direction: -1 | 1): void {
+    this.recoil = direction * COCUY_CONFIG.ROCK_KNOCKBACK
+    this.velocity *= 0.35
+    this.windInfluence *= 0.5
   }
 
   clearInput(): void {

@@ -95,7 +95,7 @@ export default class NoteManager {
   private removeFinishedNotes(currentTime: number): void {
     for (let index = this.activeNotes.length - 1; index >= 0; index -= 1) {
       const note = this.activeNotes[index]
-      const shouldRemove = note.isJudged() && currentTime > note.hitTime + 360
+      const shouldRemove = note.isJudged() && currentTime >= note.hitTime + RUANA_CONFIG.NOTE_FINISH_DELAY_MS
 
       if (shouldRemove) {
         note.destroy()

@@ -5,6 +5,7 @@ import { SCENE_ASSETS } from '../config/sceneAssets'
 import { AUDIO_CONFIG, type AudioKey } from '../config/audioConfig'
 import { gameManager } from '../core/GameManager'
 import { TEXTS } from '../config/texts'
+import { PAPA_GUIDE_ASSET } from '../config/guideConfig'
 
 export default class PreloaderScene extends Phaser.Scene {
 
@@ -19,6 +20,7 @@ export default class PreloaderScene extends Phaser.Scene {
     this.game.events.once('brand:complete', showLoading)
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.game.events.off('brand:complete', showLoading))
     for (const asset of Object.values(SCENE_ASSETS)) if (!this.textures.exists(asset.key)) this.load.image(asset.key, asset.path)
+    this.load.image(PAPA_GUIDE_ASSET.key, PAPA_GUIDE_ASSET.path)
     this.load.once('filecomplete-audio-menuMusic', () => gameManager.audioManager.playMusic(this, 'menuMusic'))
     gameManager.audioManager.preload(this, Object.keys(AUDIO_CONFIG) as AudioKey[])
     this.cameras.main.setBackgroundColor('#000000')

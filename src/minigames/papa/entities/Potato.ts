@@ -40,9 +40,10 @@ export default class Potato {
     }
 
     const seconds = delta / 1000
-    this.velocityY += PAPA_CONFIG.GRAVITY_Y * seconds
     this.container.x += this.velocityX * seconds
-    this.container.y += this.velocityY * seconds
+    // Integración del arco: misma altura y velocidad a 30, 60 o 120 FPS.
+    this.container.y += this.velocityY * seconds + 0.5 * PAPA_CONFIG.GRAVITY_Y * seconds * seconds
+    this.velocityY += PAPA_CONFIG.GRAVITY_Y * seconds
     this.sprite.rotation += this.rotationSpeed * seconds
     this.container.setDepth(Math.round(this.container.y))
 

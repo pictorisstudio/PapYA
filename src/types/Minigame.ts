@@ -1,4 +1,4 @@
-export type MinigameKey = 'ruana' | 'cocina' | 'papa' | 'tejo' | 'cocuy'
+export type MinigameKey = 'ruana' | 'cocina' | 'trompo' | 'papa' | 'tejo' | 'cocuy'
 
 export interface MinigameConfig {
   key: MinigameKey

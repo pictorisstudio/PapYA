@@ -6,6 +6,7 @@ export default {
   Geom: require('../node_modules/phaser/src/geom'),
   Core: { Events: require('../node_modules/phaser/src/core/events') },
   Scenes: { Events: require('../node_modules/phaser/src/scene/events') },
+  Scale: { Events: require('../node_modules/phaser/src/scale/events') },
   Scene: class { constructor(key) { this.scene = { key } } },
   GameObjects: { Image: class {} },
 }

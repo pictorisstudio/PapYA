@@ -4,7 +4,7 @@ Minijuego funcional de lanzamiento 2.5D construido con Phaser 2D. La escena coor
 
 ## Flujo
 
-El jugador presiona el tejo, arrastra hacia atras y suelta. `TejoAimSystem` calcula `power`, direccion y punto final; `TejoThrowSystem` anima el disco con un `progress` normalizado hasta ese punto; `TejoImpactSystem` clasifica el impacto solamente al finalizar el vuelo. `TejoScoreManager` decide victoria por 3 mechas o 10 puntos.
+El jugador presiona el tejo, arrastra hacia atras y suelta. `TejoAimSystem` calcula `power`, direccion y punto final; `TejoThrowSystem` anima el disco con un `progress` normalizado hasta ese punto; `TejoImpactSystem` clasifica el impacto solamente al finalizar el vuelo. La guia visible es una flecha corta de direccion y una barra de fuerza, sin mostrar el destino exacto; se borra al soltar. Cada mecha alcanzada desaparece y deja de detectar impactos durante esa partida. `TejoScoreManager` exige 10 puntos y dos mechas distintas para ganar; los tiros cercanos solos no bastan.
 
 ## Trayectoria
 

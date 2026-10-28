@@ -22,7 +22,7 @@ export default class TejoScoreManager {
   }
 
   hasWon(): boolean {
-    return this.score >= TEJO_CONFIG.WIN_SCORE
+    return this.score >= TEJO_CONFIG.WIN_SCORE && this.mechas >= TEJO_CONFIG.MIN_MECHAS_TO_WIN
   }
 
   getSnapshot(): TejoScoreSnapshot {

@@ -7,6 +7,7 @@ import type { TejoImpactResult, TejoPoint } from '../types/TejoTypes'
 
 interface MechaZone extends TejoPoint {
   radius: number
+  active: boolean
 }
 
 export default class TejoBoard {
@@ -15,6 +16,7 @@ export default class TejoBoard {
   private readonly impactGraphics: Phaser.GameObjects.Graphics
   private readonly mechas: MechaZone[]
   private readonly mechaArt: Phaser.GameObjects.Image[] = []
+  private readonly mechaSprites = new Map<MechaZone, Phaser.GameObjects.Image>()
 
   constructor(private readonly scene: Phaser.Scene) {
     this.graphics = scene.add.graphics().setDepth(LAYERS.background)
@@ -27,7 +29,9 @@ export default class TejoBoard {
     this.mechaArt.push(scene.add.image(640, 720, SCENE_ASSETS.tejoBackground.key).setOrigin(0.5, 1).setDisplaySize(1280, 720).setDepth(LAYERS.background + 1))
     this.mechaArt.push(scene.add.image(640, TEJO_CONFIG.BOARD_Y, TEJO_ASSETS.bocin.key).setDisplaySize(104, 104).setDepth(LAYERS.scenery - 1))
     for (const mecha of this.mechas) {
-      this.mechaArt.push(scene.add.image(mecha.x, mecha.y, TEJO_ASSETS.mecha.key).setDisplaySize(60, 60).setDepth(LAYERS.scenery))
+      const sprite = scene.add.image(mecha.x, mecha.y, TEJO_ASSETS.mecha.key).setDisplaySize(60, 60).setDepth(LAYERS.scenery)
+      this.mechaArt.push(sprite)
+      this.mechaSprites.set(mecha, sprite)
     }
   }
 
@@ -36,7 +40,16 @@ export default class TejoBoard {
   }
 
   getMechaZones(): readonly MechaZone[] {
-    return this.mechas
+    return this.mechas.filter(mecha => mecha.active)
+  }
+
+  consumeMecha(point: TejoPoint): boolean {
+    const mecha = this.getMechaZones().find(zone => Phaser.Math.Distance.Between(point.x, point.y, zone.x, zone.y) <= zone.radius)
+    if (!mecha) return false
+    mecha.active = false
+    this.mechaSprites.get(mecha)?.setVisible(false)
+    this.debugGraphics.clear()
+    return true
   }
 
   setDebugVisible(visible: boolean): void {
@@ -51,7 +64,7 @@ export default class TejoBoard {
     this.debugGraphics.lineStyle(2, TEJO_CONFIG.COLORS.touchArea, 0.82)
     this.debugGraphics.strokeCircle(TEJO_CONFIG.BOARD_CENTER_X, TEJO_CONFIG.BOARD_Y, TEJO_CONFIG.BOCIN_RADIUS)
 
-    for (const mecha of this.mechas) {
+    for (const mecha of this.getMechaZones()) {
       this.debugGraphics.strokeCircle(mecha.x, mecha.y, mecha.radius)
     }
   }
@@ -120,10 +133,10 @@ export default class TejoBoard {
 
   private createMechaZones(): MechaZone[] {
     return [
-      { x: TEJO_CONFIG.BOARD_CENTER_X - 72, y: TEJO_CONFIG.BOARD_Y - 42, radius: TEJO_CONFIG.MECHA_RADIUS },
-      { x: TEJO_CONFIG.BOARD_CENTER_X + 72, y: TEJO_CONFIG.BOARD_Y - 42, radius: TEJO_CONFIG.MECHA_RADIUS },
-      { x: TEJO_CONFIG.BOARD_CENTER_X - 72, y: TEJO_CONFIG.BOARD_Y + 42, radius: TEJO_CONFIG.MECHA_RADIUS },
-      { x: TEJO_CONFIG.BOARD_CENTER_X + 72, y: TEJO_CONFIG.BOARD_Y + 42, radius: TEJO_CONFIG.MECHA_RADIUS },
+      { x: TEJO_CONFIG.BOARD_CENTER_X - 72, y: TEJO_CONFIG.BOARD_Y - 42, radius: TEJO_CONFIG.MECHA_RADIUS, active: true },
+      { x: TEJO_CONFIG.BOARD_CENTER_X + 72, y: TEJO_CONFIG.BOARD_Y - 42, radius: TEJO_CONFIG.MECHA_RADIUS, active: true },
+      { x: TEJO_CONFIG.BOARD_CENTER_X - 72, y: TEJO_CONFIG.BOARD_Y + 42, radius: TEJO_CONFIG.MECHA_RADIUS, active: true },
+      { x: TEJO_CONFIG.BOARD_CENTER_X + 72, y: TEJO_CONFIG.BOARD_Y + 42, radius: TEJO_CONFIG.MECHA_RADIUS, active: true },
     ]
   }
 }

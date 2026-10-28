@@ -1,6 +1,5 @@
 import Phaser from 'phaser'
 import GameplaySession from '../../components/GameplaySession'
-import { TEXTS } from '../../config/texts'
 import DebugPanel from '../../components/DebugPanel'
 import { DEBUG_MODE } from '../../config/constants'
 import { gameManager } from '../../core/GameManager'
@@ -14,6 +13,7 @@ import ObstacleSpawnManager from './systems/ObstacleSpawnManager'
 import WorldScrollSystem from './systems/WorldScrollSystem'
 import CocuyHUD from './ui/CocuyHUD'
 import VisibilityOverlay from './ui/VisibilityOverlay'
+import CocuyFeedback from './ui/CocuyFeedback'
 import type { CocuyGameState } from './types/CocuyTypes'
 
 export default class CocuyScene extends Phaser.Scene {
@@ -33,6 +33,8 @@ export default class CocuyScene extends Phaser.Scene {
   private elapsedMs = 0
   private finished = false
   private rockHits = 0
+  private nextRockHitMs = 0
+  private feedback?: CocuyFeedback
   private cleanupEvents: Phaser.Time.TimerEvent[] = []
 
   constructor() {
@@ -51,6 +53,7 @@ export default class CocuyScene extends Phaser.Scene {
     this.obstacleEffectSystem = new ObstacleEffectSystem()
     this.scoreManager = new CocuyScoreManager()
     this.visibilityOverlay = new VisibilityOverlay(this)
+    this.feedback = new CocuyFeedback(this)
     this.inputDebugGraphics = this.add.graphics().setDepth(890)
     this.inputDebugLabels = [
       this.add.text(320, 360, 'LEFT', { fontSize: '34px', fontStyle: '700', color: '#bae6fd' }).setOrigin(0.5).setDepth(891).setVisible(false),
@@ -98,11 +101,11 @@ export default class CocuyScene extends Phaser.Scene {
     const movement = this.movementSystem.update(delta)
     this.worldScrollSystem.update(this.elapsedMs, delta)
     this.condor.setX(movement.x)
-    this.condor.update(delta)
+    this.condor.update(delta, movement.velocity, movement.windInfluence)
     this.visibilityOverlay?.update(this.elapsedMs)
-    this.obstacleSpawnManager?.update(delta, this.elapsedMs, this.worldScrollSystem.getSpeed(), movement.x)
+    this.obstacleSpawnManager?.update(delta, this.elapsedMs, this.worldScrollSystem.getSpeed(), movement.x, gameManager.pace)
     this.obstacleEffectSystem?.update(this.condor, this.obstacleSpawnManager?.getActiveObstacles() ?? [], {
-      onRockHit: () => this.applyRockHit(),
+      onRockHit: rockX => this.applyRockHit(rockX),
       onCloud: () => this.activateCloudEffect(),
       onWind: (force) => this.applyWind(force),
     })
@@ -120,12 +123,13 @@ export default class CocuyScene extends Phaser.Scene {
     }
   }
 
-  private handlePointerDown(pointer: Phaser.Input.Pointer): void {
-    if (this.state !== 'PLAYING') {
+  private handlePointerDown(pointer: Phaser.Input.Pointer, objects: Phaser.GameObjects.GameObject[] = []): void {
+    if (this.state !== 'PLAYING' || objects.length) {
       return
     }
 
-    this.movementSystem?.pointerDown(pointer.id, pointer.worldX)
+    const point = this.cameras.main.getWorldPoint(pointer.x, pointer.y)
+    this.movementSystem?.pointerDown(pointer.id, point.x)
   }
 
   private handlePointerMove(pointer: Phaser.Input.Pointer): void {
@@ -133,23 +137,28 @@ export default class CocuyScene extends Phaser.Scene {
       return
     }
 
-    this.movementSystem?.pointerMove(pointer.id, pointer.worldX)
+    const point = this.cameras.main.getWorldPoint(pointer.x, pointer.y)
+    this.movementSystem?.pointerMove(pointer.id, point.x)
   }
 
   private handlePointerUp(pointer: Phaser.Input.Pointer): void {
     this.movementSystem?.pointerUp(pointer.id)
   }
 
-  private applyRockHit(): void {
-    if (this.state !== 'PLAYING') {
+  private applyRockHit(rockX?: number): void {
+    if (this.state !== 'PLAYING' || this.elapsedMs < this.nextRockHitMs) {
       return
     }
 
     gameManager.audioManager.playEffect(this, 'cocuyCollision')
+    this.nextRockHitMs = this.elapsedMs + COCUY_CONFIG.ROCK_PROTECTION_MS
     this.rockHits += 1
     this.ascentSystem?.applyRockPenalty()
     this.condor?.flashHit()
-    this.hud?.showMessage(`-${COCUY_CONFIG.ROCK_ALTITUDE_PENALTY} m`, '#f87171')
+    const x = this.movementSystem?.getSnapshot().x ?? 640
+    this.movementSystem?.applyRockKnockback(x >= (rockX ?? x + 1) ? 1 : -1)
+    this.feedback?.rock(x, COCUY_CONFIG.PLAYER_Y)
+    this.cameras?.main.shake?.(110, 0.003)
   }
 
   private activateCloudEffect(): void {
@@ -158,7 +167,7 @@ export default class CocuyScene extends Phaser.Scene {
     }
 
     this.visibilityOverlay?.activate(this.elapsedMs)
-    this.hud?.showMessage(TEXTS.minigames.cocuy.cloud, '#bae6fd')
+    this.feedback?.cloud(this.movementSystem?.getSnapshot().x ?? 640, COCUY_CONFIG.PLAYER_Y)
   }
 
   private applyWind(force: number): void {
@@ -167,10 +176,14 @@ export default class CocuyScene extends Phaser.Scene {
     }
 
     this.movementSystem?.applyWind(force)
-    this.hud?.showMessage(force > 0 ? TEXTS.minigames.cocuy.windRight : TEXTS.minigames.cocuy.windLeft, '#bae6fd')
+    this.feedback?.wind(this.movementSystem?.getSnapshot().x ?? 640, COCUY_CONFIG.PLAYER_Y, force > 0 ? 1 : -1)
   }
 
   private spawnObstacle(type: 'ROCK' | 'CLOUD' | 'WIND', windDirection: -1 | 1 = 1): void {
+    if (type === 'WIND') {
+      this.obstacleSpawnManager?.spawnWindPattern(windDirection, this.movementSystem?.getSnapshot().x ?? 640, 0, gameManager.pace)
+      return
+    }
     this.obstacleSpawnManager?.spawnObstacle(type, windDirection)
   }
 
@@ -255,6 +268,7 @@ export default class CocuyScene extends Phaser.Scene {
     this.elapsedMs = 0
     this.finished = false
     this.rockHits = 0
+    this.nextRockHitMs = 0
     this.cleanupEvents = []
   }
 
@@ -290,6 +304,7 @@ export default class CocuyScene extends Phaser.Scene {
     this.visibilityOverlay = undefined
     this.hud = undefined
     this.inputDebugGraphics = undefined
+    this.feedback = undefined
     this.inputDebugLabels = []
   }
 

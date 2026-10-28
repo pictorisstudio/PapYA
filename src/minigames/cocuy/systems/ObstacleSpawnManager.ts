@@ -12,13 +12,14 @@ export default class ObstacleSpawnManager {
 
   constructor(private readonly scene: Phaser.Scene) {}
 
-  update(delta: number, elapsedMs: number, worldSpeed: number, playerX: number): void {
+  update(delta: number, elapsedMs: number, worldSpeed: number, playerX: number, reactionScale = 1): void {
     this.elapsedSinceSpawn += delta
 
     if (this.elapsedSinceSpawn >= this.nextSpawnDelay && this.obstacles.length < COCUY_CONFIG.MAX_ACTIVE_OBSTACLES) {
-      this.spawnRandom(elapsedMs, worldSpeed, playerX)
+      const paired = this.spawnRandom(elapsedMs, worldSpeed, playerX, reactionScale)
       this.elapsedSinceSpawn = 0
       this.nextSpawnDelay = this.getNextSpawnDelay(elapsedMs)
+      if (paired) this.nextSpawnDelay = Math.max(this.nextSpawnDelay, COCUY_CONFIG.PAIR_SPAWN_BREAK_MS * reactionScale)
     }
 
     for (const obstacle of this.obstacles) {
@@ -28,13 +29,14 @@ export default class ObstacleSpawnManager {
     this.removeDestroyed()
   }
 
-  spawnObstacle(type: ObstacleType, windDirection: -1 | 1 = 1, x?: number, speed = 0): void {
+  spawnObstacle(type: ObstacleType, windDirection: -1 | 1 = 1, x?: number, speed = 0, y = -90): void {
+    if (this.obstacles.length >= COCUY_CONFIG.MAX_ACTIVE_OBSTACLES) return
     const radius = Phaser.Math.Between(COCUY_CONFIG.ROCK_VISUAL_RADIUS_MIN, COCUY_CONFIG.ROCK_VISUAL_RADIUS_MAX)
     const obstacle = new CocuyObstacle(this.scene, {
       id: `cocuy-obstacle-${this.idCounter}`,
       type,
       x: x ?? Phaser.Math.Between(130, 1150),
-      y: -90,
+      y,
       speed,
       radius,
       windDirection,
@@ -42,6 +44,18 @@ export default class ObstacleSpawnManager {
     this.idCounter += 1
     obstacle.setHitboxVisible(this.hitboxesVisible)
     this.obstacles.push(obstacle)
+  }
+
+  spawnWindPattern(direction: -1 | 1, x: number, speed = 0, reactionScale = 1): boolean {
+    if (this.obstacles.length > COCUY_CONFIG.MAX_ACTIVE_OBSTACLES - 2) return false
+    const offset = COCUY_CONFIG.WIND_ROCK_OFFSET_X
+    const windX = Phaser.Math.Clamp(x, direction === -1 ? 130 + offset : 130, direction === 1 ? 1150 - offset : 1150)
+    // Misma velocidad para ambos. La roca llega después y queda del lado del empuje.
+    // Calcular con la velocidad máxima mantiene un margen real incluso al acelerar.
+    const gap = (COCUY_CONFIG.WORLD_SCROLL_SPEED_END + speed) * COCUY_CONFIG.WIND_ROCK_REACTION_SECONDS * Math.max(1, reactionScale)
+    this.spawnObstacle('WIND', direction, windX, speed)
+    this.spawnObstacle('ROCK', direction, windX + direction * offset, speed, -90 - gap)
+    return true
   }
 
   clear(): void {
@@ -72,15 +86,16 @@ export default class ObstacleSpawnManager {
     this.clear()
   }
 
-  private spawnRandom(elapsedMs: number, worldSpeed: number, playerX: number): void {
+  private spawnRandom(elapsedMs: number, worldSpeed: number, playerX: number, reactionScale: number): boolean {
     const type = this.pickObstacleType()
     const minDistance = worldSpeed * COCUY_CONFIG.MIN_REACTION_TIME
     const avoidsPlayer = type === 'ROCK' && Phaser.Math.Between(0, 100) < 62
     const x = avoidsPlayer ? this.getFairRockX(playerX, minDistance) : Phaser.Math.Between(130, 1150)
     const speed = Phaser.Math.Linear(12, 74, Phaser.Math.Clamp(elapsedMs / COCUY_CONFIG.GAME_DURATION_MS, 0, 1))
     const windDirection: -1 | 1 = Phaser.Math.Between(0, 1) === 0 ? -1 : 1
-
+    if (type === 'WIND' && this.spawnWindPattern(windDirection, playerX + Phaser.Math.Between(-120, 120), speed, reactionScale)) return true
     this.spawnObstacle(type, windDirection, x, speed)
+    return false
   }
 
   private getFairRockX(playerX: number, minDistance: number): number {

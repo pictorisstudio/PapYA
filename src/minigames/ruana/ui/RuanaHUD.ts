@@ -97,7 +97,7 @@ export default class RuanaHUD {
       `Offset: ${snapshot.offsetMs === null ? '-' : `${Math.round(snapshot.offsetMs)} ms`}`,
       `Active notes: ${snapshot.activeNotes}`,
       `FPS: ${Math.round(snapshot.fps)}`,
-      `Win accuracy: ${RUANA_CONFIG.WIN_ACCURACY}%`,
+      `Aciertos requeridos: ${RUANA_CONFIG.WIN_HIT_PERCENT}%`,
     ])
   }
 

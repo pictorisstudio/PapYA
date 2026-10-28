@@ -96,7 +96,7 @@ export default class DebugPanel {
   private finishMinigame(won: boolean): void {
     const activeKey = this.scene.scene.key
 
-    const minigameScenes = ['RuanaScene', 'CocinaScene', 'PapaScene', 'TejoScene', 'CocuyScene']
+    const minigameScenes = ['RuanaScene', 'CocinaScene', 'TrompoScene', 'PapaScene', 'TejoScene', 'CocuyScene']
 
     if (!minigameScenes.includes(activeKey)) {
       return

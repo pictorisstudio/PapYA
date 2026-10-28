@@ -18,6 +18,9 @@ export function installMobileViewport(game: Phaser.Game): void {
       app.style.height = `${viewport?.height ?? window.innerHeight}px`
       app.style.left = `${viewport?.offsetLeft ?? 0}px`
       app.style.top = `${viewport?.offsetTop ?? 0}px`
+      // Phaser debe leer el contenedor ya actualizado antes de calcular el canvas.
+      // Si lo lee al final de refresh, conserva el tamaño anterior y recorta los controles.
+      game.scale.getParentBounds?.()
       game.scale.refresh()
     })
   }

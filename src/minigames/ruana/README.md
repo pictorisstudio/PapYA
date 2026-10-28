@@ -1,12 +1,13 @@
 # Tejiendo la Ruana
 
-Prototipo tecnico del primer microjuego de PapYA. Valida sincronizacion temporal, carriles con falsa perspectiva 2.5D, input tactil por lane, scoring y victoria por precision sin introducir arte final.
+Minijuego de ritmo con cuatro carriles de colores. La victoria depende de los aciertos; la precision temporal determina el puntaje.
 
 ## Estructura
 
 - `RuanaScene.ts`: coordina intro, countdown, gameplay, input, resultado y salida al flujo central.
 - `config/ruanaConfig.ts`: centraliza ventanas de precision, posiciones, tiempos y colores temporales.
-- `config/beatmapPrototype.ts`: beatmap local provisional con 18 notas `{ id, lane, hitTime }`, listo para migrar a JSON.
+- `config/beatmapPrototype.ts`: pulso base provisional de 18 notas `{ id, lane, hitTime }`.
+- `config/ruanaDifficulty.ts`: cinco patrones automaticos de 18, 22, 26, 30 y 34 notas. Agrega contratiempos y despues acordes de dos dedos, conservando los cuatro colores.
 - `systems/RhythmClock.ts`: reloj de alta precision basado en `performance.now()`. El tiempo absoluto es la fuente de verdad para evitar drift por FPS.
 - `systems/LaneProjector.ts`: convierte `lane + progress` en `x, y, scale` usando interpolacion y easing visual.
 - `systems/NoteManager.ts`: crea notas desde el beatmap, actualiza posiciones, detecta notas vencidas y limpia entidades.
@@ -19,7 +20,9 @@ Prototipo tecnico del primer microjuego de PapYA. Valida sincronizacion temporal
 
 ## Flujo
 
-Al entrar se muestra una introduccion breve, luego cuenta regresiva `3, 2, 1, ¡YA!`. Despues inicia `RhythmClock`, aparecen las notas segun `hitTime - NOTE_TRAVEL_TIME`, el jugador toca una de las cuatro zonas inferiores con `pointerdown`, y la escena evalua contra la nota activa mas cercana solamente en ese lane. Al terminar todas las notas se muestra el resultado y se llama a `gameManager.completeCurrentMinigame(victory)` para continuar con `TransitionScene` o `ResultsScene`.
+El reloj y las notas comienzan de inmediato, sin instrucciones ni cuenta regresiva. El jugador toca las cuatro zonas inferiores; cada dedo se transforma con la camara actual y se evalua contra la nota pendiente mas cercana de ese carril. El nivel aumenta tras rondas exitosas, se conserva al fallar y tiene limite; una sesion voluntaria nueva comienza en el nivel inicial. La musica usa la misma velocidad que el reloj al acelerar. Los tiempos base siguen siendo provisionales y requieren validar el ajuste musical con el equipo.
+
+La duracion se calcula a partir de la ultima nota y de su margen de limpieza. Al terminar se entrega el resultado al ciclo compartido, que avanza inmediatamente si no se completa o muestra brevemente Ganaste.
 
 ## Timing
 
@@ -39,15 +42,15 @@ La sincronizacion depende siempre de `hitTime`; la perspectiva es solo represent
 
 Valores actuales:
 
-- `PERFECT`: `<= 80 ms`
-- `GOOD`: `<= 160 ms`
-- `MISS`: `> 160 ms`
+- `PERFECT`: `<= 110 ms`
+- `GOOD`: `<= 220 ms`
+- `MISS`: `> 220 ms`
 
 Formula:
 
 `accuracy = ((perfect + good * 0.75) / totalNotes) * 100`
 
-`GOOD` es un acierto valido, pero ponderado para reflejar menor precision temporal. La victoria se obtiene con `accuracy >= 85`.
+`GOOD` y `PERFECT` cuentan igual para completar al menos el 85 % de las notas. La ponderacion 0.75 solo se usa para medir precision y puntuar: acertar todas las notas como GOOD tambien permite ganar.
 
 ## Debug
 

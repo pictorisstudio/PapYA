@@ -17,11 +17,11 @@ export default class AudioManager {
     }
   }
 
-  playMusic(scene: Phaser.Scene, key: AudioKey): boolean {
+  playMusic(scene: Phaser.Scene, key: AudioKey, rate = 1): boolean {
     this.stopMusic()
     if (AUDIO_CONFIG[key].kind !== 'music' || !scene.cache?.audio?.exists(key)) return false
     if (scene.sound.locked) {
-      const onUnlocked = () => { if (scene.scene.isActive()) this.playMusic(scene, key) }
+      const onUnlocked = () => { if (scene.scene.isActive()) this.playMusic(scene, key, rate) }
       scene.sound.once('unlocked', onUnlocked)
       scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => scene.sound.off('unlocked', onUnlocked))
       // Android y navegadores con autoplay permitido pueden arrancar sin un toque.
@@ -36,7 +36,7 @@ export default class AudioManager {
     }
     const music = scene.sound.add(key) as PlayableSound
     this.music = music
-    music.play({ loop: true, volume: this.muted ? 0 : this.musicVolume })
+    music.play({ loop: true, volume: this.muted ? 0 : this.musicVolume, rate: Phaser.Math.Clamp(rate, 0.5, 2) })
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       if (this.music === music) this.stopMusic()
     })

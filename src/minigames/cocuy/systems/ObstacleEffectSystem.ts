@@ -4,7 +4,7 @@ import CocuyObstacle from '../entities/CocuyObstacle'
 import type { CocuyRect } from '../types/CocuyTypes'
 
 interface EffectCallbacks {
-  onRockHit: () => void
+  onRockHit: (rockX: number) => void
   onCloud: () => void
   onWind: (force: number) => void
 }
@@ -21,7 +21,8 @@ export default class ObstacleEffectSystem {
       obstacle.trigger()
 
       if (obstacle.type === 'ROCK') {
-        callbacks.onRockHit()
+        const hitbox = obstacle.getHitbox()
+        callbacks.onRockHit(hitbox.x + hitbox.width / 2)
       }
 
       if (obstacle.type === 'CLOUD') {

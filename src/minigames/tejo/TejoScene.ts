@@ -86,7 +86,8 @@ export default class TejoScene extends Phaser.Scene {
       return
     }
 
-    if (!this.disc.contains(pointer.worldX, pointer.worldY)) {
+    const point = this.cameras.main.getWorldPoint(pointer.x, pointer.y)
+    if (!this.disc.contains(point.x, point.y)) {
       return
     }
 
@@ -111,6 +112,7 @@ export default class TejoScene extends Phaser.Scene {
       return
     }
 
+    this.updateAim(pointer)
     const aim = this.aimSystem.getCurrentAim()
 
     if (!aim || !this.aimSystem.hasValidDrag()) {
@@ -118,9 +120,9 @@ export default class TejoScene extends Phaser.Scene {
       return
     }
 
-    this.activeAim = aim
+    this.activeAim = null
     this.phase = 'THROWING'
-    // Mantener la guía visible durante el vuelo, hasta resolver el impacto.
+    this.aimSystem.clear()
     this.disc.setHighlighted(false)
     this.disc.setPosition({ x: TEJO_CONFIG.THROW_START_X, y: TEJO_CONFIG.THROW_START_Y })
     this.board?.clearImpactPoint()
@@ -133,7 +135,8 @@ export default class TejoScene extends Phaser.Scene {
       return
     }
 
-    const aim = this.aimSystem.update(pointer.worldX, pointer.worldY)
+    const point = this.cameras.main.getWorldPoint(pointer.x, pointer.y)
+    const aim = this.aimSystem.update(point.x, point.y)
     this.activeAim = aim
     this.disc.setPosition({
       x: TEJO_CONFIG.THROW_START_X + aim.dragX,
@@ -157,7 +160,9 @@ export default class TejoScene extends Phaser.Scene {
     }
 
     this.phase = 'IMPACT'
+    this.activeAim = null
     this.aimSystem?.clear()
+    if (result === 'MECHA' && !this.board?.consumeMecha(point)) result = this.impactSystem?.evaluate(point) ?? 'OUT'
     const score = this.scoreManager.registerImpact(result)
     if (result === 'MECHA') {
       // La mecha ganadora acompaña a Ganaste y termina incluso si cambia la escena.
@@ -184,8 +189,10 @@ export default class TejoScene extends Phaser.Scene {
     }
 
     this.phase = 'READY'
+    this.aimPointerId = null
     this.activeAim = null
     this.aimSystem.clear()
+    this.board?.clearImpactPoint()
     this.disc.reset()
     this.disc.setTouchAreaVisible(DEBUG_MODE && gameManager.debugManager.areTouchAreasVisible())
     this.refreshHud()
@@ -267,6 +274,7 @@ export default class TejoScene extends Phaser.Scene {
     this.elapsedMs = 0
     this.finished = false
     this.activeAim = null
+    this.aimPointerId = null
     this.cleanupEvents = []
   }
 

@@ -4,11 +4,13 @@ import type { TejoAimState, TejoPoint } from '../types/TejoTypes'
 
 export default class TejoAimSystem {
   private readonly preview: Phaser.GameObjects.Graphics
+  private readonly powerMeter: Phaser.GameObjects.Graphics
   private readonly origin: TejoPoint = { x: TEJO_CONFIG.THROW_START_X, y: TEJO_CONFIG.THROW_START_Y }
   private currentAim: TejoAimState | null = null
 
   constructor(private readonly scene: Phaser.Scene) {
     this.preview = scene.add.graphics().setDepth(650)
+    this.powerMeter = scene.add.graphics().setDepth(1150)
   }
 
   update(pointerX: number, pointerY: number): TejoAimState {
@@ -43,6 +45,7 @@ export default class TejoAimSystem {
     }
 
     this.drawPreview(this.currentAim)
+    this.drawPowerMeter(this.currentAim)
     return this.currentAim
   }
 
@@ -61,10 +64,12 @@ export default class TejoAimSystem {
   clear(): void {
     this.currentAim = null
     this.preview.clear()
+    this.powerMeter.clear()
   }
 
   destroy(): void {
     this.preview.destroy()
+    this.powerMeter.destroy()
   }
 
   private calculateLaunchParameters(rawDragX: number, rawDragY: number): {
@@ -87,27 +92,34 @@ export default class TejoAimSystem {
 
   private drawPreview(aim: TejoAimState): void {
     this.preview.clear()
-    const points = Array.from({ length: 33 }, (_, index) => this.getTrajectoryPoint(aim.target, aim.arcHeight, index / 32))
-    // Contorno oscuro y centro claro: visible sobre tierra y cielo.
+    // Indica dirección y fuerza, sin revelar el punto exacto de impacto.
+    const dx = aim.target.x - this.origin.x
+    const dy = aim.target.y - this.origin.y
+    const distance = Math.hypot(dx, dy) || 1
+    const length = 72 + aim.power * 68
+    const nx = dx / distance, ny = dy / distance
+    const end = { x: this.origin.x + nx * length, y: this.origin.y + ny * length }
     for (const [width, color] of [[10, 0x172033], [5, 0xfff7cc]] as const) {
       this.preview.lineStyle(width, color, 1)
-      for (let index = 1; index < points.length; index++) {
-        const previous = points[index - 1]!, point = points[index]!
-        this.preview.strokeLineShape(new Phaser.Geom.Line(previous.x, previous.y, point.x, point.y))
-      }
+      this.preview.strokeLineShape(new Phaser.Geom.Line(this.origin.x, this.origin.y, end.x, end.y))
+      for (const side of [-1, 1]) this.preview.strokeLineShape(new Phaser.Geom.Line(
+        end.x, end.y, end.x - nx * 20 + ny * side * 13, end.y - ny * 20 - nx * side * 13))
     }
-    this.preview.lineStyle(4, 0xfbbf24, 1)
-    this.preview.strokeCircle(aim.target.x, aim.target.y, 18)
   }
 
-  private getTrajectoryPoint(target: TejoPoint, arcHeight: number, progress: number): TejoPoint {
-    const baseX = Phaser.Math.Linear(this.origin.x, target.x, progress)
-    const baseY = Phaser.Math.Linear(this.origin.y, target.y, progress)
-    const arc = Math.sin(progress * Math.PI) * arcHeight
-
-    return {
-      x: baseX,
-      y: baseY - arc,
-    }
+  private drawPowerMeter(aim: TejoAimState): void {
+    const discX = this.origin.x + aim.dragX, discY = this.origin.y + aim.dragY
+    const width = 24, height = 136
+    const x = Phaser.Math.Clamp(discX + 84, 16, 1280 - width - 16)
+    // Anclar por la base para acompañar el arrastre hacia abajo sin salir del canvas.
+    const y = Phaser.Math.Clamp(discY - height + 12, 140, 720 - height - 8)
+    this.powerMeter.clear()
+    this.powerMeter.fillStyle(0xfff7cc, 1)
+    this.powerMeter.fillRoundedRect(x, y, width, height, 5)
+    this.powerMeter.fillStyle(0x172033, 1)
+    this.powerMeter.fillRect(x + 3, y + 3, width - 6, height - 6)
+    const filled = (height - 10) * aim.power
+    this.powerMeter.fillStyle(aim.power > 0.8 ? 0xfb923c : 0xfbbf24, 1)
+    this.powerMeter.fillRect(x + 5, y + height - 5 - filled, width - 10, filled)
   }
 }

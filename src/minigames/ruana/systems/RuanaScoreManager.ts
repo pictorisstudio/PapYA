@@ -50,7 +50,7 @@ export default class RuanaScoreManager {
   }
 
   isVictory(): boolean {
-    return this.getAccuracy() >= RUANA_CONFIG.WIN_ACCURACY
+    return this.totalNotes > 0 && ((this.perfect + this.good) / this.totalNotes) * 100 >= RUANA_CONFIG.WIN_HIT_PERCENT
   }
 
   getSnapshot(): RuanaScoreSnapshot {

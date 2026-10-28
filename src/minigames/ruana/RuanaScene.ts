@@ -6,7 +6,7 @@ import DebugPanel from '../../components/DebugPanel'
 import { DEBUG_MODE } from '../../config/constants'
 import { LAYERS } from '../../config/layers'
 import { gameManager } from '../../core/GameManager'
-import { RUANA_BEATMAP_PROTOTYPE } from './config/beatmapPrototype'
+import { buildRuanaBeatmap, ruanaDuration } from './config/ruanaDifficulty'
 import { RUANA_CONFIG } from './config/ruanaConfig'
 import HitJudge from './systems/HitJudge'
 import LaneProjector from './systems/LaneProjector'
@@ -37,6 +37,7 @@ export default class RuanaScene extends Phaser.Scene {
   private cleanupEvents: Phaser.Time.TimerEvent[] = []
   private lastOffsetMs: number | null = null
   private finished = false
+  private durationMs = 0
 
   constructor() {
     super('RuanaScene')
@@ -48,13 +49,15 @@ export default class RuanaScene extends Phaser.Scene {
     this.createPlaceholderLoom()
 
     this.clock = new RhythmClock()
-    this.noteManager = new NoteManager(this, RUANA_BEATMAP_PROTOTYPE, this.projector)
+    const beatmap = buildRuanaBeatmap(gameManager.difficultyLevel)
+    this.durationMs = ruanaDuration(beatmap)
+    this.noteManager = new NoteManager(this, beatmap, this.projector)
     this.judge = new HitJudge()
-    this.scoreManager = new RuanaScoreManager(RUANA_BEATMAP_PROTOTYPE.length)
+    this.scoreManager = new RuanaScoreManager(beatmap.length)
     this.hitZone = new HitZone(this, this.projector)
     this.hitZone.setGuidesVisible(DEBUG_MODE && gameManager.debugManager.areRuanaGuidesVisible())
     this.events.on('debug:touch-areas-changed', this.handleDebugTouchAreasChanged, this)
-    this.progressDisplay = new RuanaProgressDisplay(this, 640, 670, RUANA_BEATMAP_PROTOTYPE.length)
+    this.progressDisplay = new RuanaProgressDisplay(this, 640, 670, beatmap.length)
     this.hud = new RuanaHUD(this, {
       forcePerfect: () => this.forcePerfect(),
       forceMiss: () => this.forceMiss(),
@@ -66,7 +69,7 @@ export default class RuanaScene extends Phaser.Scene {
     })
     this.refreshHud()
 
-    this.session = new GameplaySession(this, { remainingMs: () => Math.max(0, 13420 - (this.clock?.getCurrentTime() ?? 0)) / gameManager.pace, pause: () => this.clock?.pause(), resume: () => { if (!this.finished) this.clock?.resume() }, debugFinish: won => this.finishWithScore(won) })
+    this.session = new GameplaySession(this, { remainingMs: () => Math.max(0, this.durationMs - (this.clock?.getCurrentTime() ?? 0)) / gameManager.pace, pause: () => this.clock?.pause(), resume: () => { if (!this.finished) this.clock?.resume() }, debugFinish: won => this.finishWithScore(won) })
     new DebugPanel(this)
     this.startGameplay()
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.cleanup())
@@ -114,7 +117,8 @@ export default class RuanaScene extends Phaser.Scene {
       return
     }
 
-    const lane = this.hitZone.getLaneAt(pointer.worldX, pointer.worldY)
+    const point = this.cameras.main.getWorldPoint(pointer.x, pointer.y)
+    const lane = this.hitZone.getLaneAt(point.x, point.y)
 
     if (lane === null) {
       return
@@ -224,7 +228,7 @@ export default class RuanaScene extends Phaser.Scene {
 
     const score = this.scoreManager.getSnapshot()
     this.session?.complete({ key: 'ruana', won: forcedVictory ?? score.victory, rawScore: score.score,
-      metrics: { accuracy: score.accuracy, perfect: score.perfect, good: score.good, miss: score.miss } })
+      metrics: { accuracy: score.accuracy, perfect: score.perfect, good: score.good, miss: score.miss, difficulty: gameManager.difficultyLevel } })
   }
 
   private createPlaceholderLoom(): void {

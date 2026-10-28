@@ -22,6 +22,7 @@ export default class GameManager {
   isPractice = false
   private paceLevel = 0
   get pace(): number { return 30 / [30, 27, 24, 21, 18][this.paceLevel]! }
+  get difficultyLevel(): number { return this.paceLevel }
 
   initialize(): void {
     this.saveManager = new SaveManager(new WebStorageAdapter())

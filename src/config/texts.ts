@@ -31,6 +31,10 @@ export const TEXTS = {
   record: (wins: number, total: number, score: number) => `Mejor viaje: ${wins}/${total} · Récord: ${score}`,
   rawScore: (name: string, score: number) => `${name}: ${score} puntos propios`,
   minigames: {
+    trompo: {
+      name: 'Duelo de Trompos', objective: 'Saca al rival del círculo con el joystick.',
+      player: 'TÚ', rival: 'RIVAL',
+    },
     papa: {
       name: 'Cosecha de Papa', objective: 'Recoge 20 papas y evita las papas podridas.',
       count: (count: number, target: number) => `Papas: ${count}/${target}`,
@@ -51,7 +55,7 @@ export const TEXTS = {
       temperature: 'Temperatura', burn: 'Quemado',
     },
     tejo: {
-      name: 'Tejo al Bocín', objective: 'Arrastra y suelta el tejo: suma 10 puntos con las mechas.',
+      name: 'Tejo al Bocín', objective: 'Arrastra y suelta el tejo: haz estallar dos mechas distintas.',
       points: (score: number, target: number) => `Puntos: ${score}/${target}`,
       mechas: (value: number) => `Mechas: ${value}`,
       impact: { MECHA: '¡Mecha! +5', NEAR: '¡Cerca! +1', OUT: '' },
