@@ -71,6 +71,41 @@ import PapaGuide from '../src/components/PapaGuide.ts'
 import { PAPA_GUIDE_ASSET, guidePages } from '../src/config/guideConfig.ts'
 import ObstacleSpawnManager from '../src/minigames/cocuy/systems/ObstacleSpawnManager.ts'
 import Condor from '../src/minigames/cocuy/entities/Condor.ts'
+import VisibilityOverlay from '../src/minigames/cocuy/ui/VisibilityOverlay.ts'
+
+test('niebla visible dura tres segundos reales, se desvanece y cubre pantallas anchas', () => {
+  const view = scene()
+  view.scale = { gameSize: { width: 1600, height: 720 } }
+  let fillAlpha
+  view.add.rectangle = (x, y, width, height, color, alpha) => {
+    fillAlpha = alpha
+    return drawable(x, y)
+  }
+  const fog = new VisibilityOverlay(view)
+  assert.equal(fillAlpha, 1, 'el relleno debe poder verse al subir la opacidad')
+  assert.equal(fog.overlay.alpha, 0)
+  assert.ok(fog.clouds.every(cloud => cloud.alpha === 0))
+  fog.activate(1000, 1.5)
+  fog.update(1750)
+  assert.equal(fog.overlay.alpha, COCUY_CONFIG.CLOUD_OVERLAY_ALPHA)
+  assert.equal(fog.overlay.width, 1600)
+  assert.equal(fog.clouds.length, 9)
+  assert.ok(fog.clouds.every(cloud => cloud.alpha > 0 && cloud.alpha < 0.5 && cloud.depth > 700 && cloud.depth < 1200))
+  fog.update(5200)
+  assert.ok(fog.overlay.alpha > 0 && fog.overlay.alpha < COCUY_CONFIG.CLOUD_OVERLAY_ALPHA)
+  assert.equal(fog.isActive(5499), true)
+  fog.update(5500)
+  assert.equal(fog.isActive(5500), false)
+  assert.equal(fog.overlay.alpha, 0)
+  assert.ok(fog.clouds.every(cloud => cloud.alpha === 0))
+  fog.activate(5600)
+  fog.update(6100)
+  assert.equal(fog.overlay.alpha, COCUY_CONFIG.CLOUD_OVERLAY_ALPHA)
+  let destroyed = 0
+  for (const object of [fog.overlay, ...fog.clouds]) object.destroy = () => destroyed++
+  fog.destroy()
+  assert.equal(destroyed, 10)
+})
 
 function storage(raw = null) {
   return { raw, writes: 0, read() { return this.raw }, has() { return this.raw !== null },

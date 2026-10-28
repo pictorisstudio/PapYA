@@ -6,9 +6,11 @@ La papa alada del menú abre la ayuda al tocarla o pulsar Cómo jugar. Tiene una
 
 Los textos están en `src/config/guideConfig.ts`; el dibujo y la interfaz están separados en `src/components/PapaGuide.ts`. El sprite usa la clave estable `papa-guide` y el archivo `public/assets/ui/guide/papa-guia.png`. Se puede reemplazar ese PNG sin cambiar las mecánicas. La imagen tiene canal alfa real y se conserva su transparencia.
 
+Ajuste del menú: papa guía centrada horizontalmente en (640, 390) y mapa en (950, 270), sin cambiar sus alturas. Corrección de niebla validada con 71 pruebas, tipos y compilación; revisión visual del menú y niebla en navegador sin errores de consola. Capturas: `docs/previews/papa-guia-mapa-derecha.png` y `docs/previews/cocuy-niebla-visible.png`.
+
 ## Cocuy
 
-- Las corrientes usan nubes celestes con tres flechas animadas en el sentido del empuje. Las nubes decorativas conservan su baja opacidad; las nubes de niebla tienen un efecto más corto y suave.
+- Las corrientes usan nubes celestes con tres flechas animadas en el sentido del empuje. Las nubes decorativas conservan su baja opacidad. Tocar una nube de niebla activa un velo y nueve nubes semitransparentes durante tres segundos reales, también en rondas aceleradas; el efecto se desvanece al terminar y se adapta al ancho de pantalla. El relleno del velo conserva alfa 1 y su visibilidad se controla con la opacidad del objeto.
 - El cóndor se inclina según el movimiento. Al entrar en una corriente aparecen flechas breves junto a él.
 - Una roca resta 25 m, desplaza al cóndor hacia abajo, aplica un pequeño retroceso lateral, parpadeo, sonido, un anillo de impacto y un texto flotante de altura perdida. Hay 900 ms de protección para evitar penalizaciones encadenadas.
 - Los patrones de viento colocan una roca del lado del empuje y con retraso vertical. Ambos elementos comparten velocidad y el espacio de reacción considera la aceleración de la sesión. Se deja una pausa adicional antes del siguiente grupo y se respeta el máximo de obstáculos.

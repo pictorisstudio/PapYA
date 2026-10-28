@@ -166,7 +166,7 @@ export default class CocuyScene extends Phaser.Scene {
       return
     }
 
-    this.visibilityOverlay?.activate(this.elapsedMs)
+    this.visibilityOverlay?.activate(this.elapsedMs, gameManager.pace)
     this.feedback?.cloud(this.movementSystem?.getSnapshot().x ?? 640, COCUY_CONFIG.PLAYER_Y)
   }
 

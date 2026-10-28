@@ -24,7 +24,7 @@ export default class MenuScene extends Phaser.Scene {
     this.add.sprite(300, 320, SCENE_ASSETS.condorSide1.key).setDisplaySize(210, 210).play('condor-side')
     const count = Phaser.Math.Clamp(gameManager.progressManager.getSaveData().unlockedRoutes.length, 0, 5)
     const maps = [SCENE_ASSETS.map0, SCENE_ASSETS.map1, SCENE_ASSETS.map2, SCENE_ASSETS.map3, SCENE_ASSETS.map4, SCENE_ASSETS.map5]
-    this.add.image(900, 270, maps[count]!.key).setDisplaySize(650, 365.625)
+    this.add.image(950, 270, maps[count]!.key).setDisplaySize(650, 365.625)
     const artButton = (x: number, y: number, key: string, action: () => void) => {
       this.add.image(x, y, key).setDisplaySize(440, 247.5)
       this.add.rectangle(x, y, 440, 160, 0, 0).setInteractive({ useHandCursor: true }).on('pointerdown', action)
@@ -35,7 +35,7 @@ export default class MenuScene extends Phaser.Scene {
       this.scene.start('TransitionScene')
     })
     artButton(880, 600, SCENE_ASSETS.mapButton.key, () => this.scene.start('MapScene'))
-    this.guide = new PapaGuide(this)
+    this.guide = new PapaGuide(this, 640, 390)
     if (DEBUG_MODE) {
       const first = this.children.list.length
       this.addButton(1100, 700, 300, 30, TEXTS.dev, () => this.scene.start('DevScene'))
