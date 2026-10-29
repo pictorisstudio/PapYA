@@ -809,7 +809,8 @@ test('guía corta de Tejo muestra dirección y fuerza sin revelar el destino', (
   assert.deepEqual(position, shot.target)
   const score = new TejoScoreManager()
   assert.equal(score.registerImpact('MECHA').victory, false)
-  assert.equal(score.registerImpact('MECHA').victory, true)
+  assert.equal(score.registerImpact('MECHA').victory, false)
+  assert.equal(score.registerImpact('BOCIN').victory, true)
 })
 
 test('barra de fuerza vertical sigue al disco a su derecha y se borra al soltar', () => {
@@ -906,7 +907,7 @@ test('dos dedos resuelven un acorde de Ruana con cámara desplazada sin contar d
   assert.equal(page.noteManager.isFinished(), true)
 })
 
-test('Tejo consume y oculta una mecha una sola vez; requiere dos distintas para ganar', () => {
+test('Tejo consume y oculta una mecha una sola vez y gana al llegar a diez puntos', () => {
   browser(); gameManager.initialize()
   const view = scene(), page = new TejoScene(), images = []
   const image = view.add.image
@@ -933,13 +934,30 @@ test('Tejo consume y oculta una mecha una sola vez; requiere dos distintas para 
   assert.equal(images.find(item => item.texture.key === TEJO_ASSETS.mecha.key && item.x === first.x && item.y === first.y).visible, false)
   page.resolveImpact(first)
   assert.equal(page.scoreManager.getSnapshot().mechas, 1)
-  for (let i = 0; i < 15; i++) page.resolveImpact(first)
   assert.deepEqual(finishes, [])
   page.resolveImpact(second)
   assert.equal(page.scoreManager.getSnapshot().mechas, 2)
+  assert.deepEqual(finishes, [])
+  page.resolveImpact(page.board.getBocinCenter())
   assert.deepEqual(finishes, [true])
   assert.equal(page.board.consumeMecha(first), false)
   assert.equal(new TejoBoard(scene()).getMechaZones().length, 4)
+})
+
+test('Tejo distingue bocín y moñona por el centro del disco y su contacto con una mecha activa', () => {
+  const board = new TejoBoard(scene()), impacts = new TejoImpactSystem(board)
+  const center = board.getBocinCenter()
+  assert.equal(impacts.evaluate(center), 'BOCIN')
+  const edge = { x: center.x + 27, y: center.y - 15 }
+  assert.equal(impacts.evaluate(edge), 'MONONA')
+  assert.equal(board.consumeMecha(edge, TEJO_CONFIG.IMPACT_DISC_RADIUS), true)
+  assert.equal(impacts.evaluate(edge), 'BOCIN')
+  const score = new TejoScoreManager()
+  assert.equal(score.registerImpact('MONONA').score, 9)
+  assert.equal(score.registerImpact('NEAR').victory, true)
+  const bocinScore = new TejoScoreManager()
+  assert.equal(bocinScore.registerImpact('BOCIN').score, 6)
+  assert.equal(new TejoScoreManager().registerImpact('MECHA').score, 3)
 })
 
 test('Trompo reemplaza solo el puesto de Cocina y conserva guardados anteriores', () => {

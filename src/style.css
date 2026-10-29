@@ -1,3 +1,7 @@
+@font-face {
+  font-family: 'VCR OSD Mono'; src: url('/assets/fonts/vcr-osd-mono.ttf') format('truetype');
+  font-style: normal; font-weight: 100 900; font-display: block;
+}
 html, body {
   width: 100%; height: 100%; margin: 0; padding: 0;
   overflow: hidden; background: #000;
@@ -13,6 +17,7 @@ html, body {
 }
 #game { width: 100%; height: 100%; overflow: hidden; }
 canvas { display: block; }
+body, button, #orientation-guard, #orientation-fullscreen { font-family: 'VCR OSD Mono', monospace !important; }
 
 #orientation-guard {
   display: none; position: fixed; inset: 0; z-index: 10000;

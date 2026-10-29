@@ -43,8 +43,8 @@ export default class TejoBoard {
     return this.mechas.filter(mecha => mecha.active)
   }
 
-  consumeMecha(point: TejoPoint): boolean {
-    const mecha = this.getMechaZones().find(zone => Phaser.Math.Distance.Between(point.x, point.y, zone.x, zone.y) <= zone.radius)
+  consumeMecha(point: TejoPoint, padding = 0): boolean {
+    const mecha = this.getMechaZones().find(zone => Phaser.Math.Distance.Between(point.x, point.y, zone.x, zone.y) <= zone.radius + padding)
     if (!mecha) return false
     mecha.active = false
     this.mechaSprites.get(mecha)?.setVisible(false)
@@ -84,7 +84,7 @@ export default class TejoBoard {
   }
 
   flashResult(point: TejoPoint, result: TejoImpactResult): void {
-    if (result === 'MECHA') {
+    if (result === 'MECHA' || result === 'MONONA') {
       const burst = this.scene.add.image(point.x, point.y - 20, TEJO_ASSETS.explosion.key).setDisplaySize(120, 160).setDepth(940)
       this.scene.tweens.add({ targets: burst, alpha: 0, duration: 450, onComplete: () => burst.destroy() })
     }

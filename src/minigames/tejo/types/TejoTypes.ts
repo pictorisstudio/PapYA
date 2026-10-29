@@ -1,4 +1,4 @@
-export type TejoImpactResult = 'MECHA' | 'NEAR' | 'OUT'
+export type TejoImpactResult = 'MECHA' | 'BOCIN' | 'MONONA' | 'NEAR' | 'OUT'
 export type TejoPhase = 'READY' | 'AIMING' | 'THROWING' | 'IMPACT' | 'RESETTING' | 'FINISHED'
 
 export interface TejoPoint {

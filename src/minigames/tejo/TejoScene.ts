@@ -163,8 +163,9 @@ export default class TejoScene extends Phaser.Scene {
     this.activeAim = null
     this.aimSystem?.clear()
     if (result === 'MECHA' && !this.board?.consumeMecha(point)) result = this.impactSystem?.evaluate(point) ?? 'OUT'
+    if (result === 'MONONA' && !this.board?.consumeMecha(point, TEJO_CONFIG.IMPACT_DISC_RADIUS)) result = this.impactSystem?.evaluate(point) ?? 'OUT'
     const score = this.scoreManager.registerImpact(result)
-    if (result === 'MECHA') {
+    if (result === 'MECHA' || result === 'MONONA') {
       // La mecha ganadora acompaña a Ganaste y termina incluso si cambia la escena.
       gameManager.audioManager.playEffect(this, 'tejoExplosion', false, score.victory)
       gameManager.audioManager.playEffect(this, 'tejoCrowd')

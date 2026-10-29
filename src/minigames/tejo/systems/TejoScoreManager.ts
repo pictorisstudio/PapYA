@@ -9,10 +9,12 @@ export default class TejoScoreManager {
   registerImpact(result: TejoImpactResult): TejoScoreSnapshot {
     this.throws += 1
 
-    if (result === 'MECHA') {
-      this.score += TEJO_CONFIG.MECHA_SCORE
+    if (result === 'MECHA' || result === 'MONONA') {
+      this.score += result === 'MONONA' ? TEJO_CONFIG.MONONA_SCORE : TEJO_CONFIG.MECHA_SCORE
       this.mechas += 1
     }
+
+    if (result === 'BOCIN') this.score += TEJO_CONFIG.BOCIN_SCORE
 
     if (result === 'NEAR') {
       this.score += TEJO_CONFIG.NEAR_SCORE

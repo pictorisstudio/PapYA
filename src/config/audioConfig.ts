@@ -1,7 +1,7 @@
 // Rutas relativas a public. Claves únicas compartidas por todas las escenas.
 export const AUDIO_CONFIG = {
   menuMusic: { path: '00_menu/musica-menu.wav', kind: 'music' },
-  ruanaMusic: { path: '01_ruana/musica-ruana.ogg', kind: 'music' },
+  ruanaMusic: { path: '01_ruana/musica-ruana.wav', kind: 'music' },
   ruanaHit: { path: '01_ruana/acierto-ritmico.wav', kind: 'sfx' },
   papaMusic: { path: '02_papa/musica-papa.ogg', kind: 'music' },
   papaGood: { path: '02_papa/papa-buena.ogg', kind: 'sfx' },

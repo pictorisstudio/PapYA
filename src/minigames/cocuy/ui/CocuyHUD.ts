@@ -66,6 +66,8 @@ export default class CocuyHUD {
       this.addButton(1134, 370, 'RESET', actions.restart, 58)
     }
     applyHudLayers(scene, hudStart)
+    this.altitudeText.setVisible(true).setPosition(1240, 82).setOrigin(1, 0)
+      .setFontSize(32).setStroke('#10131a', 5)
   }
 
   update(altitude: number, remainingMs: number): void {

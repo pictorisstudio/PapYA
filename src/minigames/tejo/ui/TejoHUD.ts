@@ -50,6 +50,9 @@ export default class TejoHUD {
       this.addButton(1202, 336, 'RESET', actions.reset, 56)
     }
     applyHudLayers(scene, hudStart)
+    this.scoreText.setVisible(true).setPosition(1240, 82).setOrigin(1, 0)
+      .setFontSize(32).setStroke('#10131a', 5)
+    this.resultText.setVisible(true)
   }
 
   update(score: TejoScoreSnapshot, remainingMs: number): void {

@@ -5,7 +5,10 @@ import type MenuScene from './scenes/MenuScene'
 import './style.css'
 import { installMobileViewport } from './utils/mobileViewport'
 import { installLandscapeOnly } from './utils/landscapeOnly'
+import { prepareGameFont } from './utils/gameFont'
 
+async function startGame(): Promise<void> {
+await prepareGameFont()
 const game = new Phaser.Game(gameConfig)
 installMobileViewport(game)
 installLandscapeOnly(game)
@@ -31,3 +34,5 @@ window.addEventListener('papya:back', event => {
     active.scene.start(destination)
   }
 })
+}
+void startGame()
