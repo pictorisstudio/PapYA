@@ -69,6 +69,43 @@ import LaneProjector from '../src/minigames/ruana/systems/LaneProjector.ts'
 import HitJudge from '../src/minigames/ruana/systems/HitJudge.ts'
 import PapaGuide from '../src/components/PapaGuide.ts'
 import { PAPA_GUIDE_ASSET, guidePages } from '../src/config/guideConfig.ts'
+import { SACK_ASSETS } from '../src/config/uiAssets.ts'
+import { RUANA_MUSIC_TIMING } from '../src/minigames/ruana/config/beatmapPrototype.ts'
+
+test('Ruana sigue el tiempo real de la canción y conserva velocidad uno en dificultades altas', () => {
+  browser()
+  gameManager.initialize()
+  const clock = new RhythmClock()
+  let audioMs = 2300
+  clock.start(1, () => audioMs)
+  assert.equal(clock.getCurrentTime(), 2300)
+  clock.pause(); audioMs = 4000
+  assert.equal(clock.getCurrentTime(), 2300)
+  clock.resume()
+  assert.equal(clock.getCurrentTime(), 4000)
+  clock.reset()
+  assert.equal(clock.getCurrentTime(), 0)
+  const level = gameManager.paceLevel
+  const playMusic = gameManager.audioManager.playMusic
+  let rate
+  try {
+    gameManager.paceLevel = 4
+    gameManager.audioManager.playMusic = (_scene, _key, value) => { rate = value; return true }
+    const view = scene()
+    view.scene.key = 'RuanaScene'
+    new GameplaySession(view)
+    assert.equal(rate, 1)
+    assert.equal(view.time.timeScale, 1)
+    assert.equal(view.tweens.timeScale, 1)
+    view.events.emit('shutdown')
+  } finally { gameManager.paceLevel = level; gameManager.audioManager.playMusic = playMusic }
+  for (let level = 0; level < 5; level++) {
+    for (const note of buildRuanaBeatmap(level)) {
+      const beat = (note.hitTime - RUANA_MUSIC_TIMING.beatOffsetMs) / (60000 / RUANA_MUSIC_TIMING.bpm)
+      assert.ok(Math.abs(beat * 2 - Math.round(beat * 2)) < 1e-8)
+    }
+  }
+})
 import ObstacleSpawnManager from '../src/minigames/cocuy/systems/ObstacleSpawnManager.ts'
 import Condor from '../src/minigames/cocuy/entities/Condor.ts'
 import VisibilityOverlay from '../src/minigames/cocuy/ui/VisibilityOverlay.ts'
@@ -168,7 +205,7 @@ test('botones del cóndor mantienen dirección, admiten dos dedos y liberan al s
   assert.equal(destroyed, 4)
 })
 
-test('canasta cuenta solo papas buenas, muestra faltantes y libera animaciones al salir', () => {
+test('costal cuenta solo papas buenas y cambia entre vacío, medio lleno y lleno', () => {
   const view = scene()
   const image = view.add.image
   view.add.image = (...args) => {
@@ -188,15 +225,18 @@ test('canasta cuenta solo papas buenas, muestra faltantes y libera animaciones a
   basket.update(score.getSnapshot())
   assert.equal(counts.at(-1), '2 / 20')
   assert.equal(remaining.at(-1), 'Faltan 18')
-  assert.equal(basket.potatoes.filter(item => item.visible).length, 2)
+  assert.equal(basket.sack.texture.key, SACK_ASSETS[0].key)
   score.collect('BAD')
   basket.update(score.getSnapshot())
   assert.equal(counts.at(-1), '2 / 20')
   assert.ok(basket.container.depth < 0, 'la canasta no tapa papas que se puedan tocar')
-  basket.collect(600, 300)
-  assert.equal(basket.flights.size, 1)
+  basket.update({ ...score.getSnapshot(), goodPotatoesCollected: 7 })
+  assert.equal(basket.sack.texture.key, SACK_ASSETS[1].key)
+  basket.update({ ...score.getSnapshot(), goodPotatoesCollected: 14 })
+  assert.equal(basket.sack.texture.key, SACK_ASSETS[2].key)
+  basket.update({ ...score.getSnapshot(), goodPotatoesCollected: 20 })
+  assert.equal(remaining.at(-1), 'Faltan 0')
   basket.destroy()
-  assert.equal(basket.flights.size, 0)
 })
 
 test('niebla visible dura tres segundos reales, se desvanece y cubre pantallas anchas', () => {
@@ -255,6 +295,7 @@ function drawable(x = 0, y = 0) {
   object.setDisplaySize = (width, height) => { object.width = width; object.height = height; return object }
   object.setPosition = (x, y) => { object.x = x; object.y = y; return object }
   object.setTint = value => { object.tint = value; return object }
+  object.setTexture = key => { object.texture = { key }; return object }
   object.clearTint = () => { delete object.tint; return object }
   object.setAlpha = value => { object.alpha = value; return object }
   object.destroy = () => {}
@@ -270,6 +311,7 @@ function scene() {
       rectangle: (x, y) => drawable(x, y), circle: (x, y) => drawable(x, y),
       triangle: (x, y) => drawable(x, y),
       image: (x, y, key) => Object.assign(drawable(x, y), { texture: { key } }),
+      sprite: (x, y, key) => Object.assign(drawable(x, y), { texture: { key }, play() { return this } }),
       text: (x, y, text) => { texts.push(text); return drawable(x, y) },
       container: (x, y, list) => Object.assign(drawable(x, y), { list }), graphics: () => drawable(),
     },
@@ -662,7 +704,7 @@ for (const fastLoad of [true, false]) {
       scene: { launch() {}, bringToTop() {}, stop() {} } })
     Object.assign(loader, { registry, add: view.add, game: view.game, events: view.events,
       cameras: { main: camera }, anims, scene: view.scene,
-      textures: { exists: () => true }, cache: { audio: { exists: () => true } },
+      textures: { exists: () => true, get: () => ({ has: () => false, add() {} }) }, cache: { audio: { exists: () => true } },
       load: Object.assign(new EventEmitter(), { image() {} }) })
     boot.create()
     loader.preload()
@@ -846,7 +888,7 @@ test('barra de fuerza vertical sigue al disco a su derecha y se borra al soltar'
 })
 
 test('Ruana aumenta densidad y agrega notas dobles solo en niveles avanzados', () => {
-  const counts = [18, 22, 26, 30, 34]
+  const counts = [64, 79, 95, 110, 126]
   for (let level = 0; level < counts.length; level++) {
     const beatmap = buildRuanaBeatmap(level)
     assert.equal(beatmap.length, counts[level])
@@ -1307,6 +1349,17 @@ test('audio reemplaza música, separa volúmenes y libera efectos al salir', () 
   assert.equal(sounds[1].volume, 0); assert.equal(sounds[2].volume, 0)
   audio.setMuted(false)
   assert.equal(sounds[1].volume, 0.2)
+  assert.equal(audio.playEffect(view, 'papaGood'), true)
+  assert.equal(audio.playEffect(view, 'papaGood'), true)
+  assert.equal(sounds.filter(sound => sound.key === 'papaGood').length, 3)
+  assert.equal(audio.playEffect(view, 'tejoExplosion'), true)
+  assert.equal(audio.playEffect(view, 'tejoExplosion'), true)
+  assert.equal(sounds.filter(sound => sound.key === 'tejoExplosion').length, 2)
+  assert.equal(audio.playEffect(view, 'cocuyWind', true), true)
+  assert.equal(audio.playEffect(view, 'cocuyWind', true), false)
+  const firstGood = sounds.find(sound => sound.key === 'papaGood')
+  firstGood.emit('complete')
+  assert.equal(sounds.filter(sound => sound.key === 'papaGood' && !sound.destroyed).length, 2)
   view.events.emit('shutdown')
   assert.ok(sounds.every(sound => sound.destroyed))
 })

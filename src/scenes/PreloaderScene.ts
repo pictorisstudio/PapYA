@@ -6,6 +6,7 @@ import { AUDIO_CONFIG, type AudioKey } from '../config/audioConfig'
 import { gameManager } from '../core/GameManager'
 import { TEXTS } from '../config/texts'
 import { PAPA_GUIDE_ASSET } from '../config/guideConfig'
+import { MENU_UI_ASSETS, GUIDE_FRAMES, SACK_ASSETS, MENU_MAIN_BUTTON_FRAMES } from '../config/uiAssets'
 
 export default class PreloaderScene extends Phaser.Scene {
 
@@ -21,6 +22,7 @@ export default class PreloaderScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.game.events.off('brand:complete', showLoading))
     for (const asset of Object.values(SCENE_ASSETS)) if (!this.textures.exists(asset.key)) this.load.image(asset.key, asset.path)
     this.load.image(PAPA_GUIDE_ASSET.key, PAPA_GUIDE_ASSET.path)
+    for (const asset of [...GUIDE_FRAMES.slice(1), ...Object.values(MENU_UI_ASSETS), ...SACK_ASSETS]) this.load.image(asset.key, asset.path)
     this.load.once('filecomplete-audio-menuMusic', () => gameManager.audioManager.playMusic(this, 'menuMusic'))
     gameManager.audioManager.preload(this, Object.keys(AUDIO_CONFIG) as AudioKey[])
     this.cameras.main.setBackgroundColor('#000000')
@@ -34,6 +36,13 @@ export default class PreloaderScene extends Phaser.Scene {
   }
 
   create(): void {
+    for (const asset of [...Object.values(MENU_UI_ASSETS), ...MENU_MAIN_BUTTON_FRAMES]) {
+      const [x, y, width, height] = asset.crop
+      if (!this.textures.get(asset.key).has('button')) this.textures.get(asset.key).add('button', 0, x, y, width, height)
+    }
+    if (!this.anims.exists('papa-guide-hover')) this.anims.create({
+      key: 'papa-guide-hover', frames: GUIDE_FRAMES.map(asset => ({ key: asset.key })), frameRate: 6, repeat: -1,
+    })
     for (const [key, frames] of [
       ['condor-flight', [SCENE_ASSETS.condorFlight1, SCENE_ASSETS.condorFlight2]],
       ['condor-side', [SCENE_ASSETS.condorSide1, SCENE_ASSETS.condorSide2, SCENE_ASSETS.condorSide3, SCENE_ASSETS.condorSide4, SCENE_ASSETS.condorSide5, SCENE_ASSETS.condorSide6]],

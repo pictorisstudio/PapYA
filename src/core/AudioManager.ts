@@ -45,7 +45,8 @@ export default class AudioManager {
 
   playEffect(scene: Phaser.Scene, key: AudioKey, loop = false, finishAfterScene = false): boolean {
     if (AUDIO_CONFIG[key].kind !== 'sfx' || !scene.cache?.audio?.exists(key)) return false
-    if ([...this.effects].some(effect => effect.key === key)) return false
+    // Los golpes y aciertos pueden solaparse; solo los ambientes en bucle son únicos.
+    if (loop && [...this.effects].some(effect => effect.key === key && effect.loop)) return false
     const effect = scene.sound.add(key) as PlayableSound
     this.effects.add(effect)
     const cleanup = () => {
@@ -57,6 +58,12 @@ export default class AudioManager {
     if (!finishAfterScene || loop) scene.events.once(Phaser.Scenes.Events.SHUTDOWN, cleanup)
     effect.play({ loop, volume: this.effectVolume(key) })
     return true
+  }
+
+  getMusicTimeMs(key: AudioKey): number | null {
+    const music = this.music
+    return music?.key === key && (music.isPlaying || music.isPaused) && Number.isFinite(music.seek)
+      ? music.seek * 1000 : null
   }
 
   stopMusic(): void {

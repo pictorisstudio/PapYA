@@ -69,7 +69,7 @@ export default class RuanaScene extends Phaser.Scene {
     })
     this.refreshHud()
 
-    this.session = new GameplaySession(this, { remainingMs: () => Math.max(0, this.durationMs - (this.clock?.getCurrentTime() ?? 0)) / gameManager.pace, pause: () => this.clock?.pause(), resume: () => { if (!this.finished) this.clock?.resume() }, debugFinish: won => this.finishWithScore(won) })
+    this.session = new GameplaySession(this, { remainingMs: () => Math.max(0, this.durationMs - (this.clock?.getCurrentTime() ?? 0)), pause: () => this.clock?.pause(), resume: () => { if (!this.finished) this.clock?.resume() }, debugFinish: won => this.finishWithScore(won) })
     new DebugPanel(this)
     this.startGameplay()
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.cleanup())
@@ -107,7 +107,7 @@ export default class RuanaScene extends Phaser.Scene {
 
   private startGameplay(): void {
     this.phase = 'playing'
-    this.clock?.start(gameManager.pace)
+    this.clock?.start(1, () => gameManager.audioManager.getMusicTimeMs('ruanaMusic'))
     this.inputHandler = (pointer) => this.handleTap(pointer)
     this.input.on('pointerdown', this.inputHandler)
   }

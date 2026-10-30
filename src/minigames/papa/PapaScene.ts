@@ -107,7 +107,6 @@ export default class PapaScene extends Phaser.Scene {
     }
 
     const result = this.scoreManager.collect(potato.type)
-    if (potato.type === 'GOOD') this.basket?.collect(potato.x, potato.y)
     gameManager.audioManager.playEffect(this, potato.type === 'GOOD' ? 'papaGood' : 'papaBad')
     potato.hit()
     this.hud.showFloatingFeedback(potato.x, potato.y, potato.type === 'GOOD' ? '+1' : '', potato.type)

@@ -2,7 +2,7 @@ import { MINIGAME_ORDER, MINIGAMES_CONFIG } from './minigamesConfig'
 import { REQUIRED_VICTORIES } from './constants'
 import type { MinigameKey } from '../types/Minigame'
 
-export const PAPA_GUIDE_ASSET = { key: 'papa-guide', path: 'assets/ui/guide/papa-guia.png' } as const
+export const PAPA_GUIDE_ASSET = { key: 'papa-guide', path: 'assets/ui/guide/HADAframe1.png' } as const
 
 // Consejos breves y editables, separados del personaje y de las mecánicas.
 export const GUIDE_TEXTS = {

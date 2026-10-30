@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { TEXTS } from '../config/texts'
+import { MENU_UI_ASSETS } from '../config/uiAssets'
 
 export default class PauseScene extends Phaser.Scene {
   private owner = ''
@@ -9,8 +10,8 @@ export default class PauseScene extends Phaser.Scene {
     this.scene.bringToTop()
     this.add.rectangle(640, 360, 1280, 720, 0x05070c, 0.88).setInteractive()
     this.add.text(640, 250, TEXTS.paused, { fontSize: '52px', color: '#f8fafc' }).setOrigin(0.5)
-    this.button(360, TEXTS.resume, () => this.resumeOwner())
-    this.button(470, TEXTS.leave, () => {
+    this.button(360, MENU_UI_ASSETS.resume.key, () => this.resumeOwner())
+    this.button(510, MENU_UI_ASSETS.menu.key, () => {
       this.scene.stop(this.owner)
       this.sound.stopAll()
       this.scene.start('MenuScene')
@@ -27,8 +28,10 @@ export default class PauseScene extends Phaser.Scene {
     this.scene.resume(this.owner)
     this.scene.stop()
   }
-  private button(y: number, text: string, action: () => void): void {
-    this.add.rectangle(640, y, 440, 84, 0xfbbf24).setInteractive({ useHandCursor: true }).on('pointerdown', action)
-    this.add.text(640, y, text, { fontSize: '34px', color: '#1f2937' }).setOrigin(0.5)
+  private button(y: number, key: string, action: () => void): void {
+    const height = key === MENU_UI_ASSETS.resume.key ? 130 : 126
+    const width = key === MENU_UI_ASSETS.resume.key ? 258 : 330
+    this.add.image(640, y, key, 'button').setDisplaySize(width, height)
+      .setInteractive({ useHandCursor: true }).on('pointerdown', action)
   }
 }

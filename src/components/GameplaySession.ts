@@ -25,13 +25,14 @@ export default class GameplaySession {
   constructor(private readonly scene: Phaser.Scene, private readonly hooks: SessionHooks = {}) {
     const music: Record<string, AudioKey> = { PapaScene: 'papaMusic', RuanaScene: 'ruanaMusic', TejoScene: 'tejoMusic', CocinaScene: 'cocinaMusic', CocuyScene: 'cocuyMusic' }
     const track = music[scene.scene.key]
-    if (track) gameManager.audioManager.playMusic(scene, track, scene.scene.key === 'RuanaScene' ? gameManager.pace : 1)
+    if (track) gameManager.audioManager.playMusic(scene, track, 1)
     if (scene.scene.key === 'TrompoScene') gameManager.audioManager.playMusic(scene, 'ruanaMusic')
     if (scene.scene.key === 'CocinaScene') gameManager.audioManager.playEffect(scene, 'cocinaFire', true)
     if (scene.scene.key === 'CocuyScene') gameManager.audioManager.playEffect(scene, 'cocuyWind', true)
     // Animaciones y temporizadores siguen el mismo ritmo que la simulación.
-    if (scene.time) scene.time.timeScale = gameManager.pace
-    if (scene.tweens) scene.tweens.timeScale = gameManager.pace
+    const pace = scene.scene.key === 'RuanaScene' ? 1 : gameManager.pace
+    if (scene.time) scene.time.timeScale = pace
+    if (scene.tweens) scene.tweens.timeScale = pace
     const names: Record<string, string> = { PapaScene: TEXTS.minigames.papa.name, RuanaScene: TEXTS.minigames.ruana.name, CocinaScene: TEXTS.minigames.cocina.name, TejoScene: TEXTS.minigames.tejo.name, CocuyScene: TEXTS.minigames.cocuy.name }
     names.TrompoScene = TEXTS.minigames.trompo.name
     scene.add.text(48, 26, names[scene.scene.key] ?? '', { fontSize: '38px', color: '#ffffff', stroke: '#10131a', strokeThickness: 5 }).setDepth(LAYERS.hud)

@@ -1,20 +1,21 @@
 import Phaser from 'phaser'
 import { GUIDE_TEXTS, PAPA_GUIDE_ASSET, guidePages } from '../config/guideConfig'
 import { LAYERS } from '../config/layers'
+import { MENU_UI_ASSETS, MENU_BUTTON_SIZE } from '../config/uiAssets'
 
 export default class PapaGuide {
   private modal?: Phaser.GameObjects.Container
   private page = 0
   private readonly fairy: Phaser.GameObjects.Image
 
-  constructor(private readonly scene: Phaser.Scene, x = 500, y = 390) {
+  constructor(private readonly scene: Phaser.Scene, x = 500, y = 390, buttonY = y + 106) {
     scene.add.circle(x, y + 4, 75, 0x7dd3fc, 0.1)
-    this.fairy = scene.add.image(x, y, PAPA_GUIDE_ASSET.key).setDisplaySize(174, 174)
+    this.fairy = scene.add.sprite(x, y, PAPA_GUIDE_ASSET.key).play('papa-guide-hover').setDisplaySize(174, 174)
       .setInteractive({ useHandCursor: true }).on('pointerdown', () => this.open())
     scene.tweens.add({ targets: this.fairy, y: y - 8, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
-    scene.add.rectangle(x, y + 106, 210, 42, 0x102d32, 0.94).setStrokeStyle(2, 0x7dd3fc)
+    scene.add.image(x, buttonY, MENU_UI_ASSETS.instructions.key, 'button')
+      .setDisplaySize(MENU_BUTTON_SIZE.width, MENU_BUTTON_SIZE.height)
       .setInteractive({ useHandCursor: true }).on('pointerdown', () => this.open())
-    scene.add.text(x, y + 106, GUIDE_TEXTS.button, { fontFamily: 'Arial, sans-serif', fontSize: '26px', fontStyle: 'bold', color: '#e0f2fe' }).setOrigin(0.5)
     scene.input.keyboard?.on('keydown-ESC', this.close, this)
     scene.scale?.on?.(Phaser.Scale.Events.RESIZE, this.resize)
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, this.destroy, this)

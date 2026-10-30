@@ -7,6 +7,7 @@ import Phaser from 'phaser'
 import DebugPanel from '../components/DebugPanel'
 import { gameManager } from '../core/GameManager'
 import PapaGuide from '../components/PapaGuide'
+import { MENU_BUTTON_SIZE } from '../config/uiAssets'
 
 export default class MenuScene extends Phaser.Scene {
   private guide?: PapaGuide
@@ -26,16 +27,16 @@ export default class MenuScene extends Phaser.Scene {
     const maps = [SCENE_ASSETS.map0, SCENE_ASSETS.map1, SCENE_ASSETS.map2, SCENE_ASSETS.map3, SCENE_ASSETS.map4, SCENE_ASSETS.map5]
     this.add.image(950, 270, maps[count]!.key).setDisplaySize(650, 365.625)
     const artButton = (x: number, y: number, key: string, action: () => void) => {
-      this.add.image(x, y, key).setDisplaySize(440, 247.5)
-      this.add.rectangle(x, y, 440, 160, 0, 0).setInteractive({ useHandCursor: true }).on('pointerdown', action)
+      this.add.image(x, y, key, 'button').setDisplaySize(MENU_BUTTON_SIZE.width, MENU_BUTTON_SIZE.height)
+        .setInteractive({ useHandCursor: true }).on('pointerdown', action)
     }
-    artButton(400, 600, SCENE_ASSETS.travelButton.key, () => {
+    artButton(200, 600, SCENE_ASSETS.travelButton.key, () => {
       requestFullscreenOnPlay()
       gameManager.startNewRun()
       this.scene.start('TransitionScene')
     })
-    artButton(880, 600, SCENE_ASSETS.mapButton.key, () => this.scene.start('MapScene'))
-    this.guide = new PapaGuide(this, 640, 390)
+    artButton(1080, 600, SCENE_ASSETS.mapButton.key, () => this.scene.start('MapScene'))
+    this.guide = new PapaGuide(this, 640, 390, 600)
     if (DEBUG_MODE) {
       const first = this.children.list.length
       this.addButton(1100, 700, 300, 30, TEXTS.dev, () => this.scene.start('DevScene'))
