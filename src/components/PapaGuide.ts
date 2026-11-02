@@ -8,12 +8,12 @@ export default class PapaGuide {
   private page = 0
   private readonly fairy: Phaser.GameObjects.Image
 
-  constructor(private readonly scene: Phaser.Scene, x = 500, y = 390, buttonY = y + 106) {
-    scene.add.circle(x, y + 4, 75, 0x7dd3fc, 0.1)
-    this.fairy = scene.add.sprite(x, y, PAPA_GUIDE_ASSET.key).play('papa-guide-hover').setDisplaySize(174, 174)
+  constructor(private readonly scene: Phaser.Scene, x = 500, y = 390, buttonY = y + 106, buttonX = x, size = 174) {
+    scene.add.circle(x, y + 4, size * 0.43, 0x7dd3fc, 0.1)
+    this.fairy = scene.add.sprite(x, y, PAPA_GUIDE_ASSET.key).play('papa-guide-hover').setDisplaySize(size, size)
       .setInteractive({ useHandCursor: true }).on('pointerdown', () => this.open())
     scene.tweens.add({ targets: this.fairy, y: y - 8, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
-    scene.add.image(x, buttonY, MENU_UI_ASSETS.instructions.key, 'button')
+    scene.add.image(buttonX, buttonY, MENU_UI_ASSETS.instructions.key, 'button')
       .setDisplaySize(MENU_BUTTON_SIZE.width, MENU_BUTTON_SIZE.height)
       .setInteractive({ useHandCursor: true }).on('pointerdown', () => this.open())
     scene.input.keyboard?.on('keydown-ESC', this.close, this)

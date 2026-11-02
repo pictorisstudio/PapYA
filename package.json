@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "multiplayer": "node server/multiplayer.mjs",
+    "test:multiplayer": "node --test tests/multiplayer.test.mjs",
     "dev": "vite",
     "typecheck": "tsc --noEmit",
     "test": "node --disable-warning=ExperimentalWarning --loader ./tests/ts-loader.mjs --test tests/stage1.test.mjs",

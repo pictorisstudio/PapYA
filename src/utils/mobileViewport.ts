@@ -1,6 +1,6 @@
 import type Phaser from 'phaser'
 import { SCENE_ASSETS } from '../config/sceneAssets'
-import { COCINA_ASSETS } from '../config/assets'
+import { COCINA_ASSETS, TROMPO_ASSETS } from '../config/assets'
 import { LOGICAL_WIDTH, LOGICAL_HEIGHT } from '../config/constants'
 import { LAYERS } from '../config/layers'
 
@@ -28,6 +28,7 @@ export function installMobileViewport(game: Phaser.Game): void {
   const backgrounds = new Set<string>([
     SCENE_ASSETS.menuBackground.key, SCENE_ASSETS.papaBackground.key, SCENE_ASSETS.papaFloor.key,
     SCENE_ASSETS.ruanaBackground.key, SCENE_ASSETS.tejoBackground.key, COCINA_ASSETS.pared.key, COCINA_ASSETS.mesa.key,
+    TROMPO_ASSETS.background.key,
   ])
   const layouts = new WeakMap<Phaser.Scene, { width: number; height: number; first: Phaser.GameObjects.GameObject | undefined }>()
   const updateLayout = () => {
@@ -47,7 +48,9 @@ export function installMobileViewport(game: Phaser.Game): void {
           // Compensar el recorte del PNG y cubrir también el ancho extra del móvil.
           item.setDisplaySize((width + 32) * 64 / 62, Math.max(1280, height + 400))
         } else if (backgrounds.has(item.texture?.key)) {
-          item.setOrigin(0.5).setPosition(LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2).setDisplaySize(width, height)
+          const stretch = item.getData?.('verticalStretch') ?? 1
+          item.setOrigin(0.5).setPosition(LOGICAL_WIDTH / 2, LOGICAL_HEIGHT / 2 - height * (stretch - 1) / 2)
+            .setDisplaySize(width, height * stretch)
         } else if (child.type === 'Rectangle' && item.width === LOGICAL_WIDTH && item.height === LOGICAL_HEIGHT) {
           item.setDisplaySize(width, height)
         } else if (child.type === 'Graphics' && item.depth === LAYERS.background) {

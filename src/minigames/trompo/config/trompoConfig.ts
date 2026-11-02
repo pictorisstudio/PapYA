@@ -1,6 +1,6 @@
 export const TROMPO_CONFIG = {
   GAME_DURATION_MS: 30000,
-  ARENA: { x: 770, y: 405, radius: 240 },
+  ARENA: { x: 600, y: 405, radius: 240 },
   TOP_RADIUS: 36,
   PLAYER_ACCELERATION: 920,
   PLAYER_MAX_SPEED: 330,
@@ -11,5 +11,5 @@ export const TROMPO_CONFIG = {
   REBOUND: 0.9,
   IMPACT_KICK: 90,
   IMPACT_COOLDOWN_MS: 160,
-  JOYSTICK: { x: 220, y: 475, radius: 104, deadZone: 0.12 },
+  JOYSTICK: { x: 1130, y: 475, radius: 104, deadZone: 0.12 },
 } as const

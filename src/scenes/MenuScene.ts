@@ -22,7 +22,6 @@ export default class MenuScene extends Phaser.Scene {
     this.add.image(640, 360, SCENE_ASSETS.menuBackground.key).setDisplaySize(1280, 720).setDepth(LAYERS.background)
     this.add.rectangle(640, 360, 1280, 720, 0x000000, 0.35).setDepth(LAYERS.background + 1)
     this.add.image(400, 120, SCENE_ASSETS.logo.key).setDisplaySize(380, 380)
-    this.add.sprite(300, 320, SCENE_ASSETS.condorSide1.key).setDisplaySize(210, 210).play('condor-side')
     const count = Phaser.Math.Clamp(gameManager.progressManager.getSaveData().unlockedRoutes.length, 0, 5)
     const maps = [SCENE_ASSETS.map0, SCENE_ASSETS.map1, SCENE_ASSETS.map2, SCENE_ASSETS.map3, SCENE_ASSETS.map4, SCENE_ASSETS.map5]
     this.add.image(950, 270, maps[count]!.key).setDisplaySize(650, 365.625)
@@ -36,7 +35,8 @@ export default class MenuScene extends Phaser.Scene {
       this.scene.start('TransitionScene')
     })
     artButton(1080, 600, SCENE_ASSETS.mapButton.key, () => this.scene.start('MapScene'))
-    this.guide = new PapaGuide(this, 640, 390, 600)
+    this.guide = new PapaGuide(this, 300, 320, 600, 640, 280)
+    this.addButton(640, 484, 470, 58, 'Trompos multijugador', () => this.scene.start('TrompoMultiplayerScene'))
     if (DEBUG_MODE) {
       const first = this.children.list.length
       this.addButton(1100, 700, 300, 30, TEXTS.dev, () => this.scene.start('DevScene'))

@@ -15,6 +15,7 @@ import PapaScene from '../minigames/papa/PapaScene'
 import TejoScene from '../minigames/tejo/TejoScene'
 import CocuyScene from '../minigames/cocuy/CocuyScene'
 import TrompoScene from '../minigames/trompo/TrompoScene'
+import TrompoMultiplayerScene from '../scenes/TrompoMultiplayerScene'
 
 export const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -43,6 +44,7 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
     RuanaScene,
     CocinaScene,
     TrompoScene,
+    TrompoMultiplayerScene,
     PapaScene,
     TejoScene,
     CocuyScene,

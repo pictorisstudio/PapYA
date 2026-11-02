@@ -22,6 +22,13 @@ export const COCINA_ASSETS = {
 } as const
 
 // Dos diseños alternativos del disco; no se deben alternar como una animación.
+export const TROMPO_ASSETS = {
+  background: { key: 'trompo-background', path: 'assets/minigames/trompos/FONDO TROMPO.png' },
+  arena: { key: 'trompo-arena', path: 'assets/minigames/trompos/BASE.png' },
+  player: { key: 'trompo-player', path: 'assets/minigames/trompos/TROMPO2.png' },
+  enemy: { key: 'trompo-enemy', path: 'assets/minigames/trompos/TROMPO1.png' },
+} as const
+
 export const TEJO_ASSETS = {
   bocin: { key: 'tejo-bocin', path: 'assets/minigames/tejo/bocin.png' },
   cancha: { key: 'tejo-cancha', path: 'assets/minigames/tejo/cancha.png' },

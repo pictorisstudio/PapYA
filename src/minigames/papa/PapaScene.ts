@@ -13,7 +13,7 @@ import PapaHUD from './ui/PapaHUD'
 import HarvestBasket from './ui/HarvestBasket'
 import type { PotatoType } from './types/PapaTypes'
 
-type PapaPhase = 'playing' | 'finished'
+type PapaPhase = 'playing' | 'feedback' | 'finished'
 
 export default class PapaScene extends Phaser.Scene {
   private session?: GameplaySession
@@ -112,11 +112,26 @@ export default class PapaScene extends Phaser.Scene {
     this.hud.showFloatingFeedback(potato.x, potato.y, potato.type === 'GOOD' ? '+1' : '', potato.type)
 
     if (result.defeat) {
-      this.finish(false)
+      this.showBadPotatoFeedback(potato.x, potato.y)
       return
     }
 
     this.refreshHud()
+  }
+
+  private showBadPotatoFeedback(x: number, y: number): void {
+    this.phase = 'feedback'
+    this.removeInputHandler()
+    this.spawnManager?.pause()
+    this.add.rectangle(640, 360, 1280, 720, 0xc02030, 0.23).setDepth(1300)
+    this.add.circle(x, y, 78, 0xb91c1c, 0.35).setStrokeStyle(6, 0xffdddd).setDepth(1301)
+    this.add.text(x, y, '×', { fontSize: '110px', color: '#ffffff', stroke: '#991b1b', strokeThickness: 7 })
+      .setOrigin(0.5).setDepth(1302)
+    this.add.text(640, 300, '¡Papa podrida!', { fontSize: '58px', color: '#ffffff',
+      stroke: '#7f1d1d', strokeThickness: 8 }).setOrigin(0.5).setDepth(1303)
+    this.cameras.main.shake?.(150, 0.006)
+    // Una reacción breve antes de avanzar, sin pantalla de derrota ni otro toque.
+    this.time.delayedCall(450 / gameManager.pace, () => this.finish(false))
   }
 
   private spawnDebugPotato(type: PotatoType): void {

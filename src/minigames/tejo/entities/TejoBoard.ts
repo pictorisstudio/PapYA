@@ -11,6 +11,7 @@ interface MechaZone extends TejoPoint {
 }
 
 export default class TejoBoard {
+  private readonly support: Phaser.GameObjects.Graphics
   private readonly graphics: Phaser.GameObjects.Graphics
   private readonly debugGraphics: Phaser.GameObjects.Graphics
   private readonly impactGraphics: Phaser.GameObjects.Graphics
@@ -23,13 +24,20 @@ export default class TejoBoard {
     this.debugGraphics = scene.add.graphics().setDepth(900)
     this.impactGraphics = scene.add.graphics().setDepth(920)
     this.mechas = this.createMechaZones()
-    this.mechaArt.push(scene.add.image(640, TEJO_CONFIG.BOARD_Y - 135, TEJO_ASSETS.cancha.key).setDisplaySize(520, 480).setDepth(LAYERS.scenery - 2))
+    const scale = TEJO_CONFIG.DISTANCE_SCALE
+    // Patas del soporte y sombra: la cancha pequeña sigue apoyada en el suelo del fondo.
+    const support = scene.add.graphics().setDepth(LAYERS.scenery - 3)
+    support.fillStyle(0x142b31, 0.25).fillEllipse(640, 345, 380, 14)
+    this.support = support
+    this.mechaArt.push(scene.add.image(640, TEJO_CONFIG.BOARD_Y - 135 * scale, TEJO_ASSETS.cancha.key)
+      .setDisplaySize(520 * scale, 480 * scale).setDepth(LAYERS.scenery - 2))
     this.draw()
     // Anclado al suelo: eleva el blanco pintado hasta la zona real de impacto.
-    this.mechaArt.push(scene.add.image(640, 720, SCENE_ASSETS.tejoBackground.key).setOrigin(0.5, 1).setDisplaySize(1280, 720).setDepth(LAYERS.background + 1))
-    this.mechaArt.push(scene.add.image(640, TEJO_CONFIG.BOARD_Y, TEJO_ASSETS.bocin.key).setDisplaySize(104, 104).setDepth(LAYERS.scenery - 1))
+    this.mechaArt.push(scene.add.image(640, 720, SCENE_ASSETS.tejoBackground.key).setOrigin(0.5, 1)
+      .setDisplaySize(1280, 800).setData('verticalStretch', 800 / 720).setDepth(LAYERS.background + 1))
+    this.mechaArt.push(scene.add.image(640, TEJO_CONFIG.BOARD_Y, TEJO_ASSETS.bocin.key).setDisplaySize(104 * scale, 104 * scale).setDepth(LAYERS.scenery - 1))
     for (const mecha of this.mechas) {
-      const sprite = scene.add.image(mecha.x, mecha.y, TEJO_ASSETS.mecha.key).setDisplaySize(60, 60).setDepth(LAYERS.scenery)
+      const sprite = scene.add.image(mecha.x, mecha.y, TEJO_ASSETS.mecha.key).setDisplaySize(60 * scale, 60 * scale).setDepth(LAYERS.scenery)
       this.mechaArt.push(sprite)
       this.mechaSprites.set(mecha, sprite)
     }
@@ -91,6 +99,7 @@ export default class TejoBoard {
   }
 
   destroy(): void {
+    this.support?.destroy()
     for (const image of this.mechaArt) image.destroy()
     this.graphics.destroy()
     this.debugGraphics.destroy()
@@ -132,11 +141,12 @@ export default class TejoBoard {
   private drawBoard(): void {}
 
   private createMechaZones(): MechaZone[] {
+    const scale = TEJO_CONFIG.DISTANCE_SCALE
     return [
-      { x: TEJO_CONFIG.BOARD_CENTER_X - 72, y: TEJO_CONFIG.BOARD_Y - 42, radius: TEJO_CONFIG.MECHA_RADIUS, active: true },
-      { x: TEJO_CONFIG.BOARD_CENTER_X + 72, y: TEJO_CONFIG.BOARD_Y - 42, radius: TEJO_CONFIG.MECHA_RADIUS, active: true },
-      { x: TEJO_CONFIG.BOARD_CENTER_X - 72, y: TEJO_CONFIG.BOARD_Y + 42, radius: TEJO_CONFIG.MECHA_RADIUS, active: true },
-      { x: TEJO_CONFIG.BOARD_CENTER_X + 72, y: TEJO_CONFIG.BOARD_Y + 42, radius: TEJO_CONFIG.MECHA_RADIUS, active: true },
+      { x: TEJO_CONFIG.BOARD_CENTER_X - 72 * scale, y: TEJO_CONFIG.BOARD_Y - 42 * scale, radius: TEJO_CONFIG.MECHA_RADIUS, active: true },
+      { x: TEJO_CONFIG.BOARD_CENTER_X + 72 * scale, y: TEJO_CONFIG.BOARD_Y - 42 * scale, radius: TEJO_CONFIG.MECHA_RADIUS, active: true },
+      { x: TEJO_CONFIG.BOARD_CENTER_X - 72 * scale, y: TEJO_CONFIG.BOARD_Y + 42 * scale, radius: TEJO_CONFIG.MECHA_RADIUS, active: true },
+      { x: TEJO_CONFIG.BOARD_CENTER_X + 72 * scale, y: TEJO_CONFIG.BOARD_Y + 42 * scale, radius: TEJO_CONFIG.MECHA_RADIUS, active: true },
     ]
   }
 }

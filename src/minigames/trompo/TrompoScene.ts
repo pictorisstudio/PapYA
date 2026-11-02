@@ -4,11 +4,12 @@ import DebugPanel from '../../components/DebugPanel'
 import { gameManager } from '../../core/GameManager'
 import { LAYERS } from '../../config/layers'
 import { TEXTS } from '../../config/texts'
+import { TROMPO_ASSETS } from '../../config/assets'
 import { TROMPO_CONFIG as C } from './config/trompoConfig'
 import TrompoJoystick from './systems/TrompoJoystick'
 import TrompoSimulation, { type TopBody } from './systems/TrompoSimulation'
 
-// Prototipo con arte procedural: sustituible por sprites sin tocar física ni controles.
+// El arte se mantiene separado de la simulación y del joystick.
 export default class TrompoScene extends Phaser.Scene {
   private simulation!: TrompoSimulation
   private joystick!: TrompoJoystick
@@ -33,8 +34,8 @@ export default class TrompoScene extends Phaser.Scene {
     this.drawArena()
     this.playerShadow = this.add.ellipse(0, 0, 82, 32, 0x142c29, 0.28).setDepth(100)
     this.enemyShadow = this.add.ellipse(0, 0, 82, 32, 0x142c29, 0.28).setDepth(100)
-    this.playerArt = this.createTop(0x38bdf8, 0x075985)
-    this.enemyArt = this.createTop(0xfb923c, 0x9a3412)
+    this.playerArt = this.createTop(TROMPO_ASSETS.player.key)
+    this.enemyArt = this.createTop(TROMPO_ASSETS.enemy.key)
     this.playerLabel = this.add.text(0, 0, TEXTS.minigames.trompo.player,
       { fontSize: '24px', fontStyle: 'bold', color: '#7dd3fc', stroke: '#102d32', strokeThickness: 5 }).setOrigin(0.5).setDepth(1050)
     this.enemyLabel = this.add.text(0, 0, TEXTS.minigames.trompo.rival,
@@ -101,39 +102,15 @@ export default class TrompoScene extends Phaser.Scene {
 
   private drawArena(): void {
     this.cameras.main.setBackgroundColor('#24483d')
-    const floor = this.add.graphics().setDepth(LAYERS.background)
-    floor.fillStyle(0x24483d).fillRect(0, 0, 1280, 720)
-    for (let i = 0; i < 160; i++) {
-      floor.fillStyle(i % 2 ? 0x315644 : 0x1e3d34, 0.6)
-      floor.fillRect((i * 137) % 1280, (i * 89) % 720, 24, 8)
-    }
+    this.add.image(640, 360, TROMPO_ASSETS.background.key).setDisplaySize(1280, 720).setDepth(LAYERS.background)
     const { x, y, radius } = C.ARENA
-    const arena = this.add.graphics().setDepth(0)
-    arena.fillStyle(0x102d29, 0.6).fillEllipse(x, y + 22, radius * 2 + 38, radius * 2 + 20)
-    arena.fillStyle(0x68412c).fillCircle(x, y, radius + 14)
-    arena.fillStyle(0xe2bb7c).fillCircle(x, y, radius)
-    arena.lineStyle(8, 0xfff1c5).strokeCircle(x, y, radius - 2)
-    arena.lineStyle(3, 0xa97547, 0.35).strokeCircle(x, y, radius * 0.64)
-    arena.lineStyle(3, 0xa97547, 0.35).strokeCircle(x, y, 40)
-    for (let i = 0; i < 60; i++) {
-      const angle = i * 2.39996, distance = Math.sqrt(i / 60) * (radius - 20)
-      arena.fillStyle(0xb38853, 0.3).fillRect(x + Math.cos(angle) * distance, y + Math.sin(angle) * distance, 5, 3)
-    }
+    const size = radius * 2 * 64 / 52
+    this.add.image(x, y, TROMPO_ASSETS.arena.key).setDisplaySize(size, size).setDepth(0)
+    this.add.graphics().setDepth(1).lineStyle(3, 0xffe4a3, 0.7).strokeCircle(x, y, radius)
   }
 
-  private createTop(color: number, dark: number): Phaser.GameObjects.Container {
-    const art = this.add.graphics()
-    art.fillStyle(0x102d32).fillCircle(0, 0, C.TOP_RADIUS + 3)
-    art.fillStyle(dark).fillCircle(0, 0, C.TOP_RADIUS)
-    art.fillStyle(0xecc991).fillCircle(0, 0, C.TOP_RADIUS - 5)
-    art.fillStyle(color).fillCircle(0, 0, C.TOP_RADIUS - 9)
-    for (let i = 0; i < 4; i++) {
-      const a = i * Math.PI / 2
-      art.fillStyle(dark).fillTriangle(0, 0, Math.cos(a) * 28, Math.sin(a) * 28,
-        Math.cos(a + 0.6) * 28, Math.sin(a + 0.6) * 28)
-    }
-    art.fillStyle(0xffecc4).fillCircle(0, 0, 10)
-    art.fillStyle(0x956036).fillCircle(0, 0, 5)
+  private createTop(key: string): Phaser.GameObjects.Container {
+    const art = this.add.image(0, 0, key).setDisplaySize(92, 92)
     return this.add.container(0, 0, [art]).setDepth(600)
   }
 

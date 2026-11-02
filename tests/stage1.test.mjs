@@ -70,7 +70,52 @@ import HitJudge from '../src/minigames/ruana/systems/HitJudge.ts'
 import PapaGuide from '../src/components/PapaGuide.ts'
 import { PAPA_GUIDE_ASSET, guidePages } from '../src/config/guideConfig.ts'
 import { SACK_ASSETS } from '../src/config/uiAssets.ts'
+import { TROMPO_ASSETS } from '../src/config/assets.ts'
+
+test('arte del trompo usa los cuatro PNG y conserva la arena y los cuerpos de la simulación', () => {
+  for (const asset of Object.values(TROMPO_ASSETS)) assert.ok(existsSync(new URL(`../public/${asset.path}`, import.meta.url)))
+  const page = new TrompoScene(), view = scene(), images = []
+  const image = view.add.image
+  view.add.image = (...args) => { const art = image(...args); images.push(art); return art }
+  Object.assign(page, { add: view.add, cameras: { main: { setBackgroundColor() {} } } })
+  page.drawArena()
+  assert.ok(images.some(art => art.texture.key === TROMPO_ASSETS.background.key))
+  assert.ok(images.some(art => art.texture.key === TROMPO_ASSETS.arena.key && art.x === TROMPO_CONFIG.ARENA.x))
+  const top = page.createTop(TROMPO_ASSETS.player.key)
+  assert.equal(top.list[0].texture.key, TROMPO_ASSETS.player.key)
+  assert.equal(top.list[0].width, 92)
+})
 import { RUANA_MUSIC_TIMING } from '../src/minigames/ruana/config/beatmapPrototype.ts'
+
+test('papa podrida muestra una reacción breve y avanza una sola vez sin pantalla de derrota', () => {
+  browser(); gameManager.initialize()
+  const page = new PapaScene(), view = scene()
+  const finishes = []
+  Object.assign(page, { add: view.add, time: view.time, cameras: { main: { shake() {} } },
+    scoreManager: new PotatoScoreManager(), hud: { showFloatingFeedback() {} },
+    spawnManager: { pause() {} }, finish: won => finishes.push(won) })
+  page.collectPotato({ type: 'BAD', x: 500, y: 400, hit() {} })
+  assert.equal(page.phase, 'feedback')
+  assert.ok(view.texts.includes('¡Papa podrida!'))
+  assert.ok(!view.texts.includes('Perdiste'))
+  assert.deepEqual(finishes, [])
+  assert.equal(view.timers.length, 1)
+  assert.equal(view.timers[0].delay * gameManager.pace, 450)
+  page.handlePointerDown({ x: 500, y: 400 })
+  assert.equal(view.timers.length, 1)
+  view.timers[0].callback()
+  assert.deepEqual(finishes, [false])
+})
+
+test('Tejo alcanza potencia máxima antes del borde y joystick queda a la derecha fuera de la pista', () => {
+  const aim = new TejoAimSystem(scene())
+  const maximumY = TEJO_CONFIG.THROW_START_Y + TEJO_CONFIG.MAX_POWER_DRAG_DISTANCE / TEJO_CONFIG.DRAG_POWER_SENSITIVITY
+  assert.ok(maximumY < 680)
+  assert.equal(aim.update(TEJO_CONFIG.THROW_START_X, maximumY + 1).power, 1)
+  const stick = TROMPO_CONFIG.JOYSTICK, arena = TROMPO_CONFIG.ARENA
+  assert.ok(stick.x - stick.radius > arena.x + arena.radius)
+  assert.ok(stick.x + stick.radius < 1280)
+})
 
 test('Ruana sigue el tiempo real de la canción y conserva velocidad uno en dificultades altas', () => {
   browser()
@@ -288,7 +333,7 @@ function browser() {
 function drawable(x = 0, y = 0) {
   const object = Object.assign(new EventEmitter(), { x, y, depth: 0, alpha: 1, rotation: 0, scaleX: 1, scaleY: 1 })
   for (const method of ['setCrop', 'setText', 'setVisible', 'setStrokeStyle', 'setOrigin', 'setInteractive', 'setScale', 'setFillStyle', 'setAlpha',
-    'setRotation', 'fillStyle', 'fillRect', 'fillPoints', 'lineStyle', 'strokeLineShape', 'fillRoundedRect',
+    'setRotation', 'setData', 'fillStyle', 'fillRect', 'fillPoints', 'lineStyle', 'strokeLineShape', 'fillRoundedRect',
     'fillEllipse', 'strokeEllipse', 'strokeCircle', 'clear', 'fillCircle']) object[method] = () => object
   object.setDepth = value => { object.depth = value; return object }
   object.setScale = value => { object.scaleX = value; object.scaleY = value; return object }
@@ -840,7 +885,7 @@ test('guía corta de Tejo muestra dirección y fuerza sin revelar el destino', (
   const aim = new TejoAimSystem(page)
   const shot = aim.update(690, 690)
   assert.equal(dots.length, 6)
-  assert.ok(Math.hypot(dots[0].x - TEJO_CONFIG.THROW_START_X, dots[0].y - TEJO_CONFIG.THROW_START_Y) <= 140)
+  assert.ok(Math.hypot(dots[0].x - TEJO_CONFIG.THROW_START_X, dots[0].y - TEJO_CONFIG.THROW_START_Y) <= 140 + 1e-8)
   assert.ok(dots.every(point => Math.hypot(point.x - shot.target.x, point.y - shot.target.y) > 100))
   aim.clear()
   assert.equal(aim.getCurrentAim(), null)
@@ -848,7 +893,8 @@ test('guía corta de Tejo muestra dirección y fuerza sin revelar el destino', (
   let position
   flight.start(shot, () => {})
   flight.update(shot.durationMs, { setPosition(point) { position = point }, setScale() {}, setRotation() {} })
-  assert.deepEqual(position, shot.target)
+  assert.ok(Math.abs(position.x - shot.target.x) < 1e-8)
+  assert.ok(Math.abs(position.y - shot.target.y) < 1e-8)
   const score = new TejoScoreManager()
   assert.equal(score.registerImpact('MECHA').victory, false)
   assert.equal(score.registerImpact('MECHA').victory, false)
@@ -990,7 +1036,7 @@ test('Tejo distingue bocín y moñona por el centro del disco y su contacto con 
   const board = new TejoBoard(scene()), impacts = new TejoImpactSystem(board)
   const center = board.getBocinCenter()
   assert.equal(impacts.evaluate(center), 'BOCIN')
-  const edge = { x: center.x + 27, y: center.y - 15 }
+  const edge = { x: center.x + 27 * TEJO_CONFIG.DISTANCE_SCALE, y: center.y - 15 * TEJO_CONFIG.DISTANCE_SCALE }
   assert.equal(impacts.evaluate(edge), 'MONONA')
   assert.equal(board.consumeMecha(edge, TEJO_CONFIG.IMPACT_DISC_RADIUS), true)
   assert.equal(impacts.evaluate(edge), 'BOCIN')
