@@ -1,0 +1,11 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "papya-salas",
+  "main": "rooms.mjs",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": false,
+  "durable_objects": {
+    "bindings": [{ "name": "TROMPO_ROOMS", "class_name": "TrompoRoom" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["TrompoRoom"] }]
+}

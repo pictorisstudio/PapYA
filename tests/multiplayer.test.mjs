@@ -31,7 +31,7 @@ test('dos entradas humanas tienen la misma aceleración sin IA', () => {
 })
 
 test('servidor real: crea sala, entra segundo jugador, rechaza tercero y valida resultados', async () => {
-  const server = createMultiplayerServer()
+  const server = createMultiplayerServer({ allowedOrigins: 'https://papya.example' })
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
   const base = `http://127.0.0.1:${server.address().port}`
   const api = async (action, data) => {
@@ -67,5 +67,12 @@ test('servidor real: crea sala, entra segundo jugador, rechaza tercero y valida 
     assert.equal((await fetch(`${base}/api/multiplayer/state`)).status, 405)
     const foreign = await fetch(`${base}/api/multiplayer/create`, { method: 'POST', headers: { Origin: 'http://evil.invalid' }, body: '{}' })
     assert.equal(foreign.status, 403)
+    const preflight = await fetch(`${base}/api/multiplayer/create`, { method: 'OPTIONS', headers: { Origin: 'https://papya.example' } })
+    assert.equal(preflight.status, 204)
+    assert.equal(preflight.headers.get('access-control-allow-origin'), 'https://papya.example')
+    const hosted = await fetch(`${base}/api/multiplayer/create`, { method: 'POST', headers: { Origin: 'https://papya.example', 'Content-Type': 'application/json' }, body: '{}' })
+    assert.equal(hosted.status, 200)
+    assert.equal(hosted.headers.get('access-control-allow-origin'), 'https://papya.example')
+    assert.deepEqual(await (await fetch(`${base}/api/multiplayer/health`)).json(), { ok: true, service: 'papya-rooms' })
   } finally { await new Promise(resolve => server.close(resolve)) }
 })

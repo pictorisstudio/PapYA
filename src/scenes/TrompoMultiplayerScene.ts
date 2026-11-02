@@ -71,7 +71,8 @@ export default class TrompoMultiplayerScene extends Phaser.Scene {
   }
 
   private async api(action: string, data: object): Promise<any> {
-    const response = await fetch(`/api/multiplayer/${action}`, { method: 'POST',
+    const server = (import.meta.env.VITE_MULTIPLAYER_SERVER_URL ?? '').replace(/\/$/, '')
+    const response = await fetch(`${server}/api/multiplayer/${action}`, { method: 'POST',
       headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data), signal: AbortSignal.timeout(5000) })
     const result = await response.json().catch(() => ({ error: 'El servidor de salas no está disponible.' }))
     if (!response.ok) throw new Error(result.error ?? 'No se pudo conectar.')

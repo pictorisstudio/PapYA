@@ -12,12 +12,17 @@
     "build": "vite build",
     "preview": "vite preview",
     "cap:sync": "npm run build && npx cap sync",
-    "android:open": "npx cap open android"
+    "android:open": "npx cap open android",
+    "rooms:dev": "wrangler dev --config cloudflare/wrangler.jsonc --port 8787",
+    "rooms:deploy": "wrangler deploy --config cloudflare/wrangler.jsonc",
+    "cloudflare:login": "wrangler login",
+    "test:cloudflare": "node --test tests/cloudflare-rooms.test.mjs"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.1",
     "typescript": "^7.0.2",
-    "vite": "^8.2.2"
+    "vite": "^8.2.2",
+    "wrangler": "^4.156.1"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.1",

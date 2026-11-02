@@ -1,4 +1,4 @@
-// Simulación compartida con el servidor Node; no depende de Phaser ni del viaje individual.
+// Simulación compartida con Cloudflare y el servidor Node local; no depende de Phaser ni del viaje individual.
 export const MATCH_ARENA = { x: 600, y: 405, radius: 240 }
 export interface MatchBody { x: number; y: number; vx: number; vy: number }
 export interface MatchInput { x: number; y: number }

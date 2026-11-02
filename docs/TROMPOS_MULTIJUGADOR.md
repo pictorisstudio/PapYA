@@ -4,6 +4,8 @@ Modo separado del viaje individual. El menú abre crear sala o introducir un có
 
 ## Cómo probar entre dos celulares
 
+**Producción en Cloudflare:** seguir `docs/PUBLICAR_SALAS_WEB.md`. Pages + Worker + Durable Objects funcionan en la misma cuenta. El servidor Node descrito debajo se conserva como alternativa local.
+
 Requiere Node.js 24 o posterior (el servidor carga el módulo compartido TypeScript con el soporte nativo de Node). Desde C:\PapYA:
 
 ```powershell
@@ -16,6 +18,8 @@ Abrir `http://localhost:8787` en el PC. Para dos celulares en la misma Wi-Fi, ab
 Para desarrollo, mantener `npm run multiplayer` en una terminal y `npm run dev` en otra: Vite redirige `/api/multiplayer` al servidor. Para jugar por Internet, alojar el servidor y el cliente juntos detrás de HTTPS; subir únicamente dist a un alojamiento estático no habilita salas. La APK con assets locales necesitará configurar el acceso a ese servidor publicado; este cambio valida la versión web, no genera una APK.
 
 ## Implementación
+
+El servicio Cloudflare `cloudflare/rooms.mjs` guarda cada sala en un Durable Object durante un máximo de 15 minutos. Comparte la física y la API del servidor Node descrito debajo, pero avanza el reloj a pasos de 1/60 s cuando recibe las consultas y persiste el estado entre ellas. No depende de timers en memoria. Pages usa un binding privado para acceder.
 
 - `src/multiplayer/TrompoMatch.ts`: física compartida, ambos con velocidad y aceleración iguales, sin IA; estado de ronda, marcador y ganador.
 - `server/multiplayer.mjs`: salas en memoria, máximo dos participantes, credenciales aleatorias privadas y simulación de servidor a 60 pasos por segundo. El cliente envía dirección, nunca posiciones ni resultados aceptados como verdad.

@@ -1,0 +1,9 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "papya",
+  "pages_build_output_dir": "./dist",
+  "compatibility_date": "2026-11-01",
+  "durable_objects": {
+    "bindings": [{ "name": "TROMPO_ROOMS", "class_name": "TrompoRoom", "script_name": "papya-salas" }]
+  }
+}

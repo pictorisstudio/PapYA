@@ -5,7 +5,9 @@ import { resolve, extname, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { TrompoMatch } from '../src/multiplayer/TrompoMatch.ts'
 
-export function createMultiplayerServer() {
+export function createMultiplayerServer(options = {}) {
+  const allowedOrigins = new Set((options.allowedOrigins ?? process.env.ALLOWED_ORIGINS ?? '')
+    .split(',').map(value => value.trim()).filter(Boolean))
   const rooms = new Map()
   const token = () => randomBytes(18).toString('hex')
   const send = (res, status, body) => { res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(body)) }
@@ -28,9 +30,17 @@ export function createMultiplayerServer() {
     const url = new URL(req.url, 'http://localhost')
     if (url.pathname.startsWith('/api/multiplayer/')) {
       try {
+        const origin = req.headers.origin
+        if (origin) {
+          if (new URL(origin).host !== req.headers.host && !allowedOrigins.has(origin)) return send(res, 403, { error: 'Origen no permitido' })
+          res.setHeader('Access-Control-Allow-Origin', origin)
+          res.setHeader('Vary', 'Origin')
+          res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+          res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+        }
+        if (req.method === 'OPTIONS') { res.writeHead(204); return res.end() }
+        if (url.pathname === '/api/multiplayer/health' && req.method === 'GET') return send(res, 200, { ok: true, service: 'papya-rooms' })
         if (req.method !== 'POST') return send(res, 405, { error: 'Método no permitido' })
-        // No aceptar peticiones de otros sitios desde un navegador.
-        if (req.headers.origin && new URL(req.headers.origin).host !== req.headers.host) return send(res, 403, { error: 'Origen no permitido' })
         let raw = ''
         for await (const chunk of req) { raw += chunk; if (raw.length > 2048) return send(res, 413, { error: 'Solicitud demasiado grande' }) }
         const body = JSON.parse(raw || '{}'), action = url.pathname.split('/').at(-1)
