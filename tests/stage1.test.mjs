@@ -117,7 +117,28 @@ test('Tejo alcanza potencia máxima antes del borde y joystick queda a la derech
   assert.ok(stick.x + stick.radius < 1280)
 })
 
-test('Ruana sigue el tiempo real de la canción y conserva velocidad uno en dificultades altas', () => {
+test('reloj del tiple interpola muestras espaciadas y respeta pausa y reanudación', (t) => {
+  let now = 1000, audio = 0
+  t.mock.method(performance, 'now', () => now)
+  const clock = new RhythmClock()
+  clock.start(1, () => audio)
+  assert.equal(clock.getCurrentTime(), 0)
+  for (let i = 1; i <= 6; i++) {
+    now += 16
+    assert.equal(clock.getCurrentTime(), i * 16)
+  }
+  audio = 100; now += 4
+  assert.equal(clock.getCurrentTime(), 100)
+  clock.pause(); now += 3000; audio = 800
+  assert.equal(clock.getCurrentTime(), 100)
+  clock.resume()
+  assert.equal(clock.getCurrentTime(), 800)
+  now += 16
+  assert.equal(clock.getCurrentTime(), 816)
+})
+
+test('Ruana sigue el tiempo real de la canción y conserva velocidad uno en dificultades altas', (t) => {
+  t.mock.method(performance, 'now', () => 1000)
   browser()
   gameManager.initialize()
   const clock = new RhythmClock()
@@ -741,7 +762,7 @@ for (const fastLoad of [true, false]) {
     const view = scene(), boot = new BootScene(), loader = new PreloaderScene()
     let brandComplete = false, visible = true, tween
     const registry = { set(_key, value) { brandComplete = value }, get() { return brandComplete } }
-    const camera = { setBackgroundColor() {}, setVisible(value) { visible = value } }
+    const camera = { setBackgroundColor() {}, setVisible(value) { visible = value }, setScroll(x, y) { this.scrollX = x; this.scrollY = y } }
     const anims = { exists: () => true }
     view.add.sprite = (x, y) => Object.assign(drawable(x, y), { play() { return this } })
     Object.assign(boot, { registry, add: view.add, game: view.game, cameras: { main: camera },
@@ -749,10 +770,13 @@ for (const fastLoad of [true, false]) {
       scene: { launch() {}, bringToTop() {}, stop() {} } })
     Object.assign(loader, { registry, add: view.add, game: view.game, events: view.events,
       cameras: { main: camera }, anims, scene: view.scene,
+      scale: Object.assign(new EventEmitter(), { gameSize: { width: 1600, height: 720 } }),
       textures: { exists: () => true, get: () => ({ has: () => false, add() {} }) }, cache: { audio: { exists: () => true } },
       load: Object.assign(new EventEmitter(), { image() {} }) })
     boot.create()
     loader.preload()
+    assert.equal(camera.scrollX, -160)
+    assert.equal(camera.scrollY, 0)
     assert.equal(brandComplete, false)
     assert.equal(visible, false)
     assert.ok(view.texts.includes(TEXTS.loading))
@@ -1534,7 +1558,11 @@ test('Ruana mantiene amarillo, azul, rojo y blanco en notas y botones', () => {
   assert.deepEqual(RUANA_CONFIG.LANE_COLORS, [0xfacc15, 0x2563eb, 0xef4444, 0xffffff])
   const lanes = RUANA_CONFIG.LANE_END_POSITIONS.map((x, id) => ({ id, startX: x, startY: 300, endX: x, endY: 1040 }))
   const projector = { getLanes: () => lanes, project: lane => ({ x: lanes[lane].endX, y: 500, scale: 1 }) }
-  const view = scene(), colors = []
+  const view = scene(), colors = [], buttons = []
+  view.add.image = (x, y, key) => {
+    buttons.push(key)
+    return drawable(x, y)
+  }
   view.add.rectangle = (x, y, width, height, color) => {
     const item = drawable(x, y)
     item.color = color
@@ -1543,7 +1571,7 @@ test('Ruana mantiene amarillo, azul, rojo y blanco en notas y botones', () => {
     return item
   }
   new HitZone(view, projector)
-  assert.deepEqual(colors.slice(0, 4).map(item => item.color), [...RUANA_CONFIG.LANE_COLORS])
+  assert.deepEqual(buttons, ['tiple-yellow', 'tiple-blue', 'tiple-red', 'tiple-white'])
   for (let lane = 0; lane < 4; lane++) {
     const note = new RhythmNote(view, { id: `test-${lane}`, lane, hitTime: 500 }, projector)
     assert.equal(note.shape.color, RUANA_CONFIG.LANE_COLORS[lane])

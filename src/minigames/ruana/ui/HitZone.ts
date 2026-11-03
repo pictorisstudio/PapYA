@@ -1,5 +1,6 @@
 import { TEXTS } from '../../../config/texts'
 import Phaser from 'phaser'
+import { TIPLE_ASSETS } from '../../../config/tipleAssets'
 import { RUANA_CONFIG } from '../config/ruanaConfig'
 import type LaneProjector from '../systems/LaneProjector'
 import type { RuanaJudgeResult, RuanaLaneId } from '../types/RuanaTypes'
@@ -7,15 +8,14 @@ import type { RuanaJudgeResult, RuanaLaneId } from '../types/RuanaTypes'
 export default class HitZone {
   private readonly guides: Phaser.GameObjects.Rectangle[] = []
   private readonly touchZones = new Map<RuanaLaneId, Phaser.Geom.Rectangle>()
-  private readonly zones = new Map<RuanaLaneId, Phaser.GameObjects.Rectangle>()
+  private readonly zones = new Map<RuanaLaneId, Phaser.GameObjects.Image>()
   private readonly feedbackLabels = new Map<RuanaLaneId, Phaser.GameObjects.Text>()
 
   constructor(private readonly scene: Phaser.Scene, projector: LaneProjector) {
     for (const lane of projector.getLanes()) {
-      // TODO: reemplazar por zona visual final del telar.
       const zone = scene.add
-        .rectangle(lane.endX, lane.endY, RUANA_CONFIG.HIT_ZONE_WIDTH, RUANA_CONFIG.HIT_ZONE_HEIGHT, RUANA_CONFIG.LANE_COLORS[lane.id], 0.82)
-        .setStrokeStyle(3, 0xf8fafc, 0.85)
+        .image(lane.endX, lane.endY, TIPLE_ASSETS.buttons[lane.id].key)
+        .setDisplaySize(144, 144)
         .setDepth(650)
 
       const label = scene.add

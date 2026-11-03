@@ -37,7 +37,7 @@ export default class RhythmNote {
     const projection = this.projector.project(this.lane, this.progress)
     this.shape.setPosition(projection.x, projection.y)
     this.shape.setScale(projection.scale)
-    this.shape.setDepth(Math.round(projection.y))
+    this.shape.setDepth(200 + this.lane)
   }
 
   markJudged(_resultColor: number, alpha = 0.45): void {

@@ -21,8 +21,8 @@ export default class LaneProjector {
     const visualProgress = this.ease(safeProgress)
 
     return {
-      x: Math.round(Phaser.Math.Linear(lane.startX, lane.endX, visualProgress)),
-      y: Math.round(Phaser.Math.Linear(lane.startY, lane.endY, visualProgress)),
+      x: Phaser.Math.Linear(lane.startX, lane.endX, visualProgress),
+      y: Phaser.Math.Linear(lane.startY, lane.endY, visualProgress),
       scale: Phaser.Math.Linear(RUANA_CONFIG.MIN_NOTE_SCALE, RUANA_CONFIG.MAX_NOTE_SCALE, visualProgress),
       visualProgress,
     }

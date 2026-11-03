@@ -40,10 +40,10 @@ export const TEXTS = {
       count: (count: number, target: number) => `Papas: ${count}/${target}`,
     },
     ruana: {
-      name: 'Tejiendo la Ruana', objective: 'Toca las marcas al ritmo del hilo para tejer la ruana.',
+      name: 'Tocando el Tiple', objective: 'Toca las notas del mismo color al ritmo de la música.',
       accuracy: (value: number) => `Precisión: ${value.toFixed(1)} %`,
       stats: (perfect: number, good: number, miss: number) => `Perfectos: ${perfect} · Cerca: ${good} · Pendientes: ${miss}`,
-      progress: 'Progreso del tejido', perfect: '¡A tiempo!', good: '¡Cerca!', miss: '',
+      progress: 'Progreso de la canción', perfect: '¡A tiempo!', good: '¡Cerca!', miss: '',
     },
     cocina: {
       name: 'Cocido Boyacense', objective: 'Pon los ingredientes del cocido en la olla y regula el fuego.',

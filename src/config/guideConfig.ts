@@ -11,7 +11,7 @@ export const GUIDE_TEXTS = {
   intro: `Completa ${REQUIRED_VICTORIES} de los ${MINIGAME_ORDER.length} retos de una ronda para abrir una ruta.`,
   introControl: 'Los juegos comienzan de inmediato. Toca, arrastra y sigue el ritmo.',
   controls: {
-    ruana: 'Toca el botón del mismo color cuando llegue el hilo. Más adelante aparecerán parejas.',
+    ruana: 'Toca el botón del mismo color cuando llegue la nota. Más adelante aparecerán parejas.',
     trompo: 'Mueve el joystick con un dedo y empuja al rival fuera del círculo.',
     papa: 'Toca las papas buenas cerca de lo más alto. Evita las podridas.',
     tejo: 'Arrastra hacia atrás y suelta. Suma 10 puntos: mecha 3, bocín 6 o moñona 9.',
@@ -19,7 +19,7 @@ export const GUIDE_TEXTS = {
     cocina: 'Pon los ingredientes correctos en la olla y regula la temperatura.',
   } satisfies Record<MinigameKey, string>,
   goals: {
-    ruana: 'Teje acertando al menos el 85 % de los hilos.', trompo: '¡Saca al trompo rival de la pista!',
+    ruana: 'Toca acertando al menos el 85 % de las notas.', trompo: '¡Saca al trompo rival de la pista!',
     papa: 'Recoge 20 papas buenas.', tejo: 'Cada mecha solo puede explotar una vez.',
     cocuy: 'Esquiva las rocas: cada golpe te hace bajar 25 metros.', cocina: 'Cocina el plato sin quemarlo.',
   } satisfies Record<MinigameKey, string>,

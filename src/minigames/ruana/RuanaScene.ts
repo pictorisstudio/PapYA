@@ -1,4 +1,5 @@
 import { SCENE_ASSETS } from '../../config/sceneAssets'
+import { TIPLE_ASSETS } from '../../config/tipleAssets'
 import Phaser from 'phaser'
 import GameplaySession from '../../components/GameplaySession'
 import { TEXTS } from '../../config/texts'
@@ -38,6 +39,7 @@ export default class RuanaScene extends Phaser.Scene {
   private lastOffsetMs: number | null = null
   private finished = false
   private durationMs = 0
+  private nextDebugUpdate = 0
 
   constructor() {
     super('RuanaScene')
@@ -90,7 +92,9 @@ export default class RuanaScene extends Phaser.Scene {
     }
 
     this.refreshHud()
-    this.hud.updateDebug({
+    if (currentTime >= this.nextDebugUpdate) {
+      this.nextDebugUpdate = currentTime + 150
+      this.hud.updateDebug({
       clockMs: currentTime,
       nextNoteMs: this.noteManager.getNextNote()?.hitTime ?? null,
       nextNoteLane: this.noteManager.getNextNote()?.lane ?? null,
@@ -98,7 +102,8 @@ export default class RuanaScene extends Phaser.Scene {
       offsetMs: this.lastOffsetMs,
       activeNotes: this.noteManager.getActiveNotes().length,
       fps: this.game.loop.actualFps,
-    })
+      })
+    }
 
     if (this.noteManager.isFinished()) {
       this.finishWithScore()
@@ -238,8 +243,7 @@ export default class RuanaScene extends Phaser.Scene {
 
     this.add.image(640, 360, SCENE_ASSETS.ruanaBackground.key).setDisplaySize(1280, 720).setDepth(LAYERS.background)
 
-    // TODO: reemplazar por telar y ruana pixel art finales.
-    this.add.rectangle(640, 386, 1080, 450, RUANA_CONFIG.COLORS.loomPanel, 0.5).setStrokeStyle(4, 0x64748b)
+    this.add.image(640, 365, TIPLE_ASSETS.instrument.key).setDisplaySize(560, 560).setAlpha(0.85)
     if (DEBUG_MODE) this.add.circle(RUANA_CONFIG.VANISHING_POINT_X, RUANA_CONFIG.VANISHING_POINT_Y, 8, 0xf8fafc, 0.9).setDepth(LAYERS.debug - 1)
 
     for (const lane of this.projector.getLanes()) {
@@ -272,6 +276,7 @@ export default class RuanaScene extends Phaser.Scene {
     this.phase = 'intro'
     this.lastOffsetMs = null
     this.finished = false
+    this.nextDebugUpdate = 0
     this.cleanupEvents = []
   }
 
