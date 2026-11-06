@@ -21,11 +21,43 @@ export class TrompoRoom {
     this.lastSave = now
   }
 
-  fetch(request) {
+  async fetch(request) {
+    const action = new URL(request.url).pathname.slice(1)
+    if (action === 'live') {
+      if (request.headers.get('Upgrade')?.toLowerCase() !== 'websocket') return reply({ error: 'Se requiere WebSocket.' }, 426)
+      if (this.ctx.getWebSockets().length >= 8) return reply({ error: 'Demasiadas conexiones.' }, 429)
+      const [client, server] = Object.values(new WebSocketPair())
+      this.ctx.acceptWebSocket(server)
+      return new Response(null, { status: 101, webSocket: client })
+    }
+    return this.handle(action, await request.json())
+  }
+
+  async webSocketMessage(socket, message) {
+    if (typeof message !== 'string' || message.length > 1024) {
+      socket.close(1008, 'Mensaje no válido')
+      return
+    }
+    let body
+    try { body = JSON.parse(message) } catch {
+      socket.close(1008, 'Mensaje no válido')
+      return
+    }
+    if (!body || typeof body.token !== 'string') {
+      socket.close(1008, 'Acceso no válido')
+      return
+    }
+    const response = await this.handle('state', body)
+    if (!response.ok) {
+      socket.close(1008, 'Sala no disponible')
+      return
+    }
+    if (socket.readyState === 1) socket.send(await response.text())
+  }
+
+  handle(action, body) {
     return this.ctx.blockConcurrencyWhile(async () => {
       const now = Date.now()
-      const action = new URL(request.url).pathname.slice(1)
-      const body = await request.json()
       let room = this.room ?? await this.ctx.storage.get('room')
       if (room && now >= room.expires) { await this.ctx.storage.deleteAll(); room = undefined }
       this.room = room
@@ -36,7 +68,7 @@ export class TrompoRoom {
         await this.save(room, now)
         await this.ctx.storage.setAlarm(room.expires)
         this.room = room
-        return reply({ code: room.code, token: player.token, player: 0 })
+        return reply({ code: room.code, token: player.token, player: 0, live: true })
       }
       if (!room) return reply({ error: 'La sala no existe o ha caducado.' }, 404)
       if (!(room.match instanceof TrompoMatch)) room.match = Object.assign(new TrompoMatch(), room.match)
@@ -46,7 +78,7 @@ export class TrompoRoom {
         const player = newPlayer(now)
         room.players.push(player); room.status = 'playing'; room.tickAt = now
         await this.save(room, now)
-        return reply({ code: room.code, token: player.token, player: 1 })
+        return reply({ code: room.code, token: player.token, player: 1, live: true })
       }
       const index = room.players.findIndex(p => p.token === body.token)
       if (index < 0) return reply({ error: 'Acceso no válido a la sala.' }, 403)
@@ -82,7 +114,8 @@ export class TrompoRoom {
       } else if (action === 'state') {
         if (previousStatus === 'finished') newVote = voteRematch(room, index, body.rematchMatch, now)
         const input = body.input
-        if (input && Number.isFinite(input.x) && Number.isFinite(input.y)) {
+        const sameMatch = body.matchNumber === undefined || body.matchNumber === (room.matchNumber ?? 1)
+        if (room.status === 'playing' && sameMatch && input && Number.isFinite(input.x) && Number.isFinite(input.y)) {
           const length = Math.max(1, Math.hypot(input.x, input.y))
           player.input = { x: input.x / length, y: input.y / length }; player.inputAt = now
         }
@@ -95,6 +128,7 @@ export class TrompoRoom {
   }
 
   async alarm() {
+    for (const socket of this.ctx.getWebSockets?.() ?? []) socket.close(1000, 'Sala caducada')
     this.room = undefined
     await this.ctx.storage.deleteAll()
   }

@@ -6,6 +6,13 @@ export async function roomsApi(request, env) {
   const action = url.pathname.split('/').at(-1)
   const origin = request.headers.get('Origin')
   if (origin && origin !== url.origin) return json({ error: 'Origen no permitido.' }, 403)
+  if (action === 'live' && request.method === 'GET') {
+    const code = url.searchParams.get('code')?.toUpperCase() ?? ''
+    if (!/^[A-F0-9]{6}$/.test(code)) return json({ error: 'Código de sala no válido.' }, 400)
+    if (!env.TROMPO_ROOMS) return json({ error: 'Servicio no disponible.' }, 503)
+    const stub = env.TROMPO_ROOMS.get(env.TROMPO_ROOMS.idFromName(code))
+    return stub.fetch(new Request('https://room/live', request))
+  }
   if (action === 'health' && request.method === 'GET') {
     return json({ ok: Boolean(env.TROMPO_ROOMS), service: 'papya-rooms' }, env.TROMPO_ROOMS ? 200 : 503)
   }
