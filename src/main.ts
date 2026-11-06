@@ -17,7 +17,7 @@ installLandscapeOnly(game)
 // Fuera del reto regresa una pantalla; en el menú deja actuar al sistema.
 window.addEventListener('papya:back', event => {
   const active = game.scene.getScenes(true).find(scene => scene.scene.key !== 'PauseScene')
-  if (active?.scene.key === 'MenuScene' && (active as MenuScene).closeGuide()) {
+  if (active?.scene.key === 'MenuScene' && (active as MenuScene).closeOverlay()) {
     event.preventDefault()
     return
   }

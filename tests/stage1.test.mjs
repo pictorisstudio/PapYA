@@ -44,6 +44,7 @@ import { TEJO_ASSETS, POTATO_ASSETS } from '../src/config/assets.ts'
 import { existsSync } from 'node:fs'
 import CookingSystem from '../src/minigames/cocina/systems/CookingSystem.ts'
 import MapScene from '../src/scenes/MapScene.ts'
+import MenuScene from '../src/scenes/MenuScene.ts'
 import TransitionScene from '../src/scenes/TransitionScene.ts'
 import DebugManager from '../src/core/DebugManager.ts'
 import { openProgressReset } from '../src/dev/resetProgress.ts'
@@ -413,6 +414,33 @@ test('postal muestra el dato cultural solo mientras la ruta está desbloqueada',
   gameManager.progressManager.reset()
   page.openRouteCard('route2', 2)
   assert.equal(page.routeCard, undefined)
+})
+
+test('reiniciar desde el menú requiere cinco rutas y una confirmación', () => {
+  browser(); gameManager.initialize()
+  const page = new MenuScene(), view = scene()
+  page.add = view.add
+  page.scale = { gameSize: { width: 1600, height: 720 } }
+  let restarts = 0
+  page.scene = { restart() { restarts++ } }
+  gameManager.progressManager.unlockNextRoute()
+  page.openResetDialog()
+  assert.equal(page.resetDialog, undefined)
+  gameManager.progressManager.unlockAllRoutes()
+  gameManager.progressManager.registerRun(5, 500)
+
+  page.openResetDialog()
+  assert.equal(gameManager.progressManager.getSaveData().unlockedRoutes.length, 5)
+  page.resetDialog.list[4].emit('pointerdown')
+  assert.equal(page.resetDialog, undefined)
+  assert.equal(gameManager.progressManager.getSaveData().recordScore, 500)
+
+  page.openResetDialog()
+  page.resetDialog.list[6].emit('pointerdown')
+  const saved = gameManager.saveManager.load()
+  assert.deepEqual(saved.unlockedRoutes, [])
+  assert.equal(saved.recordScore, 0)
+  assert.equal(restarts, 1)
 })
 
 test('controles dev comienzan apagados y al ocultar desactivan las guías', () => {
