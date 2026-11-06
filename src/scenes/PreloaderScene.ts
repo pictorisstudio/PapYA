@@ -1,7 +1,8 @@
 
-import { COCINA_ASSETS, TEJO_ASSETS, POTATO_ASSETS, ROUTE_CARD_ASSETS, TROMPO_ASSETS } from '../config/assets'
+import { COCINA_ASSETS, TEJO_ASSETS, POTATO_ASSETS, TROMPO_ASSETS } from '../config/assets'
 import Phaser from 'phaser'
 import { TIPLE_ASSETS } from '../config/tipleAssets'
+import { MAP_POSTCARDS } from '../config/mapPostcards'
 import { SCENE_ASSETS } from '../config/sceneAssets'
 import { AUDIO_CONFIG, type AudioKey } from '../config/audioConfig'
 import { gameManager } from '../core/GameManager'
@@ -25,6 +26,10 @@ export default class PreloaderScene extends Phaser.Scene {
     this.scale.on('resize', centerLoading)
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off('resize', centerLoading))
     for (const asset of [TIPLE_ASSETS.instrument, ...TIPLE_ASSETS.buttons]) this.load.image(asset.key, asset.path)
+    for (const { icon, paper } of Object.values(MAP_POSTCARDS)) {
+      this.load.image(icon.key, icon.path)
+      if (paper) this.load.image(paper.key, paper.path)
+    }
     // La cámara de carga no debe tapar el logo aunque esta escena termine arriba.
     this.cameras.main.setVisible(false)
     const showLoading = () => this.cameras.main.setVisible(true)
@@ -39,7 +44,7 @@ export default class PreloaderScene extends Phaser.Scene {
     if (!this.anims.exists('loading-condor')) this.anims.create({ key: 'loading-condor', frames: [SCENE_ASSETS.condorSide1, SCENE_ASSETS.condorSide2, SCENE_ASSETS.condorSide3, SCENE_ASSETS.condorSide4, SCENE_ASSETS.condorSide5, SCENE_ASSETS.condorSide6].map(asset => ({ key: asset.key })), frameRate: 8, repeat: -1 })
     this.add.sprite(640, 360, SCENE_ASSETS.condorSide1.key).setOrigin(0.5).setDisplaySize(240, 240).play('loading-condor')
     this.add.text(640, 514, TEXTS.loading, { fontSize: '38px', color: '#ffffff' }).setOrigin(0.5)
-    for (const asset of [...POTATO_ASSETS.GOOD, ...POTATO_ASSETS.BAD, ...Object.values(ROUTE_CARD_ASSETS), ...Object.values(COCINA_ASSETS), ...Object.values(TEJO_ASSETS), ...Object.values(TROMPO_ASSETS)]) {
+    for (const asset of [...POTATO_ASSETS.GOOD, ...POTATO_ASSETS.BAD, ...Object.values(COCINA_ASSETS), ...Object.values(TEJO_ASSETS), ...Object.values(TROMPO_ASSETS)]) {
       this.load.image(asset.key, asset.path)
     }
 

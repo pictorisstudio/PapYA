@@ -1,7 +1,7 @@
 import Phaser from 'phaser'
 import { TEXTS } from '../config/texts'
 import { gameManager } from '../core/GameManager'
-import { ROUTE_CARD_ASSETS } from '../config/assets'
+import { MAP_POSTCARDS } from '../config/mapPostcards'
 import { REQUIRED_VICTORIES } from '../config/constants'
 
 // Breve cierre del viaje; el siguiente comienza automáticamente.
@@ -23,8 +23,7 @@ export default class ResultsScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#10131a')
     const route = gameManager.lastUnlockedRoute
     if (route) {
-      const art = this.add.image(640, 382, ROUTE_CARD_ASSETS[route].key)
-      art.setScale(Math.min(800 / art.width, 350 / art.height))
+      this.add.image(640, 382, MAP_POSTCARDS[route].icon.key).setDisplaySize(320, 320)
       this.add.text(640, 610, TEXTS.routeName(Number(route.replace('route', ''))), {
         fontFamily: 'Arial, sans-serif', fontSize: '40px', color: '#fbbf24',
       }).setOrigin(0.5)

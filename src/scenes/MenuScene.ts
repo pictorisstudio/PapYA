@@ -7,7 +7,7 @@ import Phaser from 'phaser'
 import DebugPanel from '../components/DebugPanel'
 import { gameManager } from '../core/GameManager'
 import PapaGuide from '../components/PapaGuide'
-import { MENU_BUTTON_SIZE } from '../config/uiAssets'
+import { MENU_BUTTON_SIZE, MENU_UI_ASSETS } from '../config/uiAssets'
 
 export default class MenuScene extends Phaser.Scene {
   private guide?: PapaGuide
@@ -36,7 +36,8 @@ export default class MenuScene extends Phaser.Scene {
     })
     artButton(1080, 600, SCENE_ASSETS.mapButton.key, () => this.scene.start('MapScene'))
     this.guide = new PapaGuide(this, 300, 320, 600, 640, 280)
-    this.addButton(640, 484, 470, 58, 'Trompos multijugador', () => this.scene.start('TrompoMultiplayerScene'))
+    this.add.image(640, 460, MENU_UI_ASSETS.multiplayer.key, 'button').setDisplaySize(270, 121)
+      .setInteractive({ useHandCursor: true }).on('pointerdown', () => this.scene.start('TrompoMultiplayerScene'))
     if (DEBUG_MODE) {
       const first = this.children.list.length
       this.addButton(1100, 700, 300, 30, TEXTS.dev, () => this.scene.start('DevScene'))

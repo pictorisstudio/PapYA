@@ -55,7 +55,7 @@ export const TEXTS = {
       temperature: 'Temperatura', burn: 'Quemado',
     },
     tejo: {
-      name: 'Tejo al Bocín', objective: 'Arrastra y suelta el tejo: suma 10 puntos.',
+      name: 'Tejo al Bocín', objective: 'Arrastra y suelta el tejo: suma 21 puntos.',
       points: (score: number, target: number) => `Puntos: ${score}/${target}`,
       mechas: (value: number) => `Mechas: ${value}`,
       impact: { MECHA: '¡Mecha! +3', BOCIN: '¡Bocín! +6', MONONA: '¡Moñona! +9', NEAR: '¡Cerca! +1', OUT: '' },

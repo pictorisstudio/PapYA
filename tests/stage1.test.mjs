@@ -394,24 +394,25 @@ function scene() {
 }
 const outcome = (key, won = true) => ({ key, won, rawScore: 237, metrics: { collected: 12 } })
 
-test('tarjeta usa el estado actual para título y candado tras cambiar progreso', () => {
+test('postal muestra el dato cultural solo mientras la ruta está desbloqueada', () => {
   browser(); gameManager.initialize()
   const page = new MapScene(), view = scene()
   page.add = view.add
   page.textures = { exists: () => false }
-  let locks = 0
-  page.addLock = () => { locks++; return drawable() }
+  page.openRouteCard('route2', 2)
+  assert.deepEqual(view.texts, [])
   gameManager.progressManager.unlockNextRoute()
   gameManager.progressManager.unlockNextRoute()
   page.openRouteCard('route2', 2)
-  assert.ok(view.texts.includes('Ruta 2 · abierta'))
-  assert.equal(locks, 0)
+  assert.ok(view.texts.includes('RUTA 02 · COSECHA DE PAPA'))
+  assert.ok(view.texts.includes('Tesoros de la tierra'))
+  assert.ok(view.texts.some(text => text.includes('Parda Pastusa')))
+  assert.ok(view.texts.includes('Volver al mapa'))
+  assert.ok(page.routeCard.list.some(item => item.texture?.key === 'map-icon-papapng'))
   page.closeRouteCard()
   gameManager.progressManager.reset()
   page.openRouteCard('route2', 2)
-  assert.ok(view.texts.includes('Ruta 2 · por descubrir'))
-  assert.equal(locks, 1)
-  page.closeRouteCard()
+  assert.equal(page.routeCard, undefined)
 })
 
 test('controles dev comienzan apagados y al ocultar desactivan las guías', () => {
@@ -922,7 +923,9 @@ test('guía corta de Tejo muestra dirección y fuerza sin revelar el destino', (
   const score = new TejoScoreManager()
   assert.equal(score.registerImpact('MECHA').victory, false)
   assert.equal(score.registerImpact('MECHA').victory, false)
-  assert.equal(score.registerImpact('BOCIN').victory, true)
+  assert.equal(score.registerImpact('BOCIN').victory, false)
+  assert.equal(score.registerImpact('BOCIN').victory, false)
+  assert.equal(score.registerImpact('MECHA').victory, true)
 })
 
 test('barra de fuerza vertical sigue al disco a su derecha y se borra al soltar', () => {
@@ -1019,7 +1022,7 @@ test('dos dedos resuelven un acorde de Ruana con cámara desplazada sin contar d
   assert.equal(page.noteManager.isFinished(), true)
 })
 
-test('Tejo consume y oculta una mecha una sola vez y gana al llegar a diez puntos', () => {
+test('Tejo consume y oculta una mecha una sola vez y gana al alcanzar la meta de 21 puntos', () => {
   browser(); gameManager.initialize()
   const view = scene(), page = new TejoScene(), images = []
   const image = view.add.image
@@ -1051,6 +1054,9 @@ test('Tejo consume y oculta una mecha una sola vez y gana al llegar a diez punto
   assert.equal(page.scoreManager.getSnapshot().mechas, 2)
   assert.deepEqual(finishes, [])
   page.resolveImpact(page.board.getBocinCenter())
+  page.resolveImpact(page.board.getBocinCenter())
+  assert.deepEqual(finishes, [])
+  page.resolveImpact(page.board.getBocinCenter())
   assert.deepEqual(finishes, [true])
   assert.equal(page.board.consumeMecha(first), false)
   assert.equal(new TejoBoard(scene()).getMechaZones().length, 4)
@@ -1066,6 +1072,9 @@ test('Tejo distingue bocín y moñona por el centro del disco y su contacto con 
   assert.equal(impacts.evaluate(edge), 'BOCIN')
   const score = new TejoScoreManager()
   assert.equal(score.registerImpact('MONONA').score, 9)
+  assert.equal(score.registerImpact('NEAR').victory, false)
+  assert.equal(score.registerImpact('MONONA').victory, false)
+  assert.equal(score.registerImpact('NEAR').victory, false)
   assert.equal(score.registerImpact('NEAR').victory, true)
   const bocinScore = new TejoScoreManager()
   assert.equal(bocinScore.registerImpact('BOCIN').score, 6)
@@ -1287,9 +1296,12 @@ test('la transición inicia el minijuego sin instrucciones ni temporizador', () 
   assert.equal(view.timers.length, 0)
 })
 for (const scenario of [
-  { name: 'ruta obtenida', wins: 3, before: 0, message: TEXTS.runEnd.routeUnlocked },
+  { name: 'ruta del tiple', wins: 3, before: 0, icon: 'map-icon-tiple', message: TEXTS.runEnd.routeUnlocked },
+  { name: 'ruta de la papa', wins: 3, before: 1, icon: 'map-icon-papapng', message: TEXTS.runEnd.routeUnlocked },
+  { name: 'ruta del tejo', wins: 3, before: 2, icon: 'map-icon-tejo', message: TEXTS.runEnd.routeUnlocked },
+  { name: 'ruta de los trompos', wins: 3, before: 3, icon: 'map-icon-trompo', message: TEXTS.runEnd.routeUnlocked },
   { name: 'sin ruta', wins: 0, before: 0, message: TEXTS.runEnd.routePending },
-  { name: 'última ruta', wins: 3, before: 4, message: TEXTS.runEnd.allRoutes },
+  { name: 'última ruta', wins: 3, before: 4, icon: 'map-icon-condor', message: TEXTS.runEnd.allRoutes },
   { name: 'todas abiertas y viaje sin victorias', wins: 0, before: 5, message: TEXTS.runEnd.routePending },
 ]) {
   test(`cierre breve: ${scenario.name}, guarda una vez y continúa automáticamente`, () => {
@@ -1308,7 +1320,7 @@ for (const scenario of [
     page.create()
     const earned = gameManager.lastUnlockedRoute
     assert.deepEqual(view.texts, earned ? [TEXTS.routeName(scenario.before + 1), scenario.message] : [scenario.message])
-    assert.deepEqual(images, earned ? [`route-card-${scenario.before + 1}`] : [])
+    assert.deepEqual(images, scenario.icon ? [scenario.icon] : [])
     assert.equal(gameManager.progressManager.getSaveData().totalRuns, 1)
     gameManager.finishRun()
     assert.equal(gameManager.progressManager.getSaveData().totalRuns, 1)

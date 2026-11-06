@@ -33,8 +33,10 @@ test('Cloudflare: salas persistentes, autenticación, entradas y victoria a tres
     assert.equal(guest.player, 1)
     assert.equal((await call('join')).status, 409)
     assert.equal((await call('state', { token: 'falso' })).status, 403)
+    now += 1000
     let state = (await call('state', { token: host.token, input: { x: 99, y: 99 }, scores: [99, 0] })).body
     assert.deepEqual(state.scores, [0, 0])
+    assert.deepEqual(state.wins, [0, 0])
     assert.equal(JSON.stringify(state).includes(host.token), false)
     assert.equal(JSON.stringify(state).includes(guest.token), false)
     assert.ok(Math.hypot(data.get('room').players[0].input.x, data.get('room').players[0].input.y) <= 1)
@@ -47,8 +49,30 @@ test('Cloudflare: salas persistentes, autenticación, entradas y victoria a tres
     assert.equal(state.status, 'finished')
     assert.equal(state.winner, 0)
     assert.deepEqual(state.scores, [3, 0])
+    assert.deepEqual(state.wins, [1, 0])
+    const voted = (await call('state', { token: host.token, rematchMatch: 1 })).body
+    assert.equal(voted.status, 'finished')
+    assert.deepEqual(voted.rematch, [true, false])
+    object = new TrompoRoom(ctx)
+    const restarted = (await call('state', { token: guest.token, rematchMatch: 1 })).body
+    assert.equal(restarted.status, 'playing')
+    assert.equal(restarted.matchNumber, 2)
+    assert.deepEqual(restarted.scores, [0, 0])
+    assert.deepEqual(restarted.wins, [1, 0])
+    state = (await call('state', { token: host.token, rematchMatch: 1 })).body
+    for (let i = 0; i < 300 && state.status !== 'finished'; i++) {
+      await call('state', { token: host.token, input: { x: -1, y: 0 }, rematchMatch: 1 })
+      now += 80
+      state = (await call('state', { token: guest.token, input: { x: 0, y: 0 } })).body
+    }
+    assert.equal(state.status, 'finished')
+    assert.deepEqual(state.wins, [1, 1])
+    assert.deepEqual(state.rematch, [false, false])
     await call('leave', { token: host.token })
-    assert.equal(data.get('room').match.winner, 0)
+    state = (await call('state', { token: guest.token, rematchMatch: 2 })).body
+    assert.equal(state.status, 'abandoned')
+    assert.equal(state.winner, 1)
+    assert.deepEqual(state.wins, [1, 1])
     await object.alarm()
     assert.equal((await call('state', { token: host.token })).status, 404)
 

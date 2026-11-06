@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises'
 import { resolve, extname, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { TrompoMatch } from '../src/multiplayer/TrompoMatch.ts'
+import { finishMatch, voteRematch, matchSnapshot } from './trompo-series.mjs'
 
 export function createMultiplayerServer(options = {}) {
   const allowedOrigins = new Set((options.allowedOrigins ?? process.env.ALLOWED_ORIGINS ?? '')
@@ -21,7 +22,7 @@ export function createMultiplayerServer(options = {}) {
           room.status = 'abandoned'; room.match.winner = absent[0] === absent[1] ? null : absent[0] ? 1 : 0
         } else {
           room.match.step(1 / 60, room.players.map(p => now - p.inputAt > 500 ? { x: 0, y: 0 } : p.input))
-          if (room.match.winner !== null) room.status = 'finished'
+          if (room.match.winner !== null) finishMatch(room)
         }
       }
     }
@@ -62,20 +63,23 @@ export function createMultiplayerServer(options = {}) {
         }
         const index = room.players.findIndex(p => p.token === body.token)
         if (index < 0) return send(res, 403, { error: 'Acceso no válido a la sala.' })
+        if (room.status === 'finished' && room.players.some(p => Date.now() - p.seen > 15_000)) room.status = 'abandoned'
         room.touched = Date.now(); const player = room.players[index]; player.seen = room.touched
         if (action === 'leave') {
           if (room.status === 'waiting' || room.status === 'playing') {
             room.status = 'abandoned'; room.match.winner = room.players.length === 2 ? 1 - index : null
           }
+          room.status = 'abandoned'
           return send(res, 200, { ok: true })
         }
         if (action !== 'state') return send(res, 404, { error: 'Acción no válida' })
+        voteRematch(room, index, body.rematchMatch, room.touched)
         const input = body.input
         if (input && Number.isFinite(input.x) && Number.isFinite(input.y)) {
           const length = Math.max(1, Math.hypot(input.x, input.y))
           player.input = { x: input.x / length, y: input.y / length }; player.inputAt = Date.now()
         }
-        return send(res, 200, { code, status: room.status, player: index, ...room.match })
+        return send(res, 200, { code, player: index, ...matchSnapshot(room) })
       } catch { return send(res, 400, { error: 'Solicitud no válida' }) }
     }
     if (!['GET', 'HEAD'].includes(req.method)) return send(res, 405, { error: 'Método no permitido' })

@@ -4,7 +4,8 @@ import { TEXTS } from '../config/texts'
 import Phaser from 'phaser'
 import DebugPanel from '../components/DebugPanel'
 import { TOTAL_ROUTES } from '../config/constants'
-import { ROUTE_CARD_ASSETS } from '../config/assets'
+import { MAP_POSTCARDS } from '../config/mapPostcards'
+import { MENU_UI_ASSETS } from '../config/uiAssets'
 import { LAYERS } from '../config/layers'
 import type { RouteId } from '../types/SaveData'
 import { gameManager } from '../core/GameManager'
@@ -36,32 +37,33 @@ export default class MapScene extends Phaser.Scene {
 
     gameManager.progressManager.routes.forEach((routeId, index) => {
       const { state, label, blocked } = this.routeInfo(routeId)
-      const x = 192 + index * 224
-      const y = 340
-      const color = state === 'unlocked' ? 0x34d399 : state === 'next' ? 0xfbbf24 : 0x334155
-
-      this.add.rectangle(x, y, 196, 252, color, 0.95).setStrokeStyle(4, 0xf8fafc)
-        .setInteractive({ useHandCursor: true }).on('pointerdown', () => this.openRouteCard(routeId, index + 1))
-      const textColor = state === 'locked' ? '#f8fafc' : '#10131a'
-      this.add.text(x, y - 70, TEXTS.routeName(index + 1), { fontSize: '32px', fontStyle: '700', color: textColor }).setOrigin(0.5)
-      this.add.text(x, y - 15, label, { fontSize: '22px', color: textColor }).setOrigin(0.5)
-      const asset = ROUTE_CARD_ASSETS[routeId]
-      if (this.textures.exists(asset.key)) {
-        const preview = this.add.image(x, y + 65, this.routeTexture(routeId, blocked))
-        preview.setScale(Math.min(148 / preview.width, 80 / preview.height))
-        if (blocked) preview.setTint(0x8b95a7)
+      const x = 200 + index * 220
+      const y = 349
+      const border = state === 'unlocked' ? 0x34d399 : state === 'next' ? 0xfbbf24 : 0x64748b
+      const card = this.add.rectangle(x, y, 200, 300, 0x202d40).setStrokeStyle(3, border)
+      if (!blocked) {
+        card.setInteractive({ useHandCursor: true }).on('pointerdown', () => this.openRouteCard(routeId, index + 1))
       }
-      if (blocked) this.addLock(x, y + 65, 0.42)
+      const route = MAP_POSTCARDS[routeId]
+      this.add.text(x, y - 123, this.routeNumber(index + 1), { fontSize: '22px', color: '#f8fafc' }).setOrigin(0.5)
+      const icon = this.add.image(x, y - 32, this.routeTexture(routeId, blocked)).setDisplaySize(132, 132)
+      if (blocked) {
+        icon.setTint(0x8b95a7)
+        this.addLock(x, y - 32, 0.48)
+      }
+      this.add.text(x, y + 76, route.label.toUpperCase(), {
+        fontSize: '21px', color: '#f8fafc', align: 'center', wordWrap: { width: 182 },
+      }).setOrigin(0.5)
+      this.add.text(x, y + 123, label, { fontSize: '18px', color: blocked ? '#cbd5e1' : '#6ee7b7' }).setOrigin(0.5)
     })
 
-    this.addButton(344, 616, 270, 76, TEXTS.travel, () => {
+    this.addArtButton(432, SCENE_ASSETS.travelButton.key, 290, 105, () => {
       requestFullscreenOnPlay()
       gameManager.startNewRun()
       this.scene.start('TransitionScene')
     })
 
-    this.addButton(640, 616, 270, 76, TEXTS.explore, () => this.scene.start('ExplorationScene'), !save.explorationUnlocked)
-    this.addButton(936, 616, 270, 76, TEXTS.menu, () => this.scene.start('MenuScene'))
+    this.addArtButton(848, MENU_UI_ASSETS.menu.key, 290, 111, () => this.scene.start('MenuScene'))
 
     new DebugPanel(this)
     this.game.events.on('debug:progress-changed', this.refreshProgress, this)
@@ -82,36 +84,39 @@ export default class MapScene extends Phaser.Scene {
   }
 
   private openRouteCard(routeId: RouteId, number: number): void {
-    if (this.routeCard) return
-    const { label, blocked } = this.routeInfo(routeId)
+    if (this.routeCard || this.routeInfo(routeId).blocked) return
+    const route = MAP_POSTCARDS[routeId]
     const backdrop = this.add.rectangle(640, 360, 1280, 720, 0x05070c, 0.88)
-      .setInteractive().on('pointerdown', () => this.closeRouteCard())
-    const panel = this.add.rectangle(640, 360, 1080, 640, 0x172033)
-      .setStrokeStyle(3, 0xcbd5e1).setInteractive()
-    const title = this.add.text(640, 88, `${TEXTS.routeName(number)} · ${label}`, {
-      fontFamily: 'Arial, sans-serif', fontSize: '30px', color: '#f8fafc',
-    }).setOrigin(0.5)
-    const asset = ROUTE_CARD_ASSETS[routeId]
-    const art = this.textures.exists(asset.key)
-      ? this.add.image(640, 352, this.routeTexture(routeId, blocked))
-      : this.add.text(640, 352, TEXTS.routeName(number), { fontSize: '48px', color: '#6ee7b7' }).setOrigin(0.5)
-    if (art instanceof Phaser.GameObjects.Image) {
-      art.setScale(Math.min(1000 / art.width, 440 / art.height))
-      if (blocked) art.setTint(0x8b95a7)
-    }
-    const close = this.add.rectangle(640, 618, 270.01, 56, 0xfbbf24)
+      .setInteractive()
+    const paper = route.paper && this.textures.exists(route.paper.key)
+      ? this.add.image(640, 326, route.paper.key).setDisplaySize(1080, 500)
+      : this.add.rectangle(640, 326, 1080, 500, 0xffefd0).setStrokeStyle(4, 0xc38c55)
+    const stampBorder = this.add.rectangle(314, 326, 256, 256, 0xfff9e9).setStrokeStyle(3, 0xab7550)
+    const stamp = this.add.image(314, 326, route.icon.key).setDisplaySize(220, 220)
+    const divider = this.add.rectangle(500, 326, 2, 360, 0xab7550, 0.65)
+    const caption = this.add.text(548, 145, `${this.routeNumber(number)} · ${route.label.toUpperCase()}`, {
+      fontSize: '22px', color: '#70432c',
+    })
+    const title = this.add.text(548, 195, route.title, { fontSize: '38px', color: '#302016' })
+    const fact = this.add.text(548, 270, `Dato curioso: ${route.fact}`, {
+      fontSize: '25px', color: '#39291e', lineSpacing: 7, wordWrap: { width: 570 },
+    })
+    const close = this.add.rectangle(640, 629, 306, 60, 0xfbbf24)
       .setInteractive({ useHandCursor: true }).on('pointerdown', () => this.closeRouteCard())
-    const closeLabel = this.add.text(640, 618, TEXTS.closeCard, {
-      fontFamily: 'Arial, sans-serif', fontSize: '30px', color: '#1f2937',
+    const closeLabel = this.add.text(640, 629, TEXTS.closeCard, {
+      fontSize: '28px', color: '#1f2937',
     }).setOrigin(0.5)
-    const contents: Phaser.GameObjects.GameObject[] = [backdrop, panel, title, art]
-    if (blocked) contents.push(this.addLock(640, 352, 1.6))
-    contents.push(close, closeLabel)
-    this.routeCard = this.add.container(0, 0, contents).setDepth(LAYERS.overlay)
+    this.routeCard = this.add.container(0, 0, [
+      backdrop, paper, stampBorder, stamp, divider, caption, title, fact, close, closeLabel,
+    ]).setDepth(LAYERS.overlay)
+  }
+
+  private routeNumber(number: number): string {
+    return `RUTA ${String(number).padStart(2, '0')}`
   }
 
   private routeTexture(routeId: RouteId, blocked: boolean): string {
-    const original = ROUTE_CARD_ASSETS[routeId].key
+    const original = MAP_POSTCARDS[routeId].icon.key
     if (!blocked) return original
     const key = `${original}-blocked`
     if (!this.textures.exists(key)) {
@@ -149,21 +154,10 @@ export default class MapScene extends Phaser.Scene {
     return true
   }
 
-  private addButton(x: number, y: number, width: number, height: number, label: string, action: () => void, disabled = false): void {
-    const color = disabled ? 0x475569 : 0xfbbf24
-    const button = this.add.rectangle(x, y, width, height, color, 1).setStrokeStyle(2, 0xf8fafc)
-
-    if (!disabled) {
-      button.setInteractive({ useHandCursor: true })
-      button.on('pointerdown', action)
-    }
-
-    this.add
-      .text(x, y, label, {
-        fontFamily: 'Arial, sans-serif', fontSize: '30px',
-        fontStyle: '700',
-        color: disabled ? '#cbd5e1' : '#1f2937',
+  private addArtButton(x: number, key: string, width: number, height: number, action: () => void): void {
+    this.add.image(x, 613, key, 'button').setDisplaySize(width, height)
+      .setInteractive({ useHandCursor: true }).on('pointerdown', () => {
+        if (!this.routeCard) action()
       })
-      .setOrigin(0.5)
   }
 }

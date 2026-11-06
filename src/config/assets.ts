@@ -1,4 +1,3 @@
-import type { RouteId } from '../types/SaveData'
 
 // Piezas independientes, no cuadros de animación. Los originales son PNG de 64×64.
 export const COCINA_ASSETS = {
@@ -53,11 +52,3 @@ export const POTATO_ASSETS = {
   ],
 } as const
 
-// Sustituir estos SVG por el arte final o cambiar solo path (PNG/JPG/SVG).
-export const ROUTE_CARD_ASSETS: Record<RouteId, { key: string; path: string }> = {
-  route1: { key: 'route-card-1', path: 'assets/routes/route1.svg' },
-  route2: { key: 'route-card-2', path: 'assets/routes/route2.svg' },
-  route3: { key: 'route-card-3', path: 'assets/routes/route3.svg' },
-  route4: { key: 'route-card-4', path: 'assets/routes/route4.svg' },
-  route5: { key: 'route-card-5', path: 'assets/routes/route5.svg' },
-}

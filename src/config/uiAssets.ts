@@ -4,6 +4,7 @@ export const MENU_MAIN_BUTTON_FRAMES = [
   { key: 'art-mapButton', crop: [4, 15, 122, 44] },
 ] as const
 export const MENU_UI_ASSETS = {
+  multiplayer: { key: 'ui-multiplayer', path: 'assets/ui/menu/MULTIJUGADOR.png', crop: [2, 12, 252, 113] },
   instructions: { key: 'ui-instructions', path: 'assets/ui/menu/Boton_Intrucciones.png', crop: [2, 14, 124, 43] },
   resume: { key: 'ui-resume', path: 'assets/ui/menu/CONTINUAR.png', crop: [44, 36, 139, 70] },
   menu: { key: 'ui-return-menu', path: 'assets/ui/menu/VOLERALMENU.png', crop: [26, 38, 194, 74] },
