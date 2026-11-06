@@ -3,6 +3,7 @@ import { TROMPO_ASSETS } from '../config/assets'
 import { MATCH_ARENA, type MatchBody } from '../multiplayer/TrompoMatch'
 import TrompoJoystick from '../minigames/trompo/systems/TrompoJoystick'
 import { TROMPO_CONFIG } from '../minigames/trompo/config/trompoConfig'
+import { showTrompoImpact } from '../minigames/trompo/showTrompoImpact'
 import { gameManager } from '../core/GameManager'
 import { requestGameFullscreen } from '../utils/fullscreen'
 
@@ -14,6 +15,7 @@ interface Snapshot {
   winner: number | null
   round: number
   countdown: number
+  collisions?: number
   wins?: number[]
   matchNumber?: number
   rematch?: boolean[]
@@ -46,8 +48,8 @@ export default class TrompoMultiplayerScene extends Phaser.Scene {
   private scoreText?: Phaser.GameObjects.Text
   private winsText?: Phaser.GameObjects.Text
   private statusText?: Phaser.GameObjects.Text
-  private playerRing?: Phaser.GameObjects.Arc
   private playerTag?: Phaser.GameObjects.Text
+  private lastImpactAt = -Infinity
   constructor() { super('TrompoMultiplayerScene') }
 
   create(): void {
@@ -58,6 +60,7 @@ export default class TrompoMultiplayerScene extends Phaser.Scene {
     this.halfRtt = 0
     this.lastSocketAttempt = -Infinity
     this.lastSentAt = -Infinity
+    this.lastImpactAt = -Infinity
     this.winsText = undefined
     this.statusText = undefined
     this.credentials = undefined; this.snapshot = undefined; this.art = []; this.joystick.cancel()
@@ -230,6 +233,15 @@ export default class TrompoMultiplayerScene extends Phaser.Scene {
     }
     if (snapshot.round !== previous?.round || snapshot.matchNumber !== previous?.matchNumber) {
       this.art.forEach((art, index) => art.setPosition(snapshot.bodies[index]!.x, snapshot.bodies[index]!.y))
+    } else if (snapshot.status === 'playing' && previous?.status === 'playing' &&
+        (snapshot.collisions ?? 0) > (previous.collisions ?? 0) &&
+        this.snapshotAt - this.lastImpactAt >= TROMPO_CONFIG.IMPACT_COOLDOWN_MS &&
+        !document.hidden) {
+      const [first, second] = this.art
+      if (first && second) {
+        this.lastImpactAt = this.snapshotAt
+        showTrompoImpact(this, (first.x + second.x) / 2, (first.y + second.y) / 2)
+      }
     }
     if (snapshot.status === 'abandoned' && previous?.status === 'finished') this.resultShown = false
     if (snapshot.status === 'finished' || snapshot.status === 'abandoned') this.showResult()
@@ -251,9 +263,7 @@ export default class TrompoMultiplayerScene extends Phaser.Scene {
       this.add.image(this.snapshot!.bodies[index]!.x, this.snapshot!.bodies[index]!.y, asset.key).setDisplaySize(92, 92).setDepth(700))
     const style = { fontSize: '34px', color: '#ffffff', stroke: '#142c29', strokeThickness: 5 }
     const own = this.art[this.credentials!.player]!
-    this.playerRing = this.add.circle(own.x, own.y, 50, 0x102d32, 0.48)
-      .setStrokeStyle(5, 0x7fffe1).setDepth(699)
-    this.playerTag = this.add.text(own.x, own.y - 59, '▼ TÚ', { ...style, fontSize: '23px', color: '#bafff0' })
+    this.playerTag = this.add.text(own.x, own.y - 59, 'TÚ', { ...style, fontSize: '23px', color: '#bafff0' })
       .setOrigin(0.5, 1).setDepth(701)
     this.add.text(48, 26, 'Duelo online · Primero a 3', style).setDepth(1200)
     this.scoreText = this.add.text(48, 80, '', style).setDepth(1200)
@@ -287,7 +297,6 @@ export default class TrompoMultiplayerScene extends Phaser.Scene {
       art.rotation += delta * (index === 0 ? 0.016 : -0.019)
     })
     const own = this.art[player]!
-    this.playerRing?.setPosition(own.x, own.y)
     this.playerTag?.setPosition(own.x, own.y - 59)
     this.stick?.setPosition(stick.x + x * 62, stick.y + y * 62)
   }

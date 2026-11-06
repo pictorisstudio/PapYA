@@ -8,6 +8,7 @@ import { TROMPO_ASSETS } from '../../config/assets'
 import { TROMPO_CONFIG as C } from './config/trompoConfig'
 import TrompoJoystick from './systems/TrompoJoystick'
 import TrompoSimulation, { type TopBody } from './systems/TrompoSimulation'
+import { showTrompoImpact } from './showTrompoImpact'
 
 // El arte se mantiene separado de la simulación y del joystick.
 export default class TrompoScene extends Phaser.Scene {
@@ -141,9 +142,6 @@ export default class TrompoScene extends Phaser.Scene {
 
   private showImpact(): void {
     const { player, enemy } = this.simulation
-    const spark = this.add.circle((player.x + enemy.x) / 2, (player.y + enemy.y) / 2, 22, 0xffedb0, 0.8)
-      .setStrokeStyle(5, 0xffffff).setDepth(1100)
-    this.tweens.add({ targets: spark, scale: 2, alpha: 0, duration: 180, onComplete: () => spark.destroy() })
-    gameManager.audioManager.playEffect(this, 'cocuyCollision')
+    showTrompoImpact(this, (player.x + enemy.x) / 2, (player.y + enemy.y) / 2)
   }
 }
